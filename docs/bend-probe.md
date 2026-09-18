@@ -147,3 +147,11 @@ echo hello | bend run-c bend/probe/io.bend -s
 bend/probe/embed_gen.sh 65536 > embed_16.bend && /usr/bin/time -l bend run-c embed_16.bend -s
 bend gen-c bend/probe/limbmul.bend > lm.c && clang -O2 -DTPC_L2=3 lm.c -o lm -lm -lpthread && /usr/bin/time -l ./lm
 ```
+
+## 7. Independent review (astra, 2026-09-18 02:17) — verdicts
+- keep: numeric table (all rows reproduced; u32 rejected; 4 independent bigint pairs limb-exact, 44/44 limbs).
+- keep: parallel scaling 174.8 → 896.2 MIPS (5.13×, load 2.6).
+- **kill → runtime instability:** compiled probe A (2^16 254-bit muls) returned garbage `x1fffffff` in 1 of 3 identical runs (2/3: checksum 15636624, 3.99/4.12 s, 3.33 G ITRS ≈ 50 860/mul, 6.45 GB RSS). HVM2 2.0.22 compiled C output is not deterministic-safe on this box — a ceiling in itself.
+- **kill → probe bug:** `io.bend` decodes bytes as signed char (`80 00 00` → 16777088 instead of 128); needs `& 255`. The 2^18-limb checksum with correct decoding is 14095185; timing (0.46 s) unaffected.
+- keep: 2^20 embedded literals fail (`HVM output had no result`, 12.6 s, 3.44 GB RSS).
+- corrections: MIPS spin-inflation remark is false (CLOCK_MONOTONIC); the 6.4 GB is calloc-reserved virtual (7 GiB) reported as RSS on macOS, not a fixed working set; `IO/FS/read_file` path can be an argument (not literal-only); operands in probe A reach 264 bits with only 4096 unique pairs (checksum still consumes every product).
