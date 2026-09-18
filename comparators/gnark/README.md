@@ -36,33 +36,47 @@ serialises them onto one OS thread rather than changing the algorithmic split.
 
 ## Results — Mac mini, Apple M4 (10 cores), 2026-09-18
 
-Raw data: `bench/gnark-macmini.json`. **Host was shared with sibling lanes compiling
-(load1 ≈ 8–21 on 10 cores); all numbers are upper bounds, 1-thread K=14 especially noisy.**
-QAP domain = N (gnark uses `next_pow2(N)`); `num_public = 2` counts the constant-one wire.
+Raw data: `bench/gnark-macmini.json` (every entry carries the host `loadavg` at sample time).
+**Host was shared with sibling lanes compiling (load1 ≈ 9–20 on 10 cores); all numbers are
+upper bounds** — 10-thread proves suffer most (K=14 measured 97 ms on a quieter moment vs 194 ms
+below), rerun on a quiet host before quoting. QAP domain = N (gnark uses `next_pow2(N)`);
+`num_public = 2` counts the constant-one wire.
 
 ### Prove (ms, median; proofs verified)
 
-| K | N | 10 thread | 10 thread samples | solve | 1 thread | 1 thread samples | setup (10 thread) |
-|---|---|---|---|---|---|---|---|
-| 10 | 1024 | 13.43 | 13.32, 13.75, 13.81, 12.68, 13.43 | 0.04 | 56.33 | 60.43, 48.57, 54.19, 56.33, 63.1 | 80.85 |
-| 14 | 16384 | 97.32 | 96.21, 97.49, 97.32, 98.34, 96.06 | 0.57 | 1845.38 | 1275.13, 1845.38, 1314.42, 3284.53, 3239.74 | 912.72 |
-| 18 | 262144 | 928.47 | 928.47, 991.28, 912.93 | 8.15 | 7008.1 | 7008.1, 8782.66, 6663.41 | 13246.65 |
-| 20 | 1048576 | 3928.79 | 3928.79 | 37.57 | — | skipped (1-thread setup alone ≈ 5 min) | 71209.79 |
+| K | N | 10 thread | 10 thread samples | solve | 1 thread | 1 thread samples | setup (10 thread) | load1 (10t / 1t) |
+|---|---|---|---|---|---|---|---|---|
+| 10 | 1024 | 14.39 | 10.74, 20.4, 21.56, 14.39, 12.02 | 0.04 | 45.82 | 45.82, 45.46, 45.82, 45.85, 45.5 | 104.09 | 16.2 / 20.1 |
+| 14 | 16384 | 194.1 | 161.72, 194.1, 220.21, 180.89, 197.51 | 0.54 | 431.07 | 434.29, 433.21, 430.15, 431.07, 428.36 | 2037.98 | 16.2 / 18.8 |
+| 18 | 262144 | 1249.77 | 1226.43, 1249.77, 1358.32 | 8.25 | 4661.6 | 4612.03, 4661.6, 4668.85 | 23317.98 | 18.7 / 11.0 |
+| 20 | 1048576 | 3330.94 | 3330.94 | 86.29 | — | skipped (1-thread setup alone ≈ 8 min) | 76968.4 | 20.1 / — |
 
-### Primitives (ms, median)
+1-thread variance (review finding): a first run recorded K=14 samples of 1275–3284 ms (2.5×
+spread). Cause is host contention, not GC: `GODEBUG=gctrace=1` shows 14 GCs in the whole run and
+`GOGC=off` reproduces the same spread (554–932 ms); a single-`P` Go process gets a fluctuating
+share of a saturated host. Re-measured at load1 ≈ 19 the same run gives 428–434 ms (1 % spread),
+so no code stabilisation is applied — read `loadavg` next to each entry instead.
+
+### Primitives (ms, median; per call)
 
 | log2 | G1 MSM 10 thread | G1 MSM 1 thread | G2 MSM 10 thread | G2 MSM 1 thread | FFT 10 thread | iFFT 10 thread | FFT 1 thread | iFFT 1 thread |
 |---|---|---|---|---|---|---|---|---|
-| 10 | 2.1 | 6.35 | 6.82 | 34.84 | 0.08 | 0.12 | 0.16 | 0.16 |
-| 11 | 3.82 | 11.37 | 20.36 | 64.51 | 0.12 | 0.13 | 0.36 | 0.41 |
-| 12 | 6.76 | 20.54 | 30.55 | 127.87 | 0.23 | 0.27 | 0.24 | 0.28 |
-| 13 | 10.25 | 34.91 | 41.68 | 151.7 | 0.43 | 0.73 | 1.71 | 0.64 |
-| 14 | 16.26 | 58.97 | 70.98 | 295.69 | 0.64 | 0.91 | 1.17 | 1.29 |
-| 15 | 28.21 | 109.22 | 121.11 | 536.22 | 1.52 | 1.35 | 2.52 | 3.74 |
-| 16 | 43.39 | 196.68 | 241.75 | 920.64 | 3.49 | 3.34 | 5.61 | 6.1 |
-| 17 | 82.89 | 480.06 | — | — | 7.17 | 8.13 | 12.7 | 13.8 |
-| 18 | 152.89 | 673.91 | — | — | 14.45 | 13.37 | 33.08 | 35.62 |
-| 19 | 281.49 | 1982.06 | — | — | 24.66 | 26.49 | 97.08 | 83.85 |
-| 20 | 848.4 | 3877.01 | — | — | 42.66 | 41.3 | 122.69 | 128.33 |
+| 10 | 1.14 | 6.01 | 4.9 | 21.97 | 0.04 | 0.05 | 0.05 | 0.06 |
+| 11 | 1.99 | 10.75 | 8.47 | 38.1 | 0.05 | 0.07 | 0.11 | 0.13 |
+| 12 | 3.72 | 19.7 | 13.9 | 71.28 | 0.12 | 0.12 | 0.24 | 0.28 |
+| 13 | 5.6 | 33.8 | 19.16 | 95.44 | 0.2 | 0.23 | 0.54 | 0.6 |
+| 14 | 9.98 | 57.99 | 30.47 | 166.63 | 0.34 | 0.41 | 1.16 | 1.29 |
+| 15 | 20.26 | 104 | 58.19 | 309.31 | 0.66 | 0.75 | 2.55 | 2.82 |
+| 16 | 33.85 | 183.98 | 103.19 | 569.25 | 1.29 | 1.48 | 5.43 | 5.91 |
+| 17 | 62.48 | 348.53 | — | — | 3.25 | 3.68 | 11.7 | 12.65 |
+| 18 | 124.25 | 630.52 | — | — | 5.13 | 7.19 | 24.89 | 26.88 |
+| 19 | 268.79 | 1172.63 | — | — | 12.58 | 13.24 | 51.9 | 56.33 |
+| 20 | 399.9 | 2350.82 | — | — | 29.27 | 29.85 | 110.93 | 119.05 |
 
-Fr `Mul`, single thread: 6.7e7 dependent muls/s, 1.08e8 independent muls/s.
+Primitives ran at load1 ≈ 7–11. Fr `Mul`, single thread: 7.2e7 dependent muls/s, 1.17e8
+independent muls/s.
+
+## Tests
+
+`go test ./...` — `TestSquareChain`: `GetNbConstraints() == N`, the correct `y` solves, `y+1` is
+rejected by the solver (the raw output row really constrains the public output).

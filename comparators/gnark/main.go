@@ -68,6 +68,9 @@ func ms(d time.Duration) float64 { return float64(d.Nanoseconds()) / 1e6 }
 
 func now() string { return time.Now().UTC().Format(time.RFC3339) }
 
+// loadavg: host 1/5/15-min load at sample time (same field as bench/arkworks-*.json).
+func loadavg() string { return sh("sysctl", "-n", "vm.loadavg") }
+
 // timeN runs f iters times and returns the samples in ms.
 func timeN(iters int, f func()) []float64 {
 	out := make([]float64, 0, iters)
@@ -140,7 +143,7 @@ func prove(log2, iters int) map[string]any {
 		"solve_ms": median(solve), "solve_samples_ms": solve,
 		"compile_ms": compileMs, "setup_ms": setupMs,
 		"pk_source": "in-memory setup", "verified": true,
-		"threads": runtime.GOMAXPROCS(0), "timestamp": now(),
+		"threads": runtime.GOMAXPROCS(0), "timestamp": now(), "loadavg": loadavg(),
 	}
 }
 
@@ -187,7 +190,7 @@ func primIters(log2 int) int {
 
 func entry(log2 int, samples []float64, threads int) map[string]any {
 	return map[string]any{"log2": log2, "ms": median(samples), "iters": len(samples),
-		"samples_ms": samples, "threads": threads, "timestamp": now()}
+		"samples_ms": samples, "threads": threads, "timestamp": now(), "loadavg": loadavg()}
 }
 
 func primitives(maxLog2 int) map[string]any {
@@ -249,7 +252,7 @@ func primitives(maxLog2 int) map[string]any {
 			fs := timeN(primIters(k), fwd)
 			is := timeN(primIters(k), inv)
 			set(cfg.key, k, map[string]any{"log2": k, "fft_ms": median(fs), "ifft_ms": median(is),
-				"iters": len(fs), "fft_samples_ms": fs, "ifft_samples_ms": is, "threads": cfg.tasks, "timestamp": now()})
+				"iters": len(fs), "fft_samples_ms": fs, "ifft_samples_ms": is, "threads": cfg.tasks, "timestamp": now(), "loadavg": loadavg()})
 			fmt.Fprintf(os.Stderr, "%s 2^%d: fft %.3f ms, ifft %.3f ms\n", cfg.key, k, median(fs), median(is))
 		}
 	}
