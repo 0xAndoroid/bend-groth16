@@ -1,0 +1,48 @@
+{
+ "host": "macmini",
+ "cpu": "Apple M4",
+ "threads": 10,
+ "prover": "snarkjs",
+ "version": "snarkjs 0.7.6, node v26.8.2",
+ "circuit": "SquareChain(2^K), BN254, x0=12345678901234567890",
+ "results": [
+  {
+   "log2": 10,
+   "constraints": 1024,
+   "prove_ms": [
+    256.1,
+    254.7,
+    252.4
+   ],
+   "median_ms": 254.7
+  },
+  {
+   "log2": 14,
+   "constraints": 16384,
+   "prove_ms": [
+    935.6,
+    935.3,
+    933.2
+   ],
+   "median_ms": 935.3
+  },
+  {
+   "log2": 18,
+   "constraints": 262144,
+   "prove_ms": [
+    9114.6,
+    9119.8,
+    9249.2
+   ],
+   "median_ms": 9119.8
+  },
+  {
+   "log2": 20,
+   "constraints": 1048576,
+   "prove_ms": [
+    36000.4
+   ],
+   "median_ms": 36000.4
+  }
+ ]
+}
