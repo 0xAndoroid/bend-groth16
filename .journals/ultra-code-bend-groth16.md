@@ -100,3 +100,9 @@ plan waves → spec wave → build → review → integrate → verify → fix(�
 - Vast 51392026 (pika-bend-5090) destroyed 04:38, verified gone. ~4.3 h × $0.628 ≈ $2.7.
 - w5 lanes: 6f07139f quiet-rerun (Fable, worktree w5-quiet, bench/quiet/**), 53bb57ce final-review (astra-xhigh, findings-only, no load).
 - Next: merge quiet → report lane (Fable, html-report-design) → fix review findings → merge main → teardown.
+
+## 04:50 — w5 final review (astra-xhigh, 53bb57ce): fix-first
+- Blockers: msm bench loader wraps (first 2 records overwritten; prover unaffected); bench_prover.sh cfg is label-only; ICICLE-SNARK/arkworks harnesses verify one proof per size not each timed one; run.sh fallback uses obsolete converter. Proof formulas + input rows verified against ark-groth16 0.5 (no defect). Full list: `$TMPDIR/bend-groth16/w5review/findings.md` (copied to `docs/final-review-2026-09-18.md` at merge).
+- Fixer da1a005c (Fable, worktree w5-fix) on all findings except numbers; quiet lane 6f07139f told to enforce cfg args + one `--gpu off` K=14 row.
+- **Journal corrections (retained JSON beats earlier prose):** gnark mini prove 2^10/14/18/20 = 14.4/194/1250/3331 ms (`bench/gnark-macmini.json`), 1-thr K=14 431 ms, MSM 2^20 400 ms, FFT 2^20 29.3 ms. Bend K=10 10thr = 627 ms (v2), 732 (v1). MSM ratio Bend v2/gnark 2^20 ≈ 27.7×; NTT 529/29.3 ≈ 18×. CPU1 59038 ms used fd8, CPU10 11087 fd7 (not fixed-config scaling). Box rental 05:47 UTC → 04:38 ET = 2 h 51 ≈ $1.79. 55 = v2 runs; JSON retains 92 samples incl. 37 v1.
+- Apples/oranges to state in report: Bend total includes loading (comparators exclude setup; circom includes process start); arkworks "matrices" mode is the like-for-like point; gnark QAP domain N vs 2N elsewhere; witnesses differ (x0) across frontends, same logical circuit; ICICLE device MSM excludes upload, sppark includes it; CPU Bend rows without `--gpu off`.
