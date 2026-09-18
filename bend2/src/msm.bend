@@ -31,9 +31,11 @@ def Msm.log2c(+n: Nat) -> Nat:
 def Msm.windows(+c: Nat) -> Nat:
   ((253n / c) + 1n)
 
-# default window size / fork depth for n points
+# default window size / fork depth for n points (measured, bench/msm_results.md: c = 8
+# wins up to 2^16 because the bucket join costs (2^fd - 1) * windows * 2^c adds; c = 12
+# wins from 2^18)
 def Msm.pick_c(+n: Nat) -> Nat:
-  Nat.min(12n, Nat.max(8n, Nat.sub(Msm.log2c(n), 4n)))
+  Bool.pick(Nat, Nat.is_lt(Msm.log2c(n), 18n), 8n, 12n)
 
 def Msm.pick_fd(+n: Nat, +c: Nat) -> Nat:
   Nat.min(4n, Nat.sub(Msm.log2c(n), c))
