@@ -4,6 +4,8 @@ Benchmark subject: a Groth16 prover over BN254 written in [Bend 2](https://bend-
 compared against arkworks, gnark, rapidsnark, snarkjs (CPU) and gnark+ICICLE, ICICLE-SNARK, ICICLE/sppark
 primitives (GPU, one rented CUDA box). Groth16 is only the benchmark subject here.
 
+Report: [Bend 2 Groth16 benchmark (Sep 2026)](https://me.andrew.ee/reports/bend-groth16-bench-2026-09.html) — verdict, full-prover and primitive tables, audit, ceilings.
+
 Layout:
 - `bend2/` — the prover: `src/` (fr, fq, fq2, g1, g2, msm, ntt, groth16, bin_io), `prove.bend` (entry),
   `tests/`, `bench/` (primitive benches + `*_results.md`), `scripts/` (`prove.sh`, `bench_prover.sh`),
