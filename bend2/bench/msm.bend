@@ -1,4 +1,5 @@
-# MSM benchmark on real proving-key points: G1 from data/18/bend/pk_a.bin (N <= 18) or
+# MSM benchmark on real proving-key points: G1 from data/18/bend/pk_a.bin (N <= 18; the
+# whole 2^18-point file is loaded so the first n points are the file's first n) or
 # pk_h.bin (N = 19; N = 20 duplicates the 2^19 pk_h points with different scalars), G2 from
 # pk_b2.bin; scalars = canonical witness.bin entries, cycled. Prints ms and the affine
 # result (must match across --threads 1 / default / MODE=gpu). Run from the repo root:
@@ -69,7 +70,7 @@ def B.points_big(twice: Bool) -> IO(Array<U32>):
 def B.points_g1.fin(small: Bool, +n: Nat) -> IO(Array<U32>):
   match small:
     case True{}:
-      Io.load_u32("data/18/bend/pk_a.bin", (n + 5n), 0)
+      Io.load_u32("data/18/bend/pk_a.bin", 23n, 0)
     case False{}:
       B.points_big(Nat.is_eq(n, 20n))
 
