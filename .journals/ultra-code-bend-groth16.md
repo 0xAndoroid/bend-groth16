@@ -18,11 +18,11 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 ## Wave table
 | wave | shards | depends on | status |
 |---|---|---|---|
-| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (A,D integrated; B,C reviewing; E,F building) |
+| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (A,C,D integrated; B reviewing; E,F building) |
 | 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] Bend 2 field arithmetic Fr/Fq + loader · review gnark ebecad7b | 0 (D landed) | building (gnark reviewing) |
 | 2 | Bend G1/G2 ops · Bend MSM (Pippenger) · Bend NTT | 1 | draft |
 | 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
-| 4 | "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
+| 4 | quiet-host CPU bench rerun (all mini comparators + Bend, serial) · "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
 
 ## Current wave spec (wave 0)
 - A: `docs/bend-idioms.md` only. Bend/HVM2 state Sep 2026: release, numeric types (u24/i24/f24? u32/u64?), CUDA backend status, parallel idioms (fold/bend, tree recursion), IO, perf pitfalls, known bugs.
@@ -41,7 +41,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 |---|---|---|---|---|---|---|
 
 ## Key numbers so far (M4, 10 cores)
-- arkworks prove 2^10/14/18/20: 27.5 / 207 / 5916(?) / 8509 ms (2^18 anomaly under review); MSM G1 2^18 186 ms, 2^20 703 ms.
+- arkworks prove 2^10/14/18/20: 17 / 142 / 1791 / 12762(load 17!) ms under sibling load; MSM G1 2^18 186 ms, 2^20 703 ms. ALL mini CPU numbers must be re-run on a quiet host in a final bench wave (arkworks, gnark, rapidsnark, snarkjs, Bend) — record loadavg.
 - gnark prove 2^10/14/18/20 (10 thr): 13.4 / 97 / 928 / 3929 ms; 1 thr 2^14 1845 ms; MSM G1 2^20 848 ms (10 thr); FFT 2^20 43 ms.
 - Bend 1/HVM2: u24 only, 12-bit limbs ×22; 254-bit schoolbook mul ≈ 51k interactions; 2^16 muls = 4.98 s on 8 thr compiled (~13k muls/s; ~2.7k 1-thr). Tree reduce scales 5.1× on 8 thr; loops 0×. Embedded literals cap 2^16 (compiled)/2^18 (interp); IO/FS/read_file works (~1 s per 2^18 limbs). Heap prealloc 6.4 GB RSS per compiled process.
 
