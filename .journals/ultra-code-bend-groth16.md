@@ -18,7 +18,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 ## Wave table
 | wave | shards | depends on | status |
 |---|---|---|---|
-| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (A,C,D,E,F integrated; B reviewing) |
+| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (all integrated) |
 | 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] bend2-field-curve 41379b12 (Fr/Fq/Fq2/G1/G2 + tests + field bench) · bend2-export 53ed8004 (JSON→.bin per bend2/FORMAT.md) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
 | 2 | Bend MSM (Pippenger, G1 then G2) · Bend NTT + QAP h-poly · loader/prover skeleton | 1 | draft |
 | 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
@@ -43,6 +43,13 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 ## Verification matrix
 | id | wave | command/probe | expected | verifier | keep/kill | evidence |
 |---|---|---|---|---|---|---|
+| V0.1 | 0 | bend run-c bend/probe/numeric.bend | rows of docs/bend-probe.md §2 | astra 401804b1 | keep | all rows match |
+| V0.2 | 0 | gen-c + clang TPC_L2=0 vs 3 parallel.bend | ~5× MIPS | astra | keep | 174.8→896.2 MIPS |
+| V0.3 | 0 | compiled limbmul.bend 3 runs | identical checksum | astra | kill | 1/3 garbage x1fffffff → HVM2 runtime instability (report ceiling) |
+| V0.4 | 0 | io.bend byte decode | 0x80 → 128 | astra | kill | signed-char bug in probe; documented, timing unaffected |
+| V0.5 | 0 | embed 2^20 literals | fails | astra | keep | HVM output had no result |
+| V0.6 | 0 | groth16-ref verify proof_ref K=4..18 / tampered | OK / INVALID | fable 2b106e2c | keep | verify test added |
+| V0.7 | 0 | gnark constraint count == N, proofs verify | true | fable ebecad7b | keep | |
 
 ## Key numbers so far (M4, 10 cores)
 - arkworks prove 2^10/14/18/20: 17 / 142 / 1791 / 12762(load 17!) ms under sibling load; MSM G1 2^18 186 ms, 2^20 703 ms. ALL mini CPU numbers must be re-run on a quiet host in a final bench wave (arkworks, gnark, rapidsnark, snarkjs, Bend) — record loadavg.
