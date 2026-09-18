@@ -253,7 +253,7 @@ def Ntt.late(d: Nat, t: NTree, +w: F.Fr, +lm: Nat, +h: Nat, +wm: F.Fr, +ratio: F
 
 # ---- stages ----
 
-def Ntt.stage.go(early: Bool, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +log2: Nat, +j: Nat, ws: F.Fr, wn: F.Fr) -> NTree:
+def Ntt.stage.go(early: Bool, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +j: Nat, ws: F.Fr, wn: F.Fr) -> NTree:
   match early:
     case True{}:
       Ntt.pair_node(Ntt.early(s, t, F.Fr.one(), lm, ws))
@@ -263,7 +263,7 @@ def Ntt.stage.go(early: Bool, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +log2: Nat,
 # stage s: j = log2 - s - 1, h = 2^j, ω_{2^(s+1)} = wn^(2^j)
 def Ntt.stage(early: Bool, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +log2: Nat, +wn: F.Fr) -> NTree:
   +j = Nat.sub(Nat.sub(log2, s), 1n)
-  Ntt.stage.go(early, s, t, fd, lm, log2, j, Ntt.sqr_n(j, wn), wn)
+  Ntt.stage.go(early, s, t, fd, lm, j, Ntt.sqr_n(j, wn), wn)
 
 def Ntt.stages(n: Nat, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +log2: Nat, +wn: F.Fr) -> NTree:
   match n:
