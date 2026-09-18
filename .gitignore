@@ -6,3 +6,4 @@ node_modules/
 bench/raw/*.bin
 /data/
 comparators/circom/build/
+comparators/gnark/gnark-bench
