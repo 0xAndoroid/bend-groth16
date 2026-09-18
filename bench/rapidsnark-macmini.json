@@ -1,0 +1,58 @@
+{
+ "host": "macmini",
+ "cpu": "Apple M4",
+ "threads": 10,
+ "prover": "rapidsnark",
+ "version": "rapidsnark 81eddf1a536d26497b237c0b8a04fe90baf7e439 (macos_arm64, clang, gmp 6.3 via build_gmp.sh)",
+ "circuit": "SquareChain(2^K), BN254, x0=12345678901234567890",
+ "results": [
+  {
+   "log2": 10,
+   "constraints": 1024,
+   "prove_ms": [
+    24.1,
+    24.4,
+    19.4,
+    19.7,
+    20.8
+   ],
+   "median_ms": 20.8
+  },
+  {
+   "log2": 14,
+   "constraints": 16384,
+   "prove_ms": [
+    139.7,
+    157.7,
+    164.6,
+    150.7,
+    139.7
+   ],
+   "median_ms": 150.7
+  },
+  {
+   "log2": 18,
+   "constraints": 262144,
+   "prove_ms": [
+    2149.7,
+    2984.0,
+    2672.2,
+    2725.6,
+    2722.6
+   ],
+   "median_ms": 2722.6
+  },
+  {
+   "log2": 20,
+   "constraints": 1048576,
+   "prove_ms": [
+    10029.5,
+    8893.2,
+    9792.3,
+    10204.3,
+    8944.9
+   ],
+   "median_ms": 9792.3
+  }
+ ]
+}

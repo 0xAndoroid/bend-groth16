@@ -5,3 +5,4 @@ node_modules/
 *.wtns
 bench/raw/*.bin
 /data/
+comparators/circom/build/
