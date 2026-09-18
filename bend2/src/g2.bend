@@ -210,7 +210,7 @@ def G2Aff.from_array(a: Array<U32>, i: Nat) -> Array<U32> & G2Aff:
 def G2Aff.to_array(a: Array<U32>, +i: Nat, p: G2Aff) -> Array<U32>:
   match p:
     case G2Aff{x, y}:
-      Q.Fq2.to_array(Q.Fq2.to_array(a, (i * 4n), x), ((i * 4n) + 2n), y)
+      Q.Fq2.to_array(Q.Fq2.to_array(a, (i * 2n), x), ((i * 2n) + 1n), y)
 
 # "x_hex y_hex" (G2: "x0 x1 y0 y1"), canonical
 def G2.show_affine(p: G2Aff) -> String:

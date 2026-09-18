@@ -221,7 +221,7 @@ def {G}Aff.from_array(a: Array<U32>, i: Nat) -> Array<U32> & {G}Aff:
 def {G}Aff.to_array(a: Array<U32>, +i: Nat, p: {G}Aff) -> Array<U32>:
   match p:
     case {G}Aff{{x, y}}:
-      {FT}.to_array({FT}.to_array(a, (i * {PUNITS}n), x), ((i * {PUNITS}n) + {FUNITS}n), y)
+      {FT}.to_array({FT}.to_array(a, (i * 2n), x), ((i * 2n) + 1n), y)
 
 # "x_hex y_hex" (G2: "x0 x1 y0 y1"), canonical
 def {G}.show_affine(p: {G}Aff) -> String:
