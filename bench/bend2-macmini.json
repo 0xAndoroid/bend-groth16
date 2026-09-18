@@ -1,0 +1,625 @@
+{
+ "schema": 1,
+ "framework": "bend2",
+ "versions": {
+  "bend": "2.0.5"
+ },
+ "host": "mac",
+ "cpu": "Apple M4",
+ "gpu": "Apple M4 (Metal)",
+ "threads": 10,
+ "git_head": "1628377",
+ "updated": "2026-09-18T08:28:16Z",
+ "notes": "MSM v2 (788b49e: fd 7, c 8/10) for prove; prove_v1 = a2d704a defaults (fd 4, c 8/12; also holds the only K=18 --threads 1 run). prove.<k>.gpu = BENDG_GPU=1 (d524023: one ! per MSM / qap phase, Metal); K=18 needs --gpu 8GB (default span: out of memory); cpu_all = prove.sh default (10 threads); other lanes were running on the mini (see loadavg). msm_g1/ntt: medians from bend2/bench/msm_results.md (G1, v1 defaults fd 4, c 8/12, a2d704a) and ntt_results.md (fft), ms per config {cpu1, cpu_all, gpu=Metal}.",
+ "msm_g1": {
+  "10": {
+   "log2": 10,
+   "cpu1": 117,
+   "cpu_all": 94,
+   "gpu": 1384
+  },
+  "12": {
+   "log2": 12,
+   "cpu1": 412,
+   "cpu_all": 348,
+   "gpu": 2722
+  },
+  "14": {
+   "log2": 14,
+   "cpu1": 1835,
+   "cpu_all": 604,
+   "gpu": 8502
+  },
+  "16": {
+   "log2": 16,
+   "cpu1": 4783,
+   "cpu_all": 1896,
+   "gpu": 28327
+  },
+  "18": {
+   "log2": 18,
+   "cpu1": 14819,
+   "cpu_all": 6547,
+   "gpu": 43349
+  },
+  "20": {
+   "log2": 20,
+   "cpu1": 41514,
+   "cpu_all": 20808,
+   "gpu": 106468
+  }
+ },
+ "ntt": {
+  "10": {
+   "log2": 10,
+   "cpu1": 3,
+   "cpu_all": 3,
+   "gpu": 62
+  },
+  "12": {
+   "log2": 12,
+   "cpu1": 11,
+   "cpu_all": 7,
+   "gpu": 75
+  },
+  "14": {
+   "log2": 14,
+   "cpu1": 32,
+   "cpu_all": 15,
+   "gpu": 114
+  },
+  "16": {
+   "log2": 16,
+   "cpu1": 135,
+   "cpu_all": 47,
+   "gpu": 392
+  },
+  "18": {
+   "log2": 18,
+   "cpu1": 566,
+   "cpu_all": 158,
+   "gpu": 1123
+  },
+  "20": {
+   "log2": 20,
+   "cpu1": 1987,
+   "cpu_all": 529,
+   "gpu": 3381
+  }
+ },
+ "prove": {
+  "4": {
+   "log2": 4,
+   "num_constraints": 16,
+   "cpu_all": {
+    "ms": 95,
+    "iters": 3,
+    "samples_ms": [
+     99,
+     86,
+     95
+    ],
+    "phases_ms": {
+     "load": 1,
+     "evals": 0,
+     "qap": 4,
+     "msm_a": 16,
+     "msm_b1": 13,
+     "msm_b2": 34,
+     "msm_h": 12,
+     "msm_l": 10
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "1.94 4.00 5.89",
+     "2.02 3.91 5.83",
+     "2.24 3.87 5.78"
+    ]
+   },
+   "cpu1": {
+    "ms": 159,
+    "iters": 3,
+    "samples_ms": [
+     160,
+     159,
+     150
+    ],
+    "phases_ms": {
+     "load": 1,
+     "evals": 0,
+     "qap": 1,
+     "msm_a": 30,
+     "msm_b1": 21,
+     "msm_b2": 62,
+     "msm_h": 21,
+     "msm_l": 19
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "5.89 4.38 5.53",
+     "5.49 4.36 5.51",
+     "4.80 4.26 5.45"
+    ]
+   },
+   "gpu": {
+    "ms": 1061,
+    "iters": 3,
+    "samples_ms": [
+     1061,
+     1071,
+     1060
+    ],
+    "phases_ms": {
+     "load": 1,
+     "evals": 0,
+     "qap": 70,
+     "msm_a": 140,
+     "msm_b1": 137,
+     "msm_b2": 419,
+     "msm_h": 158,
+     "msm_l": 134
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "2.42 3.02 4.10",
+     "2.73 3.03 4.07",
+     "3.11 3.09 4.05"
+    ]
+   }
+  },
+  "10": {
+   "log2": 10,
+   "num_constraints": 1024,
+   "cpu_all": {
+    "ms": 627,
+    "iters": 3,
+    "samples_ms": [
+     630,
+     625,
+     627
+    ],
+    "phases_ms": {
+     "load": 7,
+     "evals": 1,
+     "qap": 14,
+     "msm_a": 86,
+     "msm_b1": 83,
+     "msm_b2": 259,
+     "msm_h": 99,
+     "msm_l": 73
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "2.11 3.76 5.71",
+     "2.16 3.72 5.67",
+     "2.42 3.70 5.63"
+    ]
+   },
+   "cpu1": {
+    "ms": 838,
+    "iters": 3,
+    "samples_ms": [
+     838,
+     839,
+     838
+    ],
+    "phases_ms": {
+     "load": 3,
+     "evals": 1,
+     "qap": 23,
+     "msm_a": 102,
+     "msm_b1": 101,
+     "msm_b2": 322,
+     "msm_h": 181,
+     "msm_l": 100
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "4.40 4.20 5.41",
+     "4.00 4.12 5.36",
+     "3.92 4.10 5.34"
+    ]
+   },
+   "gpu": {
+    "ms": 13389,
+    "iters": 3,
+    "samples_ms": [
+     13389,
+     13388,
+     13393
+    ],
+    "phases_ms": {
+     "load": 4,
+     "evals": 1,
+     "qap": 130,
+     "msm_a": 1342,
+     "msm_b1": 1341,
+     "msm_b2": 6523,
+     "msm_h": 1848,
+     "msm_l": 2195
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "2.73 3.00 3.99",
+     "2.39 2.87 3.89",
+     "2.40 2.82 3.82"
+    ]
+   }
+  },
+  "14": {
+   "log2": 14,
+   "num_constraints": 16384,
+   "cpu_all": {
+    "ms": 5469,
+    "iters": 3,
+    "samples_ms": [
+     5461,
+     5469,
+     5479
+    ],
+    "phases_ms": {
+     "load": 47,
+     "evals": 11,
+     "qap": 83,
+     "msm_a": 764,
+     "msm_b1": 759,
+     "msm_b2": 2384,
+     "msm_h": 783,
+     "msm_l": 631
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "2.46 3.65 5.57",
+     "2.55 3.59 5.51",
+     "2.45 3.50 5.43"
+    ]
+   },
+   "cpu1": {
+    "ms": 11350,
+    "iters": 3,
+    "samples_ms": [
+     11351,
+     11343,
+     11350
+    ],
+    "phases_ms": {
+     "load": 47,
+     "evals": 10,
+     "qap": 381,
+     "msm_a": 1356,
+     "msm_b1": 1358,
+     "msm_b2": 4281,
+     "msm_h": 2598,
+     "msm_l": 1325
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "3.64 4.03 5.29",
+     "3.42 3.95 5.22",
+     "3.28 3.87 5.15"
+    ]
+   },
+   "gpu": {
+    "ms": 35047.5,
+    "iters": 2,
+    "samples_ms": [
+     35060,
+     35035
+    ],
+    "phases_ms": {
+     "load": 52.5,
+     "evals": 10.0,
+     "qap": 331.0,
+     "msm_a": 4025.5,
+     "msm_b1": 4029.5,
+     "msm_b2": 18418.0,
+     "msm_h": 4461.5,
+     "msm_l": 3715.0
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "2.33 2.76 3.75",
+     "2.33 2.71 3.66"
+    ]
+   }
+  },
+  "18": {
+   "log2": 18,
+   "num_constraints": 262144,
+   "cpu_all": {
+    "ms": 33491.5,
+    "iters": 2,
+    "samples_ms": [
+     34267,
+     32716
+    ],
+    "phases_ms": {
+     "load": 734.0,
+     "evals": 163.5,
+     "qap": 1342.0,
+     "msm_a": 4082.0,
+     "msm_b1": 4176.0,
+     "msm_b2": 13808.5,
+     "msm_h": 5919.5,
+     "msm_l": 3261.0
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "2.94 3.56 5.42",
+     "5.80 4.19 5.54"
+    ]
+   },
+   "gpu": {
+    "ms": 239536,
+    "iters": 1,
+    "samples_ms": [
+     239536
+    ],
+    "phases_ms": {
+     "load": 771,
+     "evals": 162,
+     "qap": 2478,
+     "msm_a": 27647,
+     "msm_b1": 27869,
+     "msm_b2": 116589,
+     "msm_h": 41630,
+     "msm_l": 22386
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--gpu 8GB",
+    "loadavg": [
+     "2.37 2.01 2.49"
+    ]
+   }
+  }
+ },
+ "prove_v1": {
+  "4": {
+   "log2": 4,
+   "num_constraints": 16,
+   "cpu_all": {
+    "ms": 135,
+    "iters": 3,
+    "samples_ms": [
+     160,
+     135,
+     104
+    ],
+    "phases_ms": {
+     "load": 1,
+     "evals": 0,
+     "qap": 3,
+     "msm_a": 20,
+     "msm_b1": 20,
+     "msm_b2": 42,
+     "msm_h": 19,
+     "msm_l": 18
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "11.81 8.25 7.94",
+     "14.78 9.19 8.28",
+     "13.81 9.26 8.32"
+    ]
+   },
+   "cpu1": {
+    "ms": 200,
+    "iters": 3,
+    "samples_ms": [
+     200,
+     201,
+     147
+    ],
+    "phases_ms": {
+     "load": 1,
+     "evals": 0,
+     "qap": 1,
+     "msm_a": 26,
+     "msm_b1": 20,
+     "msm_b2": 82,
+     "msm_h": 28,
+     "msm_l": 20
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "8.47 7.26 7.54",
+     "10.35 7.76 7.71",
+     "9.68 7.74 7.70"
+    ]
+   }
+  },
+  "10": {
+   "log2": 10,
+   "num_constraints": 1024,
+   "cpu_all": {
+    "ms": 732,
+    "iters": 3,
+    "samples_ms": [
+     732,
+     815,
+     712
+    ],
+    "phases_ms": {
+     "load": 4,
+     "evals": 0,
+     "qap": 15,
+     "msm_a": 100,
+     "msm_b1": 101,
+     "msm_b2": 318,
+     "msm_h": 120,
+     "msm_l": 68
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "12.30 9.15 8.30",
+     "10.68 8.95 8.24",
+     "9.35 8.74 8.18"
+    ]
+   },
+   "cpu1": {
+    "ms": 976,
+    "iters": 3,
+    "samples_ms": [
+     976,
+     975,
+     976
+    ],
+    "phases_ms": {
+     "load": 4,
+     "evals": 1,
+     "qap": 24,
+     "msm_a": 121,
+     "msm_b1": 120,
+     "msm_b2": 377,
+     "msm_h": 210,
+     "msm_l": 114
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "8.58 7.62 7.66",
+     "7.80 7.48 7.61",
+     "6.82 7.28 7.54"
+    ]
+   }
+  },
+  "14": {
+   "log2": 14,
+   "num_constraints": 16384,
+   "cpu_all": {
+    "ms": 6678,
+    "iters": 3,
+    "samples_ms": [
+     6699,
+     6678,
+     6615
+    ],
+    "phases_ms": {
+     "load": 48,
+     "evals": 10,
+     "qap": 98,
+     "msm_a": 974,
+     "msm_b1": 974,
+     "msm_b2": 3011,
+     "msm_h": 987,
+     "msm_l": 571
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "8.37 8.55 8.12",
+     "6.86 8.19 8.00",
+     "6.11 7.94 7.92"
+    ]
+   },
+   "cpu1": {
+    "ms": 8722,
+    "iters": 3,
+    "samples_ms": [
+     8722,
+     8671,
+     8752
+    ],
+    "phases_ms": {
+     "load": 54,
+     "evals": 11,
+     "qap": 390,
+     "msm_a": 1007,
+     "msm_b1": 1003,
+     "msm_b2": 3136,
+     "msm_h": 1987,
+     "msm_l": 1129
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "7.02 7.31 7.54",
+     "6.64 7.20 7.50",
+     "6.18 7.06 7.44"
+    ]
+   }
+  },
+  "18": {
+   "log2": 18,
+   "num_constraints": 262144,
+   "cpu_all": {
+    "ms": 88610.0,
+    "iters": 2,
+    "samples_ms": [
+     85984,
+     91236
+    ],
+    "phases_ms": {
+     "load": 756.5,
+     "evals": 164.0,
+     "qap": 1304.0,
+     "msm_a": 14397.0,
+     "msm_b1": 14285.5,
+     "msm_b2": 35648.0,
+     "msm_h": 13148.0,
+     "msm_l": 8901.5
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "5.00 7.57 7.78",
+     "5.52 6.89 7.48"
+    ]
+   },
+   "cpu1": {
+    "ms": 97707,
+    "iters": 1,
+    "samples_ms": [
+     97707
+    ],
+    "phases_ms": {
+     "load": 750,
+     "evals": 165,
+     "qap": 6644,
+     "msm_a": 11049,
+     "msm_b1": 11002,
+     "msm_b2": 33804,
+     "msm_h": 21907,
+     "msm_l": 12381
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "3.95 5.98 6.97"
+    ]
+   }
+  }
+ }
+}
