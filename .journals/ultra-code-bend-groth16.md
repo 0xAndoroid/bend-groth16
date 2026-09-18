@@ -10,6 +10,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - Teardown at the end: no leftover processes, box destroyed, worktrees removed.
 
 ## Frozen decisions
+- Wave-2 Bend interfaces: `Msm.g1/g2(points, scalars_canonical, n) -> pts & (scs & G)`, `Ntt.fft/ifft/coset_fft/coset_ifft(a, log2)`, `Ntt.qap_h(a,b,c,log2)` (libsnark reduction), arrays 16/32/64 words per element; prover imports `./naive.bend as Msm/Ntt` to be flipped to `./msm.bend`/`./ntt.bend` at integration.
 - Curve BN254 (Fr scalar field, Fq base field). Canonical circuit `SquareChain(N)`: private x0; x_{i+1} = x_i * x_i for i<N; x_N public output. Exactly N constraints. Same circuit in every framework (arkworks, circom, gnark, bellperson).
 - Sizes: full prover 2^10, 2^14, 2^18 (+2^20 for comparators if cheap). Primitives: MSM 2^10..2^20, NTT 2^10..2^20, field mul throughput.
 - Data exchange format (arkworks exports, Bend consumes): `data/<log2N>/{r1cs,witness,pk,vk,proof_ref,public}.json` — hex 0x big-endian field elements, G1 `{x,y}` affine, G2 `{x:[c0,c1],y:[c0,c1]}`, infinity `{"inf":true}`. Test vectors `data/vectors/{fr_ops,fq_ops,g1_ops,g2_ops,msm_small,ntt_small}.json`. `ref verify --vk --proof --public` exit 0/1.
@@ -19,9 +20,9 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 | wave | shards | depends on | status |
 |---|---|---|---|
 | 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (all integrated) |
-| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] bend2-field-curve 41379b12 (Fr/Fq/Fq2/G1/G2 + tests + field bench) · bend2-export 53ed8004 (integrated; K=18 export 4.3 s, 308 MB, 0 round-trip mismatches) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
-| 2 | Bend MSM (Pippenger, G1 then G2) · Bend NTT + QAP h-poly · loader/prover skeleton | 1 | draft |
-| 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
+| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] bend2-field-curve 41379b12 (integrated; tests PASS 64/64/32/16; review e6516c76 astra) · bend2-export 53ed8004 (integrated; K=18 export 4.3 s, 308 MB, 0 round-trip mismatches) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
+| 2 | bend2-msm 3492204e · bend2-ntt 876e5746 · bend2-prover a581bb4c (naive stand-ins → K=4 OK+EQUAL) | 1 | building |
+| 3 | flip prover imports to real msm/ntt → K=4/10/14/18 OK+EQUAL, CPU 1/10 thr + Metal timings · Bend-CUDA on box (needs w1box) | 2 | draft |
 | 4 | quiet-host CPU bench rerun (all mini comparators + Bend, serial) · "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
 
 ## Current wave spec (wave 0)
@@ -57,6 +58,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - gnark prove 2^10/14/18/20 (10 thr): 13.4 / 97 / 928 / 3929 ms; 1 thr 2^14 1845 ms; MSM G1 2^20 848 ms (10 thr); FFT 2^20 43 ms.
 - rapidsnark (10 thr) 2^10/14/18/20: 20.8 / 151 / 2723 / 9792 ms; snarkjs 402 / 1419 / 18425 / 59408 ms (under load; zkey load included in wall). circom constraint counts exact.
 - Bend 2 (2.0.5): montmul 2^24 batch 1914 ms 1-thr (8.8 M/s), 440 ms 10-thr (38 M/s), Metal 78 ms (~200 M/s; chained ~670 M/s). Arrays 2^24 gather 62 ms; 8 MB file→Array 30 ms. No argv; Nat literal ≥10000n crashes checker; Metal call overhead ~55 ms.
+- Bend 2 field lane: Fr.mul 2^24 1829/352/73 ms (1 thr/10 thr/Metal) = 9.2/48/230 M/s; G1.add_mixed 2^20 1570/301/99 ms = 0.67/3.5/10.6 M/s.
 - Bend 1/HVM2: u24 only, 12-bit limbs ×22; 254-bit schoolbook mul ≈ 51k interactions; 2^16 muls = 4.98 s on 8 thr compiled (~13k muls/s; ~2.7k 1-thr). Tree reduce scales 5.1× on 8 thr; loops 0×. Embedded literals cap 2^16 (compiled)/2^18 (interp); IO/FS/read_file works (~1 s per 2^18 limbs). Heap prealloc 6.4 GB RSS per compiled process.
 
 ## Residuals
