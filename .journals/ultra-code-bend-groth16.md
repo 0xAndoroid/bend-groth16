@@ -18,7 +18,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 ## Wave table
 | wave | shards | depends on | status |
 |---|---|---|---|
-| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) | — | building (A integrated) |
+| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c | — | building (A integrated; C reviewing) |
 | 1 | Bend field arithmetic Fr/Fq (Montgomery, limbs) + data loader · gnark bench · bellperson bench · vast box + ICICLE bench | 0 | draft |
 | 2 | Bend G1/G2 ops · Bend MSM (Pippenger) · Bend NTT | 1 | draft |
 | 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
