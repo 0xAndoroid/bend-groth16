@@ -19,7 +19,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 | wave | shards | depends on | status |
 |---|---|---|---|
 | 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (all integrated) |
-| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] bend2-field-curve 41379b12 (Fr/Fq/Fq2/G1/G2 + tests + field bench) · bend2-export 53ed8004 (JSON→.bin per bend2/FORMAT.md) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
+| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] bend2-field-curve 41379b12 (Fr/Fq/Fq2/G1/G2 + tests + field bench) · bend2-export 53ed8004 (integrated; K=18 export 4.3 s, 308 MB, 0 round-trip mismatches) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
 | 2 | Bend MSM (Pippenger, G1 then G2) · Bend NTT + QAP h-poly · loader/prover skeleton | 1 | draft |
 | 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
 | 4 | quiet-host CPU bench rerun (all mini comparators + Bend, serial) · "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
@@ -37,6 +37,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - skip: w0e per-shard review — scripts shard; covered by the quiet-host rerun lane (re-executes gen.sh/bench.py) + final whole-diff review.
 - amend: ownership overlap .gitignore between w0e,w1gnark (both append-only) — resolved by union; .gitignore stays orchestrator-owned from now on (lanes list ignores in their reply instead).
 - amend: Bend 2 = compiled strict affine language (NOT HVM; fork-join runtime, no work stealing), U32 only (wrapping, no mul-hi) + 48-bit Nat → 16×16-bit limbs, R=2^256; Metal works on the mini; CUDA via NVRTC (sm_120 iff NVRTC accepts). Frozen bend2/FORMAT.md (Montgomery-form LE u32 words, CSR r1cs). Wave 1 Bend = field+curve single shard (sequential dependency) ‖ exporter.
+- skip: w1conv review — exporter ships verify_bin.py round-trip (0 mismatches K=4..18 + vectors); Bend field tests exercise the same bytes.
 - skip: w0f review — probe shard; montmul claims re-validated by w1field tests vs arkworks vectors.
 - skip: w0a review — doc-only shard, orchestrator read sections 1–4; corrections folded by w0f if any.
 
