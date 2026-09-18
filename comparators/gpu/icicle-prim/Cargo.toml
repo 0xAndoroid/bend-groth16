@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
-# open-icicle v4.0.0 checkout expected at ICICLE_RS (default /root/dev/open-icicle/wrappers/rust); see ../README.md
+# open-icicle v4.0.0 checkout: paths below are hardcoded to the box layout (/root/dev/open-icicle/wrappers/rust); edit them to relocate. See ../README.md
 [dependencies]
 icicle-bn254 = { path = "/root/dev/open-icicle/wrappers/rust/icicle-curves/icicle-bn254", default-features = false, features = ["msm", "ntt"] }
 icicle-core = { path = "/root/dev/open-icicle/wrappers/rust/icicle-core" }

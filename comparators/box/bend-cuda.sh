@@ -2,8 +2,8 @@
 # Bend 2 CUDA smoke + benchmarks on the RTX 5090 box (root; repo at /root/bend-groth16 on bend-groth16-integration).
 # Results: bend2/bench/box_results.md. Run:  nohup /root/bend-groth16/comparators/box/bend-cuda.sh > /root/bend-cuda.log 2>&1 &
 # The box has no GitHub credentials: push the branch from the mini with
-#   git remote add box ssh://root@204.111.84.239:50189/root/bend-groth16   (box: git config receive.denyCurrentBranch updateInstead)
-#   GIT_SSH_COMMAND='ssh -i ~/.ssh/vast_jolt' git push box origin/bend-groth16-integration:refs/heads/bend-groth16-integration
+#   git remote add box ssh://root@<ip>:<port>/root/bend-groth16   (box: git config receive.denyCurrentBranch updateInstead)
+#   GIT_SSH_COMMAND='ssh -i <key>' git push box origin/bend-groth16-integration:refs/heads/bend-groth16-integration
 export PATH=/root/.bend/bin:/root/.bun/bin:/usr/local/cuda/bin:/home/pika/.cargo/bin:$PATH
 export CARGO_HOME=/home/pika/.cargo RUSTUP_HOME=/home/pika/.rustup BEND_NO_TELEMETRY=1
 PY=/usr/bin/python3            # no uv on the box; the exporters are stdlib-only

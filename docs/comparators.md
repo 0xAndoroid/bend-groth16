@@ -1,6 +1,6 @@
 # Groth16 comparator selection — BN254
 
-Checked **2026-09-18** against GitHub APIs, pinned source, package registries, and operator/vendor documentation. This is a research plan: install commands and benchmark sketches below were source-checked, not executed on either target. No performance ranking is established yet.
+Research plan (2026-09-18 01:30); the recipes actually used are in `comparators/*/README.md` and `docs/box.md`, results in `bench/*.json`. Checked against GitHub APIs, pinned source, package registries, and operator/vendor documentation: install commands and benchmark sketches below were source-checked, not executed, and several were superseded (arkworks 0.5 not 0.6, Hermez URLs 403, gnark GPU runner links all four curves).
 
 ## Recommended set
 
@@ -223,7 +223,7 @@ cargo build -q --message-format=short --release
 printf 'prove --witness %s/witness.wtns --zkey %s/circuit.zkey --proof %s/proof.json --public %s/public.json --device CUDA\nexit\n' "$d" "$d" "$d" "$d" | target/release/icicle-snark
 ```
 
-Send eleven `prove` lines followed by `exit` to one worker, separately for each N: first cold, next ten warm. [Worker source](https://github.com/ingonyama-zk/icicle-snark/blob/bf00385db19087a8a3f6d754b43b006254b1b465/src/main.rs) requires `exit` (EOF alone loops); [its timer](https://github.com/ingonyama-zk/icicle-snark/blob/bf00385db19087a8a3f6d754b43b006254b1b465/src/lib.rs) includes witness loading and JSON writes. Label that metric **cached file-inclusive**, not kernel-only. Verify each result with the shared snarkjs VK. CPU experiment: omit CUDA CMake step, build normally, choose `--device CPU`; Mac build still needs validation.
+Send eleven `prove` lines followed by `exit` to one worker, separately for each N: first cold, next ten warm. [Worker source](https://github.com/ingonyama-zk/icicle-snark/blob/bf00385db19087a8a3f6d754b43b006254b1b465/src/main.rs) requires `exit` (EOF alone loops); [its timer](https://github.com/ingonyama-zk/icicle-snark/blob/bf00385db19087a8a3f6d754b43b006254b1b465/src/lib.rs) includes witness loading and JSON writes. Label that metric **cached file-inclusive**, not kernel-only. Verify with the shared snarkjs VK — as run, only the final proof per size was verified (the worker overwrites one proof file across the eleven runs). CPU experiment: omit CUDA CMake step, build normally, choose `--device CPU`; Mac build still needs validation.
 
 ### Blackwell exclusions / sppark
 
@@ -256,7 +256,7 @@ The ICICLE commands time host-supplied scalars with cached device bases (MSM), a
 
 | Prover / library | Platform | Sizes | Measurements |
 |---|---|---|---|
-| Bend / HVM2 | Mac CPU; Linux CPU; Linux CUDA if supported | S, P | Validated proof latency, MSM/NTT; setup/witness/compile separately; hardware/backend identified |
+| Bend 2 | Mac CPU; Linux CPU; Linux CUDA if supported | S, P | Validated proof latency, MSM/NTT; setup/witness/compile separately; hardware/backend identified |
 | gnark CPU; rapidsnark CPU | Mac arm64; Linux x86_64 | S | Single-core and all-core where controllable; warm prove-only and cold/file-inclusive kept separate; actual thread settings |
 | snarkjs; ark-groth16 | Both CPUs | S | Reference latency; Node worker / Rayon settings; never advertised as production CPU SOTA |
 | gnark + ICICLE | Linux + RTX 5090 | S | First proof versus warm proofs, GPU admission result, transfers/cache policy; same gnark rows and setup |

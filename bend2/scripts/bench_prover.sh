@@ -1,7 +1,10 @@
 #!/bin/sh
 # Full-prover benchmark: runs bend2/scripts/prove.sh RUNS times and prints one JSON line per run
 # (phase ms from the prover's `T` lines, OK/EQUAL verdicts, load average) — bench/bend2-*.json inputs.
-#   bend2/scripts/bench_prover.sh run CFG RUNS K [binary args, e.g. --threads 1]     CFG = cpu1|cpu_all|gpu
+#   bend2/scripts/bench_prover.sh run CFG RUNS K [extra binary args]     CFG = cpu1|cpu_all|gpu
+# CFG selects the execution mode: gpu exports BENDG_GPU=1, cpu1 adds --threads 1, cpu_all unsets
+# BENDG_GPU; the args/env actually used land in each JSON line. A run whose output lacks
+# `T total`, OK or EQUAL aborts with exit 1 (no zero-ms or unverified samples).
 #   bend2/scripts/bench_prover.sh merge META.json OUT.json runs.jsonl
 # `merge` builds the bench/README.md-style file: META.json supplies host/cpu/threads/versions and the
 # msm_g1/ntt primitive tables; prove.<log2>.<cfg> gets the median total, samples and median phases.
@@ -15,6 +18,13 @@ shift
 case "$mode" in
 run)
   cfg=$1; runs=$2; k=$3; shift 3
+  case "$cfg" in
+  gpu) export BENDG_GPU=1 ;;
+  cpu1) unset BENDG_GPU; set -- "$@" --threads 1 ;;
+  cpu_all) unset BENDG_GPU ;;
+  *) echo "unknown CFG $cfg (cpu1|cpu_all|gpu)" >&2; exit 2 ;;
+  esac
+  envs="BENDG_GPU=${BENDG_GPU:-}"
   i=0
   while [ $i -lt "$runs" ]; do
     i=$((i + 1))
@@ -23,7 +33,12 @@ run)
     phases=$(echo "$out" | awk '/^T /{printf "%s\"%s\":%s", (n++ ? "," : ""), $2, $3}')
     ok=false; echo "$out" | grep -qx OK && ok=true
     eq=false; echo "$out" | grep -qx EQUAL && eq=true
-    echo "{\"k\":$k,\"cfg\":\"$cfg\",\"args\":\"$*\",\"phases_ms\":{$phases},\"ok\":$ok,\"equal\":$eq,\"loadavg\":\"$load\"}"
+    if ! echo "$out" | grep -q '^T total ' || [ $ok = false ] || [ $eq = false ]; then
+      echo "run $i/$runs $cfg K=$k rejected (needs T total + OK + EQUAL); output tail:" >&2
+      echo "$out" | tail -5 >&2
+      exit 1
+    fi
+    echo "{\"k\":$k,\"cfg\":\"$cfg\",\"args\":\"$*\",\"env\":\"$envs\",\"phases_ms\":{$phases},\"ok\":$ok,\"equal\":$eq,\"loadavg\":\"$load\"}"
   done
   ;;
 merge)
@@ -50,6 +65,7 @@ for k, cfgs in sorted(prove.items(), key=lambda kv: int(kv[0])):
             "ok": all(r["ok"] for r in rs),
             "equal": all(r["equal"] for r in rs),
             "args": rs[0]["args"],
+            "env": rs[0].get("env", ""),
             "loadavg": [r["loadavg"] for r in rs],
         }
     out["prove"][k] = entry

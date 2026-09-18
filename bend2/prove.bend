@@ -1,8 +1,6 @@
 # Groth16 prover entry point (Bend 2). Reads the data directory from $BENDG_DATA
 # (bend2/FORMAT.md), prints `A x y` / `B x0 x1 y0 y1` / `C x y` then `T <phase> <ms>` lines.
 # Build: BEND_NO_TELEMETRY=1 ~/.bend/bin/bend bend2/prove.bend -o prove_bin  (bend2/scripts/prove.sh)
-# The two lines below are the only ones to flip when the real modules land:
-#   import ./src/msm.bend as Msm / import ./src/ntt.bend as Ntt
 import Base
 import ./src/msm.bend as Msm
 import ./src/ntt.bend as Ntt

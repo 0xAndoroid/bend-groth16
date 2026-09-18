@@ -5,11 +5,16 @@ Metal ≥ 2^18: single runs). Points = `data/18/bend/pk_a.bin` (n ≤ 2^18), `pk
 those points twice with different scalars); scalars = canonical `witness.bin` cycled. The affine result is
 identical across `--threads 1`, 10 threads and `MODE=gpu` for every n (checksums in the campaign log).
 
+**Input caveat (w5fix, 2026-09-18):** every table below was measured with a loader that allocated 2^18 G1 / 2^18 scalar
+records while `pk_a.bin` and `witness.bin` hold 2^18 + 2, so the last two records overwrote the first two (G2: the whole
+262146-record file was read into an n-record buffer) — timing is unaffected, but the "first n points" claim was false and the
+checksums below do not match the fixed loader (`bench/msm.bend` now sizes every buffer from `header.bin`).
+
 Defaults (`Msm.pick_c` / `pick_fd`): window c = 8 below 2^18, c = 12 from 2^18; fork depth fd = min(4, log2 n − c)
 (2^fd leaves, each with a private bucket array of all windows). Bucket join = (2^fd − 1) · windows · 2^c Jacobian
 adds, which is why c = 8 (32 windows, cheap join) beats c = 12 (22 windows, 1.35 M-add join) up to 2^16.
 
-## G1 (`MODE=cpu`, default c/fd)
+## v1 — G1 (`MODE=cpu`, default c/fd)
 
 | n | c | 1 thread ms | 10 threads ms | 10-thread points/s | Metal ms | Metal points/s |
 |---|---|---|---|---|---|---|
@@ -23,7 +28,7 @@ adds, which is why c = 8 (32 windows, cheap join) beats c = 12 (22 windows, 1.35
 Window comparison, 10 threads, fd = 4: 2^16 c=8 1896 / c=12 2465 / c=16 4493 ms; 2^18 c=8 6849 / c=12 6597;
 2^20 c=8 27526 / c=12 21047. c = 16 needs the 8 GB span (16 × 256 MB bucket arrays).
 
-## G2 (`MODE=cpu`, default c/fd)
+## v1 — G2 (`MODE=cpu`, default c/fd)
 
 | n | c | 1 thread ms | 10 threads ms | Metal ms |
 |---|---|---|---|---|
@@ -48,9 +53,9 @@ Window comparison, 10 threads, fd = 4: 2^16 c=8 1896 / c=12 2465 / c=16 4493 ms;
 
 Same M4 mini, Bend 2.0.5, `--gpu 8GB` span (2^20 OOMs the default span at every fd ≥ 6), single runs, **box
 shared with a sibling lane burning one core** (v1 rows above were taken on a quiet box; v1 default re-measured
-here for a fair pair). `bench/msm.bend` now loads the whole `pk_a.bin`, so for n ≤ 2^18 the first n points are the
-file's first n (`load_u32` wraps a longer file — the tail used to overwrite the head); 2^16 checksums therefore
-differ from v1's, 2^18/2^20 (files exactly fill) are unchanged.
+here for a fair pair). `bench/msm.bend` at this point read the whole `pk_a.bin` into a 2^18-record buffer; the two
+extra records still wrapped onto records 0–1 (see the input caveat at the top), so the 2^16 checksums differ from v1's
+for that reason and 2^18/2^20 were unchanged.
 
 Root cause of v1's flat scaling: the scheduler has no work stealing, and `g1_add` itself scales only 2.1× at
 FD = 4 (1167 ms) vs 4.6× at FD = 8 (528 ms, 1 thread 2423 ms, N = 20, loaded box). 16 leaves was the limit, not
@@ -69,7 +74,8 @@ the runtime or the per-add overhead (1-thread MSM already ran at 88% of the bare
 
 Ops at 2^20: c=10 fd=7 = 26 · 2^20 adds + 127 · 26 · 1024 join adds = 30.7 M (v1 c=12 fd=4: 24.6 M); 11.1 s =
 2.8 M ops/s on 10 threads (v1: 1.2 M/s), against 3.5 M/s for the bare `add_mixed` chain — so the remaining gap to
-gnark (0.85 s) is the add itself (0.67 M/s per core), not the MSM structure. Bucket memory 128 × 6.8 MB = 870 MB.
+gnark (400 ms, `bench/gnark-macmini.json` `msm_g1.20`; ≈ 27.7×) is the add itself (0.67 M/s per core), not the MSM
+structure. Bucket memory: 32 allocated windows × 1024 buckets × 64 words × 128 leaves = 1 GiB (plus join/input arrays).
 
 Tried and rejected — **per-leaf window streaming** (leaf owns a point range and ONE 2^c-bucket array, streams the
 range once per window, reduces the window with a running sum and folds Horner-style into one accumulator; leaf

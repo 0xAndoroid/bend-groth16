@@ -7,7 +7,6 @@ import Base
 import ./fr.bend as R
 import ./g1.bend as G
 import ./g2.bend as G2
-import ./fq2.bend as Q2
 import ./bin_io.bend as Io
 
 # header.bin: num_constraints, num_instance, num_witness, domain_log2, n_a, n_b, n_h, n_l
@@ -287,15 +286,9 @@ def Groth.acc_g1.fin(+idx: Nat, m: G.G1, p: Array<U32> & G.G1Aff) -> Array<U32>:
 def Groth.acc_g1(a: Array<U32>, +idx: Nat, m: G.G1) -> Array<U32>:
   Groth.acc_g1.fin(idx, m, G.G1Aff.from_array(a, idx))
 
-# store a G2 affine point at 64*idx (G2Aff.to_array in g2.bend scales the index twice, 2026-09-18)
-def Groth.g2_store(a: Array<U32>, +idx: Nat, p: G2.G2Aff) -> Array<U32>:
-  match p:
-    case G2.G2Aff{x, y}:
-      Q2.Fq2.to_array(Q2.Fq2.to_array(a, (idx * 2n), x), ((idx * 2n) + 1n), y)
-
 def Groth.acc_g2.fin(+idx: Nat, m: G2.G2, p: Array<U32> & G2.G2Aff) -> Array<U32>:
   (a, cur) = p
-  Groth.g2_store(a, idx, G2.G2.to_affine(G2.G2.add_mixed(m, cur)))
+  G2.G2Aff.to_array(a, idx, G2.G2.to_affine(G2.G2.add_mixed(m, cur)))
 
 def Groth.acc_g2(a: Array<U32>, +idx: Nat, m: G2.G2) -> Array<U32>:
   Groth.acc_g2.fin(idx, m, G2.G2Aff.from_array(a, idx))

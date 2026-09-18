@@ -7,7 +7,7 @@ arkworks JSON from `groth16-ref gen|vectors` (see `ref/README.md`); paths may be
 uv run python bend2/tools/export_bin.py data/<K>                  # -> data/<K>/bend/*.bin
 uv run python bend2/tools/export_bin.py --vectors data/vectors    # -> data/vectors/bend/*.bin
 uv run python bend2/tools/verify_bin.py data/4 data/18 --vectors data/vectors   # round-trip self-check, exit 1 on mismatch
-bend-prover ... | uv run python bend2/tools/proof_to_json.py -o proof.json --compare data/<K>/proof_ref.json
+BENDG_DATA=data/<K>/bend ./prove_bin | grep -E '^[ABC] ' | uv run python bend2/tools/proof_to_json.py -o proof.json --compare data/<K>/proof_ref.json   # drop the T timing lines
 ```
 
 - `export_bin.py`: Fr/Fq → Montgomery (`x·2^256 mod p`) as 16×u32 words of 16-bit limbs; scalars (`k`,

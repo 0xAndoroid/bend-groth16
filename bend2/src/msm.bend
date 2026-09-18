@@ -508,4 +508,3 @@ def g2_with(points: Array<U32>, scalars: Array<U32>, n: Nat, +c: Nat, +fd: Nat) 
 # sum_i scalars[i] * points[i] over the first n entries; returns (points, (scalars, result))
 def g2(points: Array<U32>, scalars: Array<U32>, +n: Nat) -> Array<U32> & (Array<U32> & G2.G2):
   g2_with(points, scalars, n, Msm.pick_c(n), Msm.pick_fd(n, Msm.pick_c(n)))
-

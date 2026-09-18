@@ -5,7 +5,9 @@ tags: [bend-groth16, gpu, benchmark]
 ---
 # GPU box — `pika-bend-5090`
 
-Rented 2026-09-18 05:47 UTC by lane `bend-groth16 · w1 gpu-box`. **Not destroyed by this lane** — the Bend-CUDA lane reuses it; the orchestrator tears it down (`echo y | vastai destroy instance 51392026`).
+**Snapshot; box destroyed 2026-09-18 04:38 ET.** Current Bend results: `bend2/bench/prover_results.md`, `bend2/bench/box_results.md`, `bench/bend2-box.json`.
+
+Rented 2026-09-18 05:47 UTC by lane `bend-groth16 · w1 gpu-box`; reused by the Bend-CUDA lane; torn down by the orchestrator (`echo y | vastai destroy instance <id>`).
 
 | | |
 |---|---|
@@ -15,7 +17,7 @@ Rented 2026-09-18 05:47 UTC by lane `bend-groth16 · w1 gpu-box`. **Not destroye
 | driver / CUDA | driver 595.84 (cuda_max_good 13.2); toolkit in image **nvcc 12.8.93** |
 | CPU | AMD Ryzen Threadripper 9960X, 24 cores / 48 threads (Zen 5, AVX-512), 125 GiB RAM, 100 GB overlay disk |
 | OS / image | Ubuntu 24.04.1, `ghcr.io/0xandoroid/pika-vast:latest` (`PIKA_SKIP_SHIM=1`, shim not registered) |
-| ssh (direct) | `ssh -i ~/.ssh/vast_jolt -p 50189 root@204.111.84.239` — key `vast_jolt` on the mini; also `~/.ssh/id_ed25519`-independent |
+| ssh (direct) | `ssh -i <key> -p <port> root@<ip>` (values were in the machine file below; the box no longer exists) |
 | machine file | `$TMPDIR/bend-groth16/box.json` on the mini (`instance_id, ip, port, key, dph`) |
 
 ## Layout on the box
@@ -54,7 +56,7 @@ SquareChain(2^K), BN254, median wall ms, every proof verified. What each timer i
 
 ## Results — RTX 5090 provers
 
-Same SquareChain rows; median wall ms; every proof verified (gnark VK / snarkjs VK).
+Same SquareChain rows; median wall ms. Verification scope: gnark and gnark+ICICLE verify every timed proof; ICICLE-SNARK: only the final proof per size verified (the worker overwrites one proof file across cold + warm runs); arkworks: one untimed proof verified per size, warm medians.
 
 | K | gnark CPU (ref, all cores) | **gnark v0.16.3 + icicle-gnark v3.2.2** (`icicleGroth.Prove`, PK not pinned) | same, `WithPinKeysToGPU` | **ICICLE-SNARK bf00385** (`--device CUDA`, zkey cached) | ICICLE-SNARK cold (1st prove, zkey parse + H2D) |
 |---|---|---|---|---|---|
@@ -64,7 +66,7 @@ Same SquareChain rows; median wall ms; every proof verified (gnark VK / snarkjs 
 | 20 | 665.7 | **203.2** (3) | 180.6 (3) | **114.3** (5) | 232.9 |
 
 - gnark+ICICLE time = gnark constraint solver (`solve_ms` 0.2 / 1.5 / 9.7 / 40.6 ms — CPU) + H2D of witness-dependent vectors + GPU MSMs/NTTs + proof D2H; PK vectors are re-uploaded each proof unless pinned. Speed-up vs gnark CPU on this box: K=18 3.9× (4.3× pinned), K=20 3.3× (3.7× pinned); K≤14 is *slower* than CPU (≈26 ms fixed launch/transfer floor). Admission gate passed: build with `-DCUDA_ARCH=120` on CUDA 12.8, valid verified proofs at all K. First prove of a process includes ICICLE backend load + device warm-up (`first_prove_ms` 289 ms at K=10).
-- ICICLE-SNARK: worker's own `proof took` timer; includes reading `witness.wtns` from disk (32 MB at K=20) and writing proof/public JSON, excludes zkey parsing (cached). Driver-side wall agrees within 0.1 ms. No witness solving (Circom wtns pre-generated) — so vs gnark+ICICLE subtract ~41 ms of solver at K=20 for a like-for-like view. Experimental per upstream README.
+- ICICLE-SNARK: worker's own `proof took` timer; includes reading `witness.wtns` from disk (32 MB at K=20) and writing proof/public JSON, excludes zkey parsing (cached). Driver-side wall agrees within 0.1 ms for the warm medians (the first command of a process includes start-up: `first_wall_ms` 146 vs `first_prove_ms` 135 at K=10). No witness solving (Circom wtns pre-generated) — so vs gnark+ICICLE subtract ~41 ms of solver at K=20 for a like-for-like view. Experimental per upstream README.
 - Files: `bench/box-gpu-gnark-icicle.json`, `bench/box-gpu-gnark-icicle-pinned.json`, `bench/box-gpu-icicle-snark.json`.
 
 ## Results — RTX 5090 primitives (BN254 G1 MSM, Fr radix-2 NTT; median of 10 after 1 warm-up)
@@ -93,4 +95,4 @@ Same SquareChain rows; median wall ms; every proof verified (gnark VK / snarkjs 
 
 ## Cost / time
 
-Started 05:47 UTC; all comparator runs done 07:00 UTC (~1.3 h ≈ $0.8 of the $40 budget at $0.628/h). Box left running for the Bend-CUDA lane.
+Started 05:47 UTC; all comparator runs done 07:00 UTC (~1.3 h ≈ $0.8 of the $40 budget at $0.628/h). Box left running for the Bend-CUDA lane; destroyed 2026-09-18 04:38 ET (2 h 51 min rental).

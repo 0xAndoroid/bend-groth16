@@ -14,8 +14,8 @@ quadratic constraints survive, the two linear aliases (`x[0] <== x0`,
 | 18 | 262,144     | 262,146   | 8.4 MB    | 140 MB  | 72 s (RSS 1.3 GB)    | ppot_0080_19   |
 | 20 | 1,048,576   | 1,048,578 | 33.5 MB   | 562 MB  | 264 s (RSS 2.8 GB)   | ppot_0080_21   |
 
-Domain size is `nConstraints + nOutputs + nPubInputs = 2^K + 1`, so the ptau
-must have power ≥ K+1.
+`nConstraints + nOutputs + nPubInputs = 2^K + 1` rounds up to the radix-2 domain 2^(K+1) = 2N,
+so the ptau must have power ≥ K+1.
 
 ## Files
 
@@ -96,7 +96,7 @@ Notes:
 - Wall time includes process start and reading the zkey from disk (562 MB at K=20),
   as any CLI user would experience it. Public output `y` is identical for both provers
   (`1334343819814275311873148782430997933860619058220351324399995139625215999052`).
-- rapidsnark thread count = `std::thread::hardware_concurrency()` (10 here), fixed at
-  build time via ffiasm's `ThreadPool::defaultPool()`; there is no CLI flag or env var to
+- rapidsnark thread count = `std::thread::hardware_concurrency()` (10 here), derived at
+  runtime by ffiasm's `ThreadPool::defaultPool()`; there is no CLI flag or env var to
   pin it to 1 thread, and macOS has no `taskset`, so no 1-thread number is recorded.
 - snarkjs prove is JS + wasm (ffjavascript) using web-worker threads (`os.cpus().length`).

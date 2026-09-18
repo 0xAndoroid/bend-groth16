@@ -47,9 +47,10 @@ Notes
 - `prove` at `K` uses the frozen `SquareChain(2^K)` circuit, the deterministic witness and the
   pk from an in-memory setup with seed 42 (bit-identical to `data/K/pk.json`, and 5× faster to
   regenerate than to deserialize); one proof is verified before timing.
-- Prove vs primitives: a Groth16 prove is 3 G1 MSMs (`a_query` N+2, `l_query` N, `h_query` 2N−1),
-  1 G2 MSM (N+2) and 7 NTT-sized passes (3 iFFT + 3 coset FFT + 1 coset iFFT at 2N), so expect
-  `prove(K) ≈ 2·msm_g1(K) + msm_g1(K+1) + msm_g2(K) + 7·ntt(K+1)` plus ~20–40 % for the sparse
+- Prove vs primitives: a Groth16 prove (r ≠ 0) is 4 G1 MSMs (`a_query` N+2, `b_g1_query` N+2,
+  `l_query` N, `h_query` 2N−1), 1 G2 MSM (N+2) and 7 NTT-sized passes (3 iFFT + 3 coset FFT + 1
+  coset iFFT at 2N), so expect
+  `prove(K) ≈ 3·msm_g1(K) + msm_g1(K+1) + msm_g2(K) + 7·ntt(K+1)` plus ~20–40 % for the sparse
   `evaluate_constraint` passes, `into_bigint` conversions of four scalar vectors and the final
   `into_affine`. On a quiet host 2^18 measures ≈ 2.1 s against a ≈ 1.6 s primitive sum.
 - Load matters more than pk source: with `iters = 1` a 2^18 prove read 5.9 s while a sibling lane
