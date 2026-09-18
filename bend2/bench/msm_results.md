@@ -43,3 +43,44 @@ Window comparison, 10 threads, fd = 4: 2^16 c=8 1896 / c=12 2465 / c=16 4493 ms;
   private-bucket design cannot afford thousands of leaves (memory) nor a cheap join. A GPU-shaped MSM needs a
   sorted (per-bucket contiguous) layout with a shared read-only point array, which Bend 2 arrays (single owner,
   split = copy) do not offer; treat the Metal column as a correctness cross-check, not a speed result.
+
+## v2 (2026-09-18): deeper fork, same layout — defaults c = 8 (< 2^20) / 10, fd = min(7, log2 n − c − 1)
+
+Same M4 mini, Bend 2.0.5, `--gpu 8GB` span (2^20 OOMs the default span at every fd ≥ 6), single runs, **box
+shared with a sibling lane burning one core** (v1 rows above were taken on a quiet box; v1 default re-measured
+here for a fair pair). `bench/msm.bend` now loads the whole `pk_a.bin`, so for n ≤ 2^18 the first n points are the
+file's first n (`load_u32` wraps a longer file — the tail used to overwrite the head); 2^16 checksums therefore
+differ from v1's, 2^18/2^20 (files exactly fill) are unchanged.
+
+Root cause of v1's flat scaling: the scheduler has no work stealing, and `g1_add` itself scales only 2.1× at
+FD = 4 (1167 ms) vs 4.6× at FD = 8 (528 ms, 1 thread 2423 ms, N = 20, loaded box). 16 leaves was the limit, not
+the runtime or the per-add overhead (1-thread MSM already ran at 88% of the bare add chain).
+
+| n | config | 1 thread ms | 10 threads ms | Metal ms | note |
+|---|---|---|---|---|---|
+| 2^16 | c=8 fd=7 (default) | 5352 | **1184** | 9711 | checksums equal (v1 default here: 3037) |
+| 2^18 | c=8 fd=8 | — | 3679 / 3722 | 14909 | v1 default (c=12 fd=4) same box: 6875 |
+| 2^18 | c=10 fd=7 | 24549 (v2-leaf, see below) | 3793 | — | c=10 fd=6 4724, c=10 fd=8 4451, c=12 fd=6 6009 |
+| 2^20 | c=8 fd=8 | — | 13046 | — | |
+| 2^20 | **c=10 fd=7 (default)** | — | **11087 / 11337** | — | was 20808 (v1 default, quiet box) → 1.85× |
+| 2^20 | c=10 fd=8 | 59038 | 12316 | — | 1-thread and 10-thread checksums equal |
+| 2^20 | c=12 fd=6 | — | 16051 | — | |
+| 2^14 G2 | c=8 fd=5 (default) | — | 2049 | — | v1: 2304 |
+
+Ops at 2^20: c=10 fd=7 = 26 · 2^20 adds + 127 · 26 · 1024 join adds = 30.7 M (v1 c=12 fd=4: 24.6 M); 11.1 s =
+2.8 M ops/s on 10 threads (v1: 1.2 M/s), against 3.5 M/s for the bare `add_mixed` chain — so the remaining gap to
+gnark (0.85 s) is the add itself (0.67 M/s per core), not the MSM structure. Bucket memory 128 × 6.8 MB = 870 MB.
+
+Tried and rejected — **per-leaf window streaming** (leaf owns a point range and ONE 2^c-bucket array, streams the
+range once per window, reduces the window with a running sum and folds Horner-style into one accumulator; leaf
+result = 1 point, join = 1 add, no clones, no bucket join): 2^18 c=10 fd=7 **5846 ms** (1 thread 24549), c=8 fd=8
+7780, c=12 fd=6 9874 — every leaf pays 2 · 2^c adds per window for the reduction (6.8 M at 2^18, equal to the
+main work), whereas v1's bucket join costs one add per bucket per level and is shared across the tree. Killed in
+favour of the 6-line defaults change. Not attempted (time box): windows-parallel leaves (needs W clones of the
+128 MB point array: 2.8 GB at c=12; Bend has no shared read-only buffer), signed digits (needs carries across
+windows, ~10% fewer adds), digit pre-extraction.
+
+What limits us: no work stealing (leaf count must be ≥ ~128 to balance 10 cores), single-owner arrays (every
+ANode split copies both halves, and a leaf can only see its own slice, so per-window ownership means cloning the
+points W times), no GC (fd = 8 at c = 12 OOMs the 8 GB span), and Metal's 16384 lanes seeing only 2^fd tasks
+(Metal 2^18 14.9 s vs 3.7 s CPU — still a checksum cross-check only).

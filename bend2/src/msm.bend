@@ -9,6 +9,9 @@
 # bucket reduction is one running sum per window, windows forked as a tree over ANode
 # splits of the bucket array and combined Horner-style (c doublings per level).
 # g1 / g2 (callers: Msm.g1 / Msm.g2) pick c and fd from n; g1_with / g2_with expose them.
+# v2 (bench/msm_results.md): the scheduler has no work stealing, so 16 leaves (fd = 4) scale
+# only 2x on 10 threads; fd = 7 (128 leaves) with c = 8 / 10 keeps the join at 6-13% of the
+# adds and the buckets at 2 / 6.8 MB per leaf, giving ~2x over the v1 defaults.
 import Base
 import ./fq.bend as Q
 import ./fq2.bend as Q2
@@ -31,14 +34,14 @@ def Msm.log2c(+n: Nat) -> Nat:
 def Msm.windows(+c: Nat) -> Nat:
   ((253n / c) + 1n)
 
-# default window size / fork depth for n points (measured, bench/msm_results.md: c = 8
-# wins up to 2^16 because the bucket join costs (2^fd - 1) * windows * 2^c adds; c = 12
-# wins from 2^18)
+# default window size / fork depth for n points (measured, bench/msm_results.md v2): the
+# bucket join costs (2^fd - 1) * windows * 2^c adds, so c = 8 up to 2^19 and c = 10 from
+# 2^20; fd = 7 (128 leaves; 2^20 c=10: fd 7 11.1 s, fd 8 12.3 s) while a leaf holds >= 2^(c+1) points
 def Msm.pick_c(+n: Nat) -> Nat:
-  Bool.pick(Nat, Nat.is_lt(Msm.log2c(n), 18n), 8n, 12n)
+  Bool.pick(Nat, Nat.is_lt(Msm.log2c(n), 20n), 8n, 10n)
 
 def Msm.pick_fd(+n: Nat, +c: Nat) -> Nat:
-  Nat.min(4n, Nat.sub(Msm.log2c(n), c))
+  Nat.min(7n, Nat.sub(Msm.log2c(n), (c + 1n)))
 
 def Msm.digit.s1(+r: Nat, +w: Nat, +wlo: U32, pr: Array<U32> & U32) -> Array<U32> & U32:
   (s, +whi) = pr

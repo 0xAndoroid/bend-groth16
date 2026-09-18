@@ -51,6 +51,13 @@ def T.verdict(ok: Bool, name: String) -> String:
     case False{}:
       "FAIL " ++ name
 
+def T.exit(ok: Bool) -> IO(Unit):
+  match ok:
+    case True{}:
+      IO.pure(Unit, Unit{})
+    case False{}:
+      IO.die(Unit, 1, "test_msm: FAIL")
+
 def main() -> IO(Unit):
   do IO<Unit>:
     +a : U32 <- T.case("data/vectors/bend/msm_small_8.bin", 8n, 9n)
@@ -58,3 +65,4 @@ def main() -> IO(Unit):
     +c : U32 <- T.case("data/vectors/bend/msm_small_1024.bin", 1024n, 16n)
     IO.print(T.verdict(U32.is_eq(a, 1), "msm_small_8") ++ " " ++ T.verdict(U32.is_eq(b, 1), "msm_small_64") ++ " " ++ T.verdict(U32.is_eq(c, 1), "msm_small_1024"))
     IO.print(T.verdict(U32.is_eq(U32.and(U32.and(a, b), c), 1), U32.show(U32.add(U32.add(a, b), c)) ++ "/3"))
+    T.exit(U32.is_eq(U32.and(U32.and(a, b), c), 1))
