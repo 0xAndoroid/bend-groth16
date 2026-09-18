@@ -9,7 +9,6 @@ use ark_poly::{EvaluationDomain, GeneralEvaluationDomain};
 use ark_relations::r1cs::{
     ConstraintMatrices, ConstraintSynthesizer, ConstraintSystem, OptimizationGoal, SynthesisMode,
 };
-use ark_serialize::CanonicalSerialize;
 use serde::Serialize;
 use std::path::Path;
 use std::time::Instant;
@@ -152,8 +151,6 @@ pub fn run(log2: u32, out: &Path) -> Result<()> {
         vk: vk_json(&pk.vk),
     })?;
     eprintln!("pk.json write: {:.1}s", t.elapsed().as_secs_f64());
-    let f = std::io::BufWriter::new(std::fs::File::create(out.join("pk.bin"))?);
-    pk.serialize_compressed(f)?;
 
     let mut total = 0u64;
     for e in std::fs::read_dir(out)? {

@@ -5,15 +5,16 @@ use crate::json::anyhow_lite::Result;
 use ark_bn254::{Bn254, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
 use ark_ec::{CurveGroup, VariableBaseMSM};
 use ark_ff::UniformRand;
-use ark_groth16::{Groth16, ProvingKey};
+use ark_groth16::Groth16;
 use ark_poly::{EvaluationDomain, Radix2EvaluationDomain};
-use ark_serialize::CanonicalDeserialize;
 use serde_json::{json, Map, Value};
 use std::hint::black_box;
 use std::path::Path;
 use std::time::Instant;
 
+/// One untimed warm-up call, then `iters` timed calls → (median, samples).
 fn median_ms<F: FnMut()>(iters: usize, mut f: F) -> (f64, Vec<f64>) {
+    f();
     let mut v: Vec<f64> = (0..iters)
         .map(|_| {
             let t = Instant::now();
@@ -26,10 +27,6 @@ fn median_ms<F: FnMut()>(iters: usize, mut f: F) -> (f64, Vec<f64>) {
     (v[v.len() / 2], samples)
 }
 
-fn default_iters(log2: u32, iters: Option<usize>) -> usize {
-    iters.unwrap_or(if log2 < 16 { 3 } else { 1 })
-}
-
 fn host() -> String {
     let h = std::process::Command::new("hostname").arg("-s").output().ok()
         .and_then(|o| String::from_utf8(o.stdout).ok()).unwrap_or_else(|| "unknown".into());
@@ -40,6 +37,11 @@ fn host() -> String {
 fn cmd(c: &str, args: &[&str]) -> Option<String> {
     std::process::Command::new(c).args(args).output().ok()
         .and_then(|o| String::from_utf8(o.stdout).ok()).map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+}
+
+/// 1/5/15-min load averages at measurement time (sibling jobs inflate every number below).
+fn loadavg() -> Option<String> {
+    cmd("sysctl", &["-n", "vm.loadavg"]).or_else(|| cmd("cat", &["/proc/loadavg"]))
 }
 
 fn load(path: &Path) -> Map<String, Value> {
@@ -72,21 +74,15 @@ fn section<'a>(doc: &'a mut Map<String, Value>, key: &str) -> &'a mut Map<String
     doc.entry(key).or_insert_with(|| json!({})).as_object_mut().unwrap()
 }
 
-pub fn prove(log2: u32, iters: Option<usize>, data: &Path, out_dir: &Path) -> Result<()> {
+pub fn prove(log2: u32, iters: usize, out_dir: &Path) -> Result<()> {
     let n = 1usize << log2;
-    let iters = default_iters(log2, iters);
     let circuit = SquareChain::random(n);
     let mut rng = circuit::rng();
-    let pk_bin = data.join(log2.to_string()).join("pk.bin");
+    // Same seed as `gen`, so this is the very pk exported to data/K/ (regenerating is faster
+    // than deserializing pk.bin: 2 s vs 12 s at 2^18).
     let t = Instant::now();
-    let (pk, pk_source): (ProvingKey<Bn254>, &str) = if pk_bin.exists() {
-        let f = std::io::BufReader::new(std::fs::File::open(&pk_bin)?);
-        (ProvingKey::deserialize_compressed_unchecked(f)?, "pk.bin")
-    } else {
-        (Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)?, "in-memory setup")
-    };
-    eprintln!("pk 2^{log2} ready ({pk_source}) in {:.1}s", t.elapsed().as_secs_f64());
-    // warm-up (also validates)
+    let pk = Groth16::<Bn254>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)?;
+    eprintln!("setup 2^{log2}: {:.1}s", t.elapsed().as_secs_f64());
     let proof = Groth16::<Bn254>::create_random_proof_with_reduction(circuit.clone(), &pk, &mut rng)?;
     let pvk = ark_groth16::prepare_verifying_key(&pk.vk);
     assert!(Groth16::<Bn254>::verify_proof(&pvk, &proof, &[circuit.public()])?);
@@ -105,12 +101,12 @@ pub fn prove(log2: u32, iters: Option<usize>, data: &Path, out_dir: &Path) -> Re
     section(&mut doc, "prove").insert(log2.to_string(), json!({
         "log2": log2, "num_constraints": n, "ms": ms, "iters": iters, "samples_ms": samples,
         "prove_matrices_ms": matrices_ms, "prove_matrices_samples_ms": matrices_samples,
-        "pk_source": pk_source, "timestamp": chrono::Utc::now().to_rfc3339(),
+        "timestamp": chrono::Utc::now().to_rfc3339(), "loadavg": loadavg(),
     }));
     save(&path, doc)
 }
 
-pub fn primitives(iters: Option<usize>, out_dir: &Path, max_log2: u32) -> Result<()> {
+pub fn primitives(it: usize, out_dir: &Path, max_log2: u32) -> Result<()> {
     let path = out_path(out_dir);
     let mut doc = load(&path);
     let mut rng = circuit::rng();
@@ -122,34 +118,31 @@ pub fn primitives(iters: Option<usize>, out_dir: &Path, max_log2: u32) -> Result
     let sc: Vec<Fr> = (0..1usize << top).map(|_| Fr::rand(&mut rng)).collect();
     for k in 10..=top {
         let n = 1usize << k;
-        let it = default_iters(k, iters);
         let (ms, samples) = median_ms(it, || { let _ = black_box(G1Projective::msm(&pts[..n], &sc[..n]).unwrap()); });
         println!("msm_g1 2^{k}: {ms:.2} ms");
-        section(&mut doc, "msm_g1").insert(k.to_string(), json!({"log2": k, "ms": ms, "iters": it, "samples_ms": samples, "timestamp": stamp()}));
+        section(&mut doc, "msm_g1").insert(k.to_string(), json!({"log2": k, "ms": ms, "iters": it, "samples_ms": samples, "timestamp": stamp(), "loadavg": loadavg()}));
     }
     drop(pts);
     let top2 = max_log2.min(16);
     let pts2: Vec<G2Affine> = G2Projective::normalize_batch(&(0..1usize << top2).map(|_| G2Projective::rand(&mut rng)).collect::<Vec<_>>());
     for k in 10..=top2 {
         let n = 1usize << k;
-        let it = default_iters(k, iters);
         let (ms, samples) = median_ms(it, || { let _ = black_box(G2Projective::msm(&pts2[..n], &sc[..n]).unwrap()); });
         println!("msm_g2 2^{k}: {ms:.2} ms");
-        section(&mut doc, "msm_g2").insert(k.to_string(), json!({"log2": k, "ms": ms, "iters": it, "samples_ms": samples, "timestamp": stamp()}));
+        section(&mut doc, "msm_g2").insert(k.to_string(), json!({"log2": k, "ms": ms, "iters": it, "samples_ms": samples, "timestamp": stamp(), "loadavg": loadavg()}));
     }
     drop(pts2);
 
     // NTT / iNTT over Fr.
     for k in 10..=top {
         let n = 1usize << k;
-        let it = default_iters(k, iters);
         let d = Radix2EvaluationDomain::<Fr>::new(n).unwrap();
         let coeffs = &sc[..n];
         let (fft_ms, fft_samples) = median_ms(it, || { black_box(d.fft(coeffs)); });
         let (ifft_ms, ifft_samples) = median_ms(it, || { black_box(d.ifft(coeffs)); });
         println!("ntt 2^{k}: fft {fft_ms:.2} ms, ifft {ifft_ms:.2} ms");
         section(&mut doc, "ntt").insert(k.to_string(), json!({"log2": k, "fft_ms": fft_ms, "ifft_ms": ifft_ms, "iters": it,
-            "fft_samples_ms": fft_samples, "ifft_samples_ms": ifft_samples, "timestamp": stamp()}));
+            "fft_samples_ms": fft_samples, "ifft_samples_ms": ifft_samples, "timestamp": stamp(), "loadavg": loadavg()}));
     }
 
     // Fr mul throughput, single thread.
@@ -172,6 +165,6 @@ pub fn primitives(iters: Option<usize>, out_dir: &Path, max_log2: u32) -> Result
     let indep = (rounds * a.len()) as f64 / t.elapsed().as_secs_f64();
     println!("fr_mul: dependent {:.1} M/s, independent {:.1} M/s (single thread)", dep / 1e6, indep / 1e6);
     doc.insert("fr_mul".into(), json!({"dependent_muls_per_sec": dep, "independent_muls_per_sec": indep,
-        "n_muls": N_MULS, "batch": a.len(), "threads": 1, "timestamp": stamp()}));
+        "n_muls": N_MULS, "batch": a.len(), "threads": 1, "timestamp": stamp(), "loadavg": loadavg()}));
     save(&path, doc)
 }

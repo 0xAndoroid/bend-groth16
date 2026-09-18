@@ -38,21 +38,19 @@ enum Cmd {
         #[arg(long)]
         out: PathBuf,
     },
-    /// Benchmark arkworks. `--log2 K` = Groth16::prove at 2^K (reuses data/K/pk.bin if present);
+    /// Benchmark arkworks. `--log2 K` = Groth16::prove at 2^K (pk from in-memory setup, seed 42);
     /// `--primitives` = MSM/NTT/Fr-mul suites. Results merge into <out-dir>/arkworks-<host>.json.
     Bench {
         #[arg(long)]
         log2: Option<u32>,
         #[arg(long)]
         primitives: bool,
-        /// Iterations per measurement (default: 3 below 2^16, else 1; median reported).
-        #[arg(long)]
-        iters: Option<usize>,
+        /// Timed iterations per measurement (median reported; one extra warm-up run is discarded).
+        #[arg(long, default_value_t = 3)]
+        iters: usize,
         /// Largest MSM/NTT size (log2) for --primitives.
         #[arg(long, default_value_t = 20)]
         max_log2: u32,
-        #[arg(long, default_value = "data")]
-        data: PathBuf,
         #[arg(long, default_value = "bench")]
         out_dir: PathBuf,
     },
@@ -78,10 +76,10 @@ fn main() {
             }
         },
         Cmd::Vectors { out } => vectors::run(&out),
-        Cmd::Bench { log2, primitives, iters, max_log2, data, out_dir } => {
+        Cmd::Bench { log2, primitives, iters, max_log2, out_dir } => {
             let mut r = Ok(());
             if let Some(k) = log2 {
-                r = bench::prove(k, iters, &data, &out_dir);
+                r = bench::prove(k, iters, &out_dir);
             }
             if r.is_ok() && primitives {
                 r = bench::primitives(iters, &out_dir, max_log2);

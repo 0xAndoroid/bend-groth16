@@ -206,7 +206,6 @@ pub fn run(out: &Path) -> Result<()> {
     // sanity: G2 generator round-trips through the JSON encoding
     let g2 = G2Affine::generator();
     assert_eq!(G2Json::from(&g2).to_affine()?, g2);
-    let _ = G1Affine::generator();
     println!("vectors written to {}", out.display());
     Ok(())
 }

@@ -8,8 +8,9 @@ separately (e.g. under `nohup`).
 
 Produced by `ref/` (`groth16-ref bench --log2 K` → `prove`; `groth16-ref bench --primitives` →
 `msm_g1`, `msm_g2`, `ntt`, `fr_mul`). All times are wall-clock milliseconds, rayon using every
-core (`threads`), release build. Each entry is the **median** of `iters` runs (default 3 below
-2^16, 1 at/above); the raw samples are kept in `samples_ms`.
+core (`threads`), release build. Each entry is the **median** of `iters` timed runs (default 3)
+after one discarded warm-up run; the raw samples are kept in `samples_ms`, the host's 1/5/15-min
+load averages at that moment in `loadavg`.
 
 ```jsonc
 {
@@ -27,11 +28,10 @@ core (`threads`), release build. Each entry is the **median** of `iters` runs (d
       "ms": 12.3, "iters": 3, "samples_ms": [12.5, 12.3, 12.1],
       "prove_matrices_ms": 11.0, "prove_matrices_samples_ms": [...],  // create_proof_with_reduction_and_matrices:
                                         //   matrices + z precomputed, fixed r,s (prover-only work, = what Bend does)
-      "pk_source": "pk.bin",          // "pk.bin" (data/K/pk.bin reloaded) or "in-memory setup"
-      "timestamp": "…"
+      "timestamp": "…", "loadavg": "{ 5.4 9.7 8.0 }"
     }
   },
-  "msm_g1": { "10": {"log2": 10, "ms": 1.2, "iters": 3, "samples_ms": [...], "timestamp": "…"} },
+  "msm_g1": { "10": {"log2": 10, "ms": 1.2, "iters": 3, "samples_ms": [...], "timestamp": "…", "loadavg": "…"} },
   "msm_g2": { "10": {…} },            // 2^10..2^16
   "ntt":    { "10": {"log2": 10, "fft_ms": 0.1, "ifft_ms": 0.1, "iters": 3,
                      "fft_samples_ms": [...], "ifft_samples_ms": [...], "timestamp": "…"} },
@@ -44,10 +44,18 @@ core (`threads`), release build. Each entry is the **median** of `iters` runs (d
 ```
 
 Notes
-- `prove` at `K` uses the frozen `SquareChain(2^K)` circuit and the deterministic witness
-  (seed 42); the proof is verified once before timing (warm-up run, not counted).
+- `prove` at `K` uses the frozen `SquareChain(2^K)` circuit, the deterministic witness and the
+  pk from an in-memory setup with seed 42 (bit-identical to `data/K/pk.json`, and 5× faster to
+  regenerate than to deserialize); one proof is verified before timing.
+- Prove vs primitives: a Groth16 prove is 3 G1 MSMs (`a_query` N+2, `l_query` N, `h_query` 2N−1),
+  1 G2 MSM (N+2) and 7 NTT-sized passes (3 iFFT + 3 coset FFT + 1 coset iFFT at 2N), so expect
+  `prove(K) ≈ 2·msm_g1(K) + msm_g1(K+1) + msm_g2(K) + 7·ntt(K+1)` plus ~20–40 % for the sparse
+  `evaluate_constraint` passes, `into_bigint` conversions of four scalar vectors and the final
+  `into_affine`. On a quiet host 2^18 measures ≈ 2.1 s against a ≈ 1.6 s primitive sum.
+- Load matters more than pk source: with `iters = 1` a 2^18 prove read 5.9 s while a sibling lane
+  compiled, yet 2^20 read only 8.5 s a minute later; re-measured back to back at 2^18, pk.bin vs
+  in-memory setup differ by < 15 %. Treat entries whose `loadavg` ≫ `threads` as upper bounds and
+  rerun `groth16-ref bench --log2 K` on a quiet host before quoting them.
 - MSMs: `VariableBaseMSM::msm` over fresh random affine points and random scalars
   (no fixed-base tables). NTT: `Radix2EvaluationDomain::{fft,ifft}` over Fr.
 - Sizes: MSM G1 and NTT 2^10..2^20, MSM G2 2^10..2^16 (override with `--max-log2`).
-- Numbers taken while sibling lanes were compiling (load1 ≈ 6–16 on a 10-core M4) are upper
-  bounds; rerun `groth16-ref bench --log2 K` on a quiet host before quoting them.
