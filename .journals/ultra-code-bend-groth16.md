@@ -21,8 +21,8 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 |---|---|---|---|
 | 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (all integrated) |
 | 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (integrated; box 51392026 pika-bend-5090 $0.628/h, running) · [after w0f] bend2-field-curve 41379b12 (integrated; tests PASS 64/64/32/16; review e6516c76 astra) · bend2-export 53ed8004 (integrated; K=18 export 4.3 s, 308 MB, 0 round-trip mismatches) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
-| 2 | bend2-msm 3492204e (building) · bend2-ntt 876e5746 (integrated; review 3052ee89 astra) · bend2-prover a581bb4c (integrated: K=4 + K=10 naive OK+EQUAL; G2Aff.to_array bug fixed on integration by orchestrator) | 1 | msm/ntt building |
-| 3 | bend2-cuda-smoke 20d69844 (integrated: CUDA works on sm_120; data K=4..20 on box) · [after msm/ntt] flip prover imports → K=4/10/14/18 OK+EQUAL on mini (CPU 1/10 thr, Metal) + box (CPU48, CUDA) | 2 | cuda-smoke building |
+| 2 | bend2-msm 3492204e (integrated; review d95f6611 astra) · bend2-ntt 876e5746 (integrated; reviewed 3052ee89 keep) · bend2-prover a581bb4c (integrated: K=4 + K=10 naive OK+EQUAL; G2Aff.to_array bug fixed on integration by orchestrator) | 1 | msm/ntt building |
+| 3 | bend2-cuda-smoke 20d69844 (integrated) · prover imports flipped by orchestrator (K=4 115 ms, K=10 1103 ms OK+EQUAL) · bend2-prover-bench b3ef68f2 (mini + box full prover, box msm/ntt CUDA) · bend2-msm-opt 6654ff4c (60-min time-box, v2 MSM) | 2 | building |
 | 4 | quiet-host CPU bench rerun (all mini comparators + Bend, serial) · "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
 
 ## Current wave spec (wave 0)
@@ -57,6 +57,11 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 | V1.3 | 1 | README bench numbers ±30% | within | astra | kill (minor) | Fr20 Metal +63%, Fr24 CPU10 +31% — single samples under sibling load; quiet rerun wave re-measures |
 | V1.4 | 1 | benchmark does real work (generated C inspected) | yes | astra | keep | |
 | V1.5 | 1 | used-properly checklist (field layer) | all P | astra | keep | 9/9 applicable P |
+| V2.1 | 2 | test_ntt vectors + qap_h K=4/10 vs ref_qap; corrupt → FAIL | PASS / FAIL | astra 3052ee89 | keep (FAIL exits 0 — minor) | |
+| V2.2 | 2 | ref_qap oracle: A·B−C = h·Z_d at 3 random points, independent bigint | residual 0 | astra | keep | ark-groth16 r1cs_to_qap.rs:176 confirms instance rows |
+| V2.3 | 2 | ntt bench ±30%, checksums CPU=Metal | within | astra | keep | |
+| V2.4 | 2 | ntt used-properly | all P | astra | partial | 7 pass, 2 partial, #5 fail (array split copies O(n·FD)) |
+| V2.5 | 2 | prover K=4/K=10 real modules OK+EQUAL | OK EQUAL | orchestrator | keep | 115 ms / 1103 ms |
 
 ## Key numbers so far (M4, 10 cores)
 - arkworks prove 2^10/14/18/20: 17 / 142 / 1791 / 12762(load 17!) ms under sibling load; MSM G1 2^18 186 ms, 2^20 703 ms. ALL mini CPU numbers must be re-run on a quiet host in a final bench wave (arkworks, gnark, rapidsnark, snarkjs, Bend) — record loadavg.
@@ -64,12 +69,15 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - rapidsnark (10 thr) 2^10/14/18/20: 20.8 / 151 / 2723 / 9792 ms; snarkjs 402 / 1419 / 18425 / 59408 ms (under load; zkey load included in wall). circom constraint counts exact.
 - Bend 2 (2.0.5): montmul 2^24 batch 1914 ms 1-thr (8.8 M/s), 440 ms 10-thr (38 M/s), Metal 78 ms (~200 M/s; chained ~670 M/s). Arrays 2^24 gather 62 ms; 8 MB file→Array 30 ms. No argv; Nat literal ≥10000n crashes checker; Metal call overhead ~55 ms.
 - BOX (Threadripper 9960X 24C/48T + RTX 5090, $0.628/h): gnark CPU prove 2^10/14/18/20 = 3.6/19/189/666 ms (1 thr 2^14 321 ms); rapidsnark CLI cold 22/60/644/2031 ms; snarkjs 373/669/2894/10663 ms. GPU: gnark+icicle 26/31/48/203 ms (pinned 26/30/44/181); ICICLE-SNARK 20/21/41/114 ms. Primitives 5090: ICICLE MSM 2^20 7.17 ms (device-resident), sppark MSM 2^20 92 ms (incl H2D); ICICLE NTT 2^20 0.62 ms. Bend 2 CUDA target builds on box (clang-19 needed, NVRTC JIT).
+- Bend 2 FULL PROVER (mini, 10 thr, real MSM/NTT): K=4 115 ms; K=10 1103 ms (msm_b2 481, msm_h 240, msm_l 141, msm_a 104, msm_b1 101, qap 17) vs gnark 13 ms / arkworks 17 ms / rapidsnark 21 ms → ~65–85× slower at K=10.
+- Bend 2 MSM v1 (mini): G1 2^20 41.5 s / 20.8 s (1/10 thr; 2× scaling only), Metal 106 s; 2^18 14.8/6.5 s; G2 2^18 29.3 s (10 thr). gnark 2^20 848 ms → ~25× slower. Ceiling: single-owner arrays (split=copy), private bucket arrays per leaf (memory), no shared read-only buffers → GPU MSM not expressible efficiently.
 - Bend 2 NTT (mini): fft 2^20 1987/529/3381 ms (1 thr/10 thr/Metal — Metal SLOWER); 2^16 135/47/392; qap_h 2^19 8836/2646/2220 ms. gnark FFT 2^20 = 43 ms (10 thr) → Bend ~12× slower on CPU NTT.
 - Bend 2 on BOX: CUDA works (NVRTC sm_120, clang-19). field_mul 2^28: CPU48 2098 ms (128 M/s) vs CUDA 19 ms (14 G/s); 2^30 CUDA 71 ms. g1_add 2^26: CPU48 6776 ms vs CUDA 65 ms (1.03 G adds/s); 2^20 CPU48 134 ms vs CUDA 4 ms. Checksums equal.
 - Bend 2 field lane: Fr.mul 2^24 1829/352/73 ms (1 thr/10 thr/Metal) = 9.2/48/230 M/s; G1.add_mixed 2^20 1570/301/99 ms = 0.67/3.5/10.6 M/s.
 - Bend 1/HVM2: u24 only, 12-bit limbs ×22; 254-bit schoolbook mul ≈ 51k interactions; 2^16 muls = 4.98 s on 8 thr compiled (~13k muls/s; ~2.7k 1-thr). Tree reduce scales 5.1× on 8 thr; loops 0×. Embedded literals cap 2^16 (compiled)/2^18 (interp); IO/FS/read_file works (~1 s per 2^18 limbs). Heap prealloc 6.4 GB RSS per compiled process.
 
 ## Residuals
+- (open, minor) tests: run.sh omits NTT/MSM; test_ntt FAIL exits 0. ntt.bend array split copies O(n·FD) (checklist #5). Dead defs in test_ntt/ntt. → final-review fixer.
 - (open, minor) tests/run.sh prints PASS 0 on empty/zero-count vector files; gen_field.py `head1` dead helper; Fq bit helpers uncalled → final-review fixer.
 
 ## Playbook
