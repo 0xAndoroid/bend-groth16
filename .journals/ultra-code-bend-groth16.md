@@ -119,3 +119,9 @@ plan waves → spec wave → build → review → integrate → verify → fix(�
 ## 05:20 — report delivered, verifier spawned
 - b8526215 report: `~/.pika/web/reports/bend-groth16-bench-2026-09.html` (lint clean, 16 tables, 3 charts; verdict "Not competitive": Bend 2 CPU 40× behind gnark at 2^18 on the mini, 173–184× on the box; Bend CUDA 1,020× behind gnark+ICICLE at 2^20, slower than its own CPU path; Jolt answer: no). README link merged (`c9ad27a`); w6 worktree removed.
 - bb547442 astra report-verify (numbers vs JSON, claims, caveats). Then: merge main → kanban done → reply parent.
+
+## 05:30 — report verified, merged to main, campaign closed
+- bb547442 report-verify: 453 numeric cells/ratios pass at ≤3 %; fix-first on prose only (G2 share range, NTT load-loss %, 21.3 GB→21,257 MiB, sample counts, load gate wording, unisolated causal claims, "smaller cards", sppark/SupraSeal, "cloned per pass"). All patched by orchestrator in the HTML; lint 0/0.
+- Final: waves w0–w6, 27 lanes (20 build/bench Fable, 7 astra reviews/audits), 2 reviews returned fix-first → both fixed same turn. Kill-rate: MSM "language ceiling" claim killed (fd choice), audit "zero GPU dispatches" fixed by d524023; PARTIAL verdict stands.
+- Cost: vast 2 h 51 ≈ $1.79; wall clock ~7.5 h. Box destroyed 04:38, worktrees removed, scratch removed.
+- Residuals (not fixed): mini K=20 Bend not run (16 GB); K=18 CPU1 v2 only estimated (~125 s); MSM v2 regresses 12 % on the box vs v1; ICICLE-SNARK/arkworks harnesses verify one proof per size; Bend CPU rows without `--gpu off` (K=14 delta −7 %, inside spread).
