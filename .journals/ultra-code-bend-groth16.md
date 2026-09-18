@@ -52,6 +52,11 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 | V0.5 | 0 | embed 2^20 literals | fails | astra | keep | HVM output had no result |
 | V0.6 | 0 | groth16-ref verify proof_ref K=4..18 / tampered | OK / INVALID | fable 2b106e2c | keep | verify test added |
 | V0.7 | 0 | gnark constraint count == N, proofs verify | true | fable ebecad7b | keep | |
+| V1.1 | 1 | bend2/tests/run.sh + corrupted vector | PASS 64/64/32/16; FAIL on corruption | astra e6516c76 | keep | FAIL 5 mul on flipped word |
+| V1.2 | 1 | 3 random Fr products, inv(0), sub borrow; G1 edge cases | match bigint / 8/8 | astra | keep | |
+| V1.3 | 1 | README bench numbers ±30% | within | astra | kill (minor) | Fr20 Metal +63%, Fr24 CPU10 +31% — single samples under sibling load; quiet rerun wave re-measures |
+| V1.4 | 1 | benchmark does real work (generated C inspected) | yes | astra | keep | |
+| V1.5 | 1 | used-properly checklist (field layer) | all P | astra | keep | 9/9 applicable P |
 
 ## Key numbers so far (M4, 10 cores)
 - arkworks prove 2^10/14/18/20: 17 / 142 / 1791 / 12762(load 17!) ms under sibling load; MSM G1 2^18 186 ms, 2^20 703 ms. ALL mini CPU numbers must be re-run on a quiet host in a final bench wave (arkworks, gnark, rapidsnark, snarkjs, Bend) — record loadavg.
@@ -62,7 +67,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - Bend 1/HVM2: u24 only, 12-bit limbs ×22; 254-bit schoolbook mul ≈ 51k interactions; 2^16 muls = 4.98 s on 8 thr compiled (~13k muls/s; ~2.7k 1-thr). Tree reduce scales 5.1× on 8 thr; loops 0×. Embedded literals cap 2^16 (compiled)/2^18 (interp); IO/FS/read_file works (~1 s per 2^18 limbs). Heap prealloc 6.4 GB RSS per compiled process.
 
 ## Residuals
-(none)
+- (open, minor) tests/run.sh prints PASS 0 on empty/zero-count vector files; gen_field.py `head1` dead helper; Fq bit helpers uncalled → final-review fixer.
 
 ## Playbook
 plan waves → spec wave → build → review → integrate → verify → fix(≤2) → amend → … → final review → merge main → report. Skips logged as `skip: <reason>`.
