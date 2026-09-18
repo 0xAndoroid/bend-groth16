@@ -111,3 +111,7 @@ plan waves → spec wave → build → review → integrate → verify → fix(�
 - Merged `7b5c495`/`fb129e7` (w5fix, 11.7 min): msm bench loader header-sized, bench_prover.sh enforces cfg + rejects unverified runs, run.sh 7/7 incl. prove K=4, naive.bend/vectors_to_bin.py/gen_naive_consts.py/g2_store workaround/dead Fq helpers removed, docs corrected (README rewrite, audit #3→P/#6 partial, PARTIAL verdict stands, box snapshot + placeholders). Review findings retained as `docs/final-review-2026-09-18.md`.
 - b8526215 report lane (Fable, worktree w6-report; waits on bench/quiet-results.md via condition sleep). 6f07139f quiet lane still running (sleeping on its nohup chain).
 - Next: merge quiet → (report finishes) → astra spot-check of report numbers vs JSON → merge main → teardown → kanban done → reply parent.
+
+## 05:15 — quiet rerun merged, teardown started
+- Merged `8a36ee9` (w5quiet). Quiet mini (10 thr): gnark 8.2/69/800/2953 ms; arkworks 17.6/139/1670/6573 (matrices 17.2/124/1513/6030); rapidsnark 16.8/104/1351/5011; snarkjs 255/935/9120/36000; Bend 2 v2 629/6000/31836 (K=10/14/18; `--gpu off` K=14 5569; 1-thr 846/11456). MSM G1 2^20 Bend 10302 vs gnark 391 vs arkworks 641; FFT 2^20 389 vs 22.4 vs 40.7. Ratios Bend/gnark 77×/86×/40× at K=10/14/18; loaded comparator numbers were 1.3–2.8× inflated; ordering unchanged.
+- 20 lane worktrees removed, local+remote branches deleted; only integration + w6-report remain. Box already destroyed.
