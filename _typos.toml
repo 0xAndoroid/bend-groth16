@@ -3,4 +3,4 @@ groth = "groth"
 Groth = "Groth"
 
 [files]
-extend-exclude = ["bench/*.json"]
+extend-exclude = ["bench/*.json", "bench/quiet/*.json"]

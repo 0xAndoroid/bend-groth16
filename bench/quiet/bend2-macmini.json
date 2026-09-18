@@ -1,0 +1,310 @@
+{
+ "schema": 1,
+ "framework": "bend2",
+ "versions": {
+  "bend": "2.0.5"
+ },
+ "host": "mac",
+ "cpu": "Apple M4",
+ "threads": 10,
+ "git_head": "baab824",
+ "updated": "2026-09-18T09:10:37Z",
+ "notes": "Quiet-host rerun (w5quiet, load1<=4 gate before every run, strictly sequential). prove.<k>.cpu_all = prove.sh default (10 threads, BENDG_GPU unset); K=18 needs --gpu 8GB (arena span only; default span OOMs at this head); cpu1 = --threads 1; cpu_all_gpuoff = 10 threads with --gpu off. msm_g1/ntt: bend2/bench/msm.bend (MODE=cpu G=1, v2 defaults, --gpu 8GB span) and ntt.bend (OP=fft, default FD), 10 threads, median of 3, ms; load1 = 1-min load before each run.",
+ "msm_g1": {
+  "16": {
+   "log2": 16,
+   "cpu_all": 1096,
+   "samples_ms": [
+    1102,
+    1094,
+    1096
+   ],
+   "c": 8,
+   "fd": 7,
+   "load1": [
+    3.15,
+    3.15,
+    3.15
+   ]
+  },
+  "18": {
+   "log2": 18,
+   "cpu_all": 3160,
+   "samples_ms": [
+    3130,
+    3160,
+    3203
+   ],
+   "c": 8,
+   "fd": 7,
+   "load1": [
+    3.15,
+    3.54,
+    4.13
+   ]
+  },
+  "20": {
+   "log2": 20,
+   "cpu_all": 10302,
+   "samples_ms": [
+    10167,
+    10302,
+    10467
+   ],
+   "c": 10,
+   "fd": 7,
+   "load1": [
+    2.81,
+    4.06,
+    4.27
+   ]
+  }
+ },
+ "ntt": {
+  "16": {
+   "log2": 16,
+   "cpu_all": 26,
+   "samples_ms": [
+    32,
+    26,
+    26
+   ],
+   "fd": 12,
+   "load1": [
+    2.79,
+    2.79,
+    2.79
+   ]
+  },
+  "17": {
+   "log2": 17,
+   "cpu_all": 51,
+   "samples_ms": [
+    51,
+    52,
+    50
+   ],
+   "fd": 12,
+   "load1": [
+    2.79,
+    2.79,
+    2.79
+   ]
+  },
+  "18": {
+   "log2": 18,
+   "cpu_all": 95,
+   "samples_ms": [
+    95,
+    97,
+    93
+   ],
+   "fd": 12,
+   "load1": [
+    2.79,
+    2.79,
+    2.79
+   ]
+  },
+  "19": {
+   "log2": 19,
+   "cpu_all": 182,
+   "samples_ms": [
+    182,
+    182,
+    182
+   ],
+   "fd": 12,
+   "load1": [
+    2.79,
+    2.79,
+    2.79
+   ]
+  },
+  "20": {
+   "log2": 20,
+   "cpu_all": 389,
+   "samples_ms": [
+    389,
+    390,
+    389
+   ],
+   "fd": 12,
+   "load1": [
+    2.79,
+    2.79,
+    2.79
+   ]
+  }
+ },
+ "prove": {
+  "10": {
+   "log2": 10,
+   "num_constraints": 1024,
+   "cpu_all": {
+    "ms": 629,
+    "iters": 3,
+    "samples_ms": [
+     629,
+     626,
+     659
+    ],
+    "phases_ms": {
+     "load": 5,
+     "evals": 1,
+     "qap": 13,
+     "msm_a": 84,
+     "msm_b1": 85,
+     "msm_b2": 263,
+     "msm_h": 100,
+     "msm_l": 74
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "3.91 4.34 3.73",
+     "3.75 4.26 3.72",
+     "3.14 4.05 3.66"
+    ]
+   },
+   "cpu1": {
+    "ms": 846,
+    "iters": 3,
+    "samples_ms": [
+     846,
+     845,
+     846
+    ],
+    "phases_ms": {
+     "load": 4,
+     "evals": 0,
+     "qap": 26,
+     "msm_a": 102,
+     "msm_b1": 102,
+     "msm_b2": 324,
+     "msm_h": 182,
+     "msm_l": 100
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "2.97 3.80 3.67",
+     "2.96 3.72 3.65",
+     "3.30 3.74 3.66"
+    ]
+   }
+  },
+  "14": {
+   "log2": 14,
+   "num_constraints": 16384,
+   "cpu_all": {
+    "ms": 6000,
+    "iters": 3,
+    "samples_ms": [
+     6000,
+     6207,
+     5502
+    ],
+    "phases_ms": {
+     "load": 50,
+     "evals": 11,
+     "qap": 102,
+     "msm_a": 795,
+     "msm_b1": 799,
+     "msm_b2": 2509,
+     "msm_h": 892,
+     "msm_l": 669
+    },
+    "ok": true,
+    "equal": true,
+    "args": "",
+    "loadavg": [
+     "3.17 3.98 3.65",
+     "3.74 4.03 3.68",
+     "4.56 4.20 3.76"
+    ]
+   },
+   "cpu1": {
+    "ms": 11456,
+    "iters": 3,
+    "samples_ms": [
+     11442,
+     11466,
+     11456
+    ],
+    "phases_ms": {
+     "load": 51,
+     "evals": 10,
+     "qap": 390,
+     "msm_a": 1359,
+     "msm_b1": 1348,
+     "msm_b2": 4318,
+     "msm_h": 2638,
+     "msm_l": 1329
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--threads 1",
+    "loadavg": [
+     "2.98 3.62 3.62",
+     "3.36 3.64 3.62",
+     "3.39 3.60 3.61"
+    ]
+   },
+   "cpu_all_gpuoff": {
+    "ms": 5569,
+    "iters": 1,
+    "samples_ms": [
+     5569
+    ],
+    "phases_ms": {
+     "load": 47,
+     "evals": 11,
+     "qap": 97,
+     "msm_a": 766,
+     "msm_b1": 764,
+     "msm_b2": 2418,
+     "msm_h": 813,
+     "msm_l": 648
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--gpu off",
+    "loadavg": [
+     "3.88 3.89 3.68"
+    ]
+   }
+  },
+  "18": {
+   "log2": 18,
+   "num_constraints": 262144,
+   "cpu_all": {
+    "ms": 31836.0,
+    "iters": 2,
+    "samples_ms": [
+     31585,
+     32087
+    ],
+    "phases_ms": {
+     "load": 771.0,
+     "evals": 165.5,
+     "qap": 1336.5,
+     "msm_a": 3968.0,
+     "msm_b1": 3993.5,
+     "msm_b2": 12604.5,
+     "msm_h": 5787.0,
+     "msm_l": 3205.0
+    },
+    "ok": true,
+    "equal": true,
+    "args": "--gpu 8GB",
+    "loadavg": [
+     "2.61 3.11 3.38",
+     "5.12 3.67 3.57"
+    ]
+   }
+  }
+ }
+}
