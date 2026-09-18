@@ -19,7 +19,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 | wave | shards | depends on | status |
 |---|---|---|---|
 | 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (A,C,D,E integrated; B reviewing; F building) |
-| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] Bend 2 field arithmetic Fr/Fq + loader · review gnark ebecad7b | 0 (D landed) | building (gnark reviewing) |
+| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] Bend 2 field arithmetic Fr/Fq + loader · review gnark ebecad7b | 0 (D landed) | gnark integrated; box building |
 | 2 | Bend G1/G2 ops · Bend MSM (Pippenger) · Bend NTT | 1 | draft |
 | 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
 | 4 | quiet-host CPU bench rerun (all mini comparators + Bend, serial) · "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
@@ -35,6 +35,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - amend: bend-lang.com now ships **Bend 2** (bendlang/bend 2.0.5, 2026-09-17; HigherOrderCO/Bend redirects). Bend 1/HVM2 (bend-lang 0.2.38 + hvm 2.0.22) is dead since 2024-08 (u24-only, 64-node CUDA def cap). PRIMARY target → Bend 2 (U32, in-place arrays, C/Metal/CUDA). Added shard w0f (Bend 2 research+probe). w0b stays on Bend 1 as a legacy data point. Report must state the version boundary.
 - amend: comparators per w0d — CPU gnark v0.16.3 + rapidsnark v0.0.8 (+snarkjs ref, arkworks ref); GPU gnark+icicle-gnark v3.2.2 + ICICLE-SNARK bf00385 (experimental) + ICICLE v4/sppark BN254 primitives. bellperson dropped (BLS12-381 only), bellman-ce archived. w0d merged (doc-only; skip review, orchestrator read).
 - skip: w0e per-shard review — scripts shard; covered by the quiet-host rerun lane (re-executes gen.sh/bench.py) + final whole-diff review.
+- amend: ownership overlap .gitignore between w0e,w1gnark (both append-only) — resolved by union; .gitignore stays orchestrator-owned from now on (lanes list ignores in their reply instead).
 - skip: w0a review — doc-only shard, orchestrator read sections 1–4; corrections folded by w0f if any.
 
 ## Verification matrix
