@@ -1,6 +1,6 @@
 # NTT checks. Vectors mode (default): data/vectors/bend/ntt_small_{8,64,1024}.bin, per size
 # fft(coeffs) == evals, ifft(evals) == coeffs, ifft(fft(coeffs)) == coeffs, and
-# coset_ifft(coset_fft(coeffs)) == coeffs; prints "PASS <n>" or "FAIL <n> <bad counts>".
+# coset_ifft(coset_fft(coeffs)) == coeffs; prints "PASS <n>" per size, or exits 1 with "FAIL ...".
 # QAP mode (K=<k> in the env): loads data/<K>/bend/{header,abc_evals,h_ref}.bin (written by
 # `uv run python bend2/gen/ref_qap.py data/<K>`), runs Ntt.qap_h and compares with h_ref.
 # Run from the repo root: BEND_NO_TELEMETRY=1 ~/.bend/bin/bend bend2/tests/test_ntt.bend -o t && ./t && K=4 ./t
@@ -25,14 +25,6 @@ def T.copy(n: Nat, +i: Nat, +u0: Nat, st: Cp) -> Cp:
     case 1n++p:
       Cp{src, dst} = st
       T.copy(p, (i + 1n), u0, T.copy.s0(i, dst, R.Fr.from_array(src, (u0 + i))))
-
-def T.copy.dst(st: Cp) -> Array<U32>:
-  Cp{src, dst} = st
-  dst
-
-def T.copy.src(st: Cp) -> Array<U32>:
-  Cp{src, dst} = st
-  src
 
 # ---- count mismatches: a[i] != arr[u0 + i] ----
 
@@ -59,10 +51,6 @@ def T.cmp.bad(st: Cm) -> U32:
   Cm{a, arr, bad} = st
   bad
 
-def T.cmp.arr(st: Cm) -> Array<U32>:
-  Cm{a, arr, bad} = st
-  arr
-
 # ---- vectors mode ----
 
 # fresh 2^(log2+4)-word array holding arr[u0 .. u0+n)
@@ -75,7 +63,7 @@ def T.vec.report(ok: Bool, +n: Nat, +b1: U32, +b2: U32, +b3: U32, +b4: U32) -> I
     case True{}:
       IO.print("PASS " ++ Nat.show(n))
     case False{}:
-      IO.print("FAIL " ++ Nat.show(n) ++ " fft=" ++ U32.show(b1) ++ " ifft=" ++ U32.show(b2) ++ " ifft.fft=" ++ U32.show(b3) ++ " coset_ifft.coset_fft=" ++ U32.show(b4))
+      IO.die(Unit, 1, "FAIL " ++ Nat.show(n) ++ " fft=" ++ U32.show(b1) ++ " ifft=" ++ U32.show(b2) ++ " ifft.fft=" ++ U32.show(b3) ++ " coset_ifft.coset_fft=" ++ U32.show(b4))
 
 def T.vec.step4(+log2: Nat, +n: Nat, +b1: U32, +b2: U32, +b3: U32, st: Cm) -> IO(Unit):
   Cm{a, arr, b4} = st
@@ -113,10 +101,21 @@ def T.vec.step0(+log2: Nat, +n: Nat, c: Cp) -> IO(Unit):
   Cp{arr, x} = c
   T.vec.step1(log2, n, T.cmp(n, 0n, (3n + n), Cm{Ntt.Ntt.fft(x, log2), arr, 0}))
 
-def T.vec(path: String, +log2: Nat) -> IO(Unit):
+def T.vec.cnt.go(ok: Bool, path: String, +log2: Nat, +c: U32, arr: Array<U32>) -> IO(Unit):
+  match ok:
+    case True{}:
+      T.vec.step0(log2, Nat.pow(2n, log2), T.extract(arr, log2, 3n))
+    case False{}:
+      IO.die(Unit, 1, "FAIL " ++ path ++ " count=" ++ U32.show(c))
+
+def T.vec.cnt(path: String, +log2: Nat, pr: Array<U32> & U32) -> IO(Unit):
+  (arr, +c) = pr
+  T.vec.cnt.go(U32.is_eq(c, U32.from_nat(Nat.pow(2n, log2))), path, log2, c, arr)
+
+def T.vec(+path: String, +log2: Nat) -> IO(Unit):
   do IO<Unit>:
     arr : Array<U32> <- Io.load_u32(path, (log2 + 6n), 15)
-    T.vec.step0(log2, Nat.pow(2n, log2), T.extract(arr, log2, 3n))
+    T.vec.cnt(path, log2, arr[15])
 
 # ---- QAP mode ----
 
@@ -151,7 +150,7 @@ def T.qap.run3(+log2: Nat, a: Array<U32>, href: Array<U32>, bc: Array<U32> & Arr
   (b, c) = bc
   T.cmp.bad(T.cmp(Nat.pow(2n, log2), 0n, 0n, Cm{Ntt.Ntt.qap_h(a, b, c, log2), href, 0}))
 
-def T.qap.run2(+log2: Nat, b: Array<U32>, c: Array<U32>, href: Array<U32>, pr: Array<U32> & (Array<U32> & Array<U32>)) -> U32:
+def T.qap.run2(+log2: Nat, href: Array<U32>, pr: Array<U32> & (Array<U32> & Array<U32>)) -> U32:
   (a, bc) = pr
   T.qap.run3(log2, a, href, bc)
 
@@ -160,7 +159,7 @@ def T.qap.report.go(ok: Bool, +log2: Nat, +bad: U32) -> IO(Unit):
     case True{}:
       IO.print("PASS qap_h d=2^" ++ Nat.show(log2))
     case False{}:
-      IO.print("FAIL qap_h d=2^" ++ Nat.show(log2) ++ " bad=" ++ U32.show(bad))
+      IO.die(Unit, 1, "FAIL qap_h d=2^" ++ Nat.show(log2) ++ " bad=" ++ U32.show(bad))
 
 def T.qap.report(+log2: Nat, +bad: U32) -> IO(Unit):
   T.qap.report.go(U32.is_eq(bad, 0), log2, bad)
@@ -169,7 +168,7 @@ def T.qap.go(+dir: String, +log2: Nat) -> IO(Unit):
   do IO<Unit>:
     abc : Array<U32> <- Io.load_u32(dir ++ "/bend/abc_evals.bin", (log2 + 6n), 0)
     href : Array<U32> <- Io.load_u32(dir ++ "/bend/h_ref.bin", (log2 + 4n), 0)
-    T.qap.report(log2, T.qap.run2(log2, Array.new(U32, 0n, 0), Array.new(U32, 0n, 0), href, T.qap.split(abc)))
+    T.qap.report(log2, T.qap.run2(log2, href, T.qap.split(abc)))
 
 def T.qap(+k: String) -> IO(Unit):
   +dir = "data/" ++ k

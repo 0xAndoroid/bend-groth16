@@ -66,12 +66,6 @@ class Gen:
         self.w("  match %s %s:" % (a, b))
         self.w("    case %s %s:" % (self.rec(a), self.rec(b)))
 
-    def head1(self, name, a="a"):
-        N = self.N
-        self.w("def %s.%s(%s: %s) -> %s:" % (N, name, a, N, N))
-        self.w("  match %s:" % a)
-        self.w("    case %s:" % self.rec(a))
-
     # ---- ops ----
     def gen_add(self):
         self.head2("add")
