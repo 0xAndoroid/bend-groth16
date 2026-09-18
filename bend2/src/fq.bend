@@ -2472,28 +2472,6 @@ def Fq.lo(x: Fq) -> U32:
     case Fq{l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15}:
       l0
 
-# drop limb 0, shift the rest down, top limb becomes 0
-def Fq.shift_down(x: Fq) -> Fq:
-  match x:
-    case Fq{l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15}:
-      Fq{l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, 0}
-
-# limb j of x (0 for j >= 16)
-def Fq.limb(j: Nat, x: Fq) -> U32:
-  match j:
-    case 0n:
-      Fq.lo(x)
-    case 1n+p:
-      Fq.limb(p, Fq.shift_down(x))
-
-# bits lo..lo+width-1 of a CANONICAL (non-Montgomery) x as a U32; width <= 16
-def Fq.bits_window(+x: Fq, +lo: Nat, width: Nat) -> U32:
-  +q = (lo / 16n)
-  +r = (lo % 16n)
-  +wlo = U32.shrn(Fq.limb(q, x), r)
-  +whi = U32.shln(Fq.limb((q + 1n), x), Nat.sub(16n, r))
-  U32.and(U32.or(wlo, whi), U32.sub(U32.shln(1, width), 1))
-
 def Fq.hexc(+n: U32) -> Char:
   Chr{U32.add(U32.add(n, 48), U32.mul(39, U32.shrn(U32.add(n, 6), 4n)))}
 

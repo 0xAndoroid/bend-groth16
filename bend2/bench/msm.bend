@@ -1,8 +1,9 @@
-# MSM benchmark on real proving-key points: G1 from data/18/bend/pk_a.bin (N <= 18; the
-# whole 2^18-point file is loaded so the first n points are the file's first n) or
+# MSM benchmark on real proving-key points: G1 from data/18/bend/pk_a.bin (N <= 18) or
 # pk_h.bin (N = 19; N = 20 duplicates the 2^19 pk_h points with different scalars), G2 from
-# pk_b2.bin; scalars = canonical witness.bin entries, cycled. Prints ms and the affine
-# result (must match across --threads 1 / default / MODE=gpu). Run from the repo root:
+# pk_b2.bin; scalars = canonical witness.bin entries, cycled. Every buffer is sized from the
+# record counts in header.bin, the whole file is read and the first n records are used.
+# Prints ms and the affine result (must match across --threads 1 / default / MODE=gpu).
+# Run from the repo root:
 #   Build: BEND_NO_TELEMETRY=1 ~/.bend/bin/bend bend2/bench/msm.bend -o msm
 #   Run:   MODE=cpu G=1 N=20 [C=12 FD=4] ./msm [--threads 1] ; MODE=gpu N=20 ./msm
 # C=0 / FD=99 mean "use the Msm defaults for this n".
@@ -12,6 +13,7 @@ import ../src/g1.bend as G
 import ../src/g2.bend as G2
 import ../src/msm.bend as Msm
 import ../src/bin_io.bend as Io
+import ../src/groth16.bend as P
 
 def env_nat.parse(m: Maybe<&2, U32>, +dflt: Nat) -> Nat:
   match m:
@@ -58,32 +60,43 @@ def B.dup(pr: Array<U32> & Array<U32>) -> Array<U32>:
   (a, b) = pr
   ANode{a, b}
 
-def B.points_big(twice: Bool) -> IO(Array<U32>):
+def B.points_big(twice: Bool, +d: Nat) -> IO(Array<U32>):
   match twice:
     case True{}:
       do IO<Array<U32>>:
-        a : Array<U32> <- Io.load_u32("data/18/bend/pk_h.bin", 24n, 0)
+        a : Array<U32> <- Io.load_u32("data/18/bend/pk_h.bin", d, 0)
         return B.dup(Array.clone(U32, a))
     case False{}:
-      Io.load_u32("data/18/bend/pk_h.bin", 24n, 0)
+      Io.load_u32("data/18/bend/pk_h.bin", d, 0)
 
-def B.points_g1.fin(small: Bool, +n: Nat) -> IO(Array<U32>):
+def B.points_g1.fin(small: Bool, +n: Nat, +da: Nat, +dh: Nat) -> IO(Array<U32>):
   match small:
     case True{}:
-      Io.load_u32("data/18/bend/pk_a.bin", 23n, 0)
+      Io.load_u32("data/18/bend/pk_a.bin", da, 0)
     case False{}:
-      B.points_big(Nat.is_eq(n, 20n))
+      B.points_big(Nat.is_eq(n, 20n), dh)
 
-# 2^N point slots: pk_a for N <= 18, pk_h for N = 19, pk_h twice for N = 20
-def B.points_g1(+n: Nat) -> IO(Array<U32>):
-  B.points_g1.fin(Nat.is_lt(n, 19n), n)
+# 2^N point slots: pk_a for N <= 18, pk_h for N = 19, pk_h twice for N = 20; da/dh = log2 of
+# the word buffer holding the whole pk_a / pk_h file
+def B.points_g1(+n: Nat, +da: Nat, +dh: Nat) -> IO(Array<U32>):
+  B.points_g1.fin(Nat.is_lt(n, 19n), n, da, dh)
 
-def B.points(g2: Bool, +n: Nat) -> IO(Array<U32>):
+def B.points(g2: Bool, +n: Nat, +h: P.Hdr) -> IO(Array<U32>):
   match g2:
     case True{}:
-      Io.load_u32("data/18/bend/pk_b2.bin", (n + 6n), 0)
+      match h:
+        case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
+          Io.load_u32("data/18/bend/pk_b2.bin", P.Groth.clog2((nb * 64 : U32)), 0)
     case False{}:
-      B.points_g1(n)
+      match h:
+        case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
+          B.points_g1(n, P.Groth.clog2((na * 32 : U32)), P.Groth.clog2((nh * 32 : U32)))
+
+# number of witness.bin entries (ni + nw)
+def B.nz(+h: P.Hdr) -> Nat:
+  match h:
+    case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
+      U32.to_nat((ni + nw : U32))
 
 def B.show_g1(r: Array<U32> & (Array<U32> & G.G1)) -> String:
   (pts, rest) = r
@@ -140,9 +153,12 @@ def main() -> IO(Unit):
     +c : Nat = B.pick(Nat.is_eq(c0, 0n), c0, Msm.Msm.pick_c(n))
     +fd : Nat = B.pick(Nat.is_eq(fd0, 99n), fd0, Msm.Msm.pick_fd(n, c))
     +g2 : Bool = Nat.is_eq(g, 2n)
-    pts : Array<U32> <- B.points(g2, ln)
-    w : Array<U32> <- Io.load_u32("data/18/bend/witness.bin", 22n, 0)
-    scs : Array<U32> = B.scalars(n, 0n, (Nat.pow(2n, 18n) + 2n), Array.new(U32, (ln + 4n), 0), R.Fr.from_array(w, 0n))
+    hdr : Array<U32> <- Io.load_u32("data/18/bend/header.bin", 3n, 0)
+    +h : P.Hdr = P.Hdr.read(hdr)
+    +nz : Nat = B.nz(h)
+    pts : Array<U32> <- B.points(g2, ln, h)
+    w : Array<U32> <- Io.load_u32("data/18/bend/witness.bin", P.Groth.clog2(U32.from_nat((nz * 16n))), 0)
+    scs : Array<U32> = B.scalars(n, 0n, nz, Array.new(U32, (ln + 4n), 0), R.Fr.from_array(w, 0n))
     t0 : Nat <- IO.now()
     +res : String = B.run(g2, String.eq(mode, "gpu"), pts, scs, n, c, fd)
     t1 : Nat <- IO.now()
