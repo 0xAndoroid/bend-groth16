@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "framework": "rapidsnark",
+  "versions": {
+    "snarkjs": "[binary.file]",
+    "circom": "2.2.3",
+    "node": "v22.23.2",
+    "rapidsnark": "v0.0.8"
+  },
+  "host": "c7883eee4d97",
+  "cpu": "AMD Ryzen Threadripper 9960X 24-Cores",
+  "threads": 48,
+  "git_head": "box",
+  "updated": "2026-09-18T06:49:53Z",
+  "prove": {
+    "10": {
+      "log2": 10,
+      "num_constraints": 1024,
+      "ms": 21.96,
+      "iters": 5,
+      "samples_ms": [
+        32.06,
+        31.94,
+        21.96,
+        21.44,
+        21.87
+      ],
+      "verified": true,
+      "zkey_bytes": 550460,
+      "timestamp": "2026-09-18T06:49:44Z"
+    },
+    "14": {
+      "log2": 14,
+      "num_constraints": 16384,
+      "ms": 60.48,
+      "iters": 5,
+      "samples_ms": [
+        62.0,
+        68.38,
+        60.13,
+        59.47,
+        60.48
+      ],
+      "verified": true,
+      "zkey_bytes": 8783420,
+      "timestamp": "2026-09-18T06:49:46Z"
+    },
+    "18": {
+      "log2": 18,
+      "num_constraints": 262144,
+      "ms": 643.86,
+      "iters": 3,
+      "samples_ms": [
+        624.67,
+        650.32,
+        643.86
+      ],
+      "verified": true,
+      "zkey_bytes": 140510780,
+      "timestamp": "2026-09-18T06:49:49Z"
+    },
+    "20": {
+      "log2": 20,
+      "num_constraints": 1048576,
+      "ms": 2030.545,
+      "iters": 2,
+      "samples_ms": [
+        2038.58,
+        2022.51
+      ],
+      "verified": true,
+      "zkey_bytes": 562038332,
+      "timestamp": "2026-09-18T06:49:53Z"
+    }
+  },
+  "notes": "rapidsnark prover CLI (C++ x86_64 asm, thread pool + OpenMP); wall time of one process launch = zkey+wtns load from disk + prove + JSON write (cold/file-inclusive). No witness solving (wtns pre-generated). Verified with snarkjs groth16 verify (untimed)."
+}

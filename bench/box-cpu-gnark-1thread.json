@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "framework": "gnark",
+  "versions": {
+    "gnark": "v0.16.3",
+    "gnark-crypto": "v0.21.0",
+    "go": "go1.25.7"
+  },
+  "host": "c7883eee4d97",
+  "cpu": "AMD Ryzen Threadripper 9960X 24-Cores",
+  "threads": 1,
+  "git_head": "box",
+  "updated": "2026-09-18T06:49:42Z",
+  "notes": "groth16.Prove (CPU) on gnark rows; time includes gnark constraint solver (solve_ms measured separately via ccs.Solve). Proof verified with gnark VK.",
+  "prove": {
+    "10": {
+      "log2": 10,
+      "num_constraints": 1024,
+      "ms": 35.340878,
+      "iters": 5,
+      "samples_ms": [
+        35.340878,
+        35.400747,
+        35.18837,
+        35.24243,
+        35.476361
+      ],
+      "first_prove_ms": 35.63592,
+      "solve_ms": 0.065629,
+      "setup_ms": 201.328496,
+      "pk_bytes": 395869,
+      "verified": true,
+      "gomaxprocs": 1,
+      "timestamp": "2026-09-18T06:49:37Z"
+    },
+    "14": {
+      "log2": 14,
+      "num_constraints": 16384,
+      "ms": 321.183466,
+      "iters": 5,
+      "samples_ms": [
+        320.815446,
+        320.978459,
+        321.183466,
+        321.403926,
+        321.877635
+      ],
+      "first_prove_ms": 321.309826,
+      "solve_ms": 0.637404,
+      "setup_ms": 3072.577224,
+      "pk_bytes": 6324829,
+      "verified": true,
+      "gomaxprocs": 1,
+      "timestamp": "2026-09-18T06:49:42Z"
+    }
+  }
+}
