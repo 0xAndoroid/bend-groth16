@@ -21,8 +21,8 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 |---|---|---|---|
 | 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (all integrated) |
 | 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (integrated; box 51392026 pika-bend-5090 $0.628/h, running) · [after w0f] bend2-field-curve 41379b12 (integrated; tests PASS 64/64/32/16; review e6516c76 astra) · bend2-export 53ed8004 (integrated; K=18 export 4.3 s, 308 MB, 0 round-trip mismatches) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
-| 2 | bend2-msm 3492204e · bend2-ntt 876e5746 · bend2-prover a581bb4c (integrated: K=4 + K=10 naive OK+EQUAL; G2Aff.to_array bug fixed on integration by orchestrator) | 1 | msm/ntt building |
-| 3 | bend2-cuda-smoke 20d69844 (box: data gen, tests, field/g1 benches CPU48 + CUDA) · [after msm/ntt] flip prover imports → K=4/10/14/18 OK+EQUAL on mini (CPU 1/10 thr, Metal) + box (CPU48, CUDA) | 2 | cuda-smoke building |
+| 2 | bend2-msm 3492204e (building) · bend2-ntt 876e5746 (integrated; review 3052ee89 astra) · bend2-prover a581bb4c (integrated: K=4 + K=10 naive OK+EQUAL; G2Aff.to_array bug fixed on integration by orchestrator) | 1 | msm/ntt building |
+| 3 | bend2-cuda-smoke 20d69844 (integrated: CUDA works on sm_120; data K=4..20 on box) · [after msm/ntt] flip prover imports → K=4/10/14/18 OK+EQUAL on mini (CPU 1/10 thr, Metal) + box (CPU48, CUDA) | 2 | cuda-smoke building |
 | 4 | quiet-host CPU bench rerun (all mini comparators + Bend, serial) · "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
 
 ## Current wave spec (wave 0)
@@ -64,6 +64,8 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - rapidsnark (10 thr) 2^10/14/18/20: 20.8 / 151 / 2723 / 9792 ms; snarkjs 402 / 1419 / 18425 / 59408 ms (under load; zkey load included in wall). circom constraint counts exact.
 - Bend 2 (2.0.5): montmul 2^24 batch 1914 ms 1-thr (8.8 M/s), 440 ms 10-thr (38 M/s), Metal 78 ms (~200 M/s; chained ~670 M/s). Arrays 2^24 gather 62 ms; 8 MB file→Array 30 ms. No argv; Nat literal ≥10000n crashes checker; Metal call overhead ~55 ms.
 - BOX (Threadripper 9960X 24C/48T + RTX 5090, $0.628/h): gnark CPU prove 2^10/14/18/20 = 3.6/19/189/666 ms (1 thr 2^14 321 ms); rapidsnark CLI cold 22/60/644/2031 ms; snarkjs 373/669/2894/10663 ms. GPU: gnark+icicle 26/31/48/203 ms (pinned 26/30/44/181); ICICLE-SNARK 20/21/41/114 ms. Primitives 5090: ICICLE MSM 2^20 7.17 ms (device-resident), sppark MSM 2^20 92 ms (incl H2D); ICICLE NTT 2^20 0.62 ms. Bend 2 CUDA target builds on box (clang-19 needed, NVRTC JIT).
+- Bend 2 NTT (mini): fft 2^20 1987/529/3381 ms (1 thr/10 thr/Metal — Metal SLOWER); 2^16 135/47/392; qap_h 2^19 8836/2646/2220 ms. gnark FFT 2^20 = 43 ms (10 thr) → Bend ~12× slower on CPU NTT.
+- Bend 2 on BOX: CUDA works (NVRTC sm_120, clang-19). field_mul 2^28: CPU48 2098 ms (128 M/s) vs CUDA 19 ms (14 G/s); 2^30 CUDA 71 ms. g1_add 2^26: CPU48 6776 ms vs CUDA 65 ms (1.03 G adds/s); 2^20 CPU48 134 ms vs CUDA 4 ms. Checksums equal.
 - Bend 2 field lane: Fr.mul 2^24 1829/352/73 ms (1 thr/10 thr/Metal) = 9.2/48/230 M/s; G1.add_mixed 2^20 1570/301/99 ms = 0.67/3.5/10.6 M/s.
 - Bend 1/HVM2: u24 only, 12-bit limbs ×22; 254-bit schoolbook mul ≈ 51k interactions; 2^16 muls = 4.98 s on 8 thr compiled (~13k muls/s; ~2.7k 1-thr). Tree reduce scales 5.1× on 8 thr; loops 0×. Embedded literals cap 2^16 (compiled)/2^18 (interp); IO/FS/read_file works (~1 s per 2^18 limbs). Heap prealloc 6.4 GB RSS per compiled process.
 
