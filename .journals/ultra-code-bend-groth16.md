@@ -87,3 +87,9 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 
 ## Playbook
 plan waves → spec wave → build → review → integrate → verify → fix(≤2) → amend → … → final review → merge main → report. Skips logged as `skip: <reason>`.
+
+## 03:58 — GPU switch + w4fix merged
+- `d524023` prove.bend: `BENDG_GPU=1` → `!` dispatch per MSM phase + qap_h (6 dispatches/run). Mini Metal K=4 1079 ms (CPU 84), K=10 13397 ms (CPU 1103), OK+EQUAL both. Closes audit finding "zero GPU dispatches".
+- `2c12d9c` merged w4fix (run.sh runs 6 tests, exits non-zero on FAIL / PASS 0 / empty vectors; dead helpers dropped).
+- b3ef68f2 (prover-bench) messaged to re-merge and produce gpu rows with BENDG_GPU=1 (mini Metal, box CUDA).
+- Remaining: b3ef68f2 → quiet-host rerun → report lane → final review → merge main → teardown.
