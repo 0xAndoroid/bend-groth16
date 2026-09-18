@@ -16,7 +16,7 @@ Raw lines: `/root/w3/results.txt`, `/root/w3/smi.log`, `/root/step1.log` on the 
 - Missing/stale `.gpu` → `bend: compiling the GPU program (… is missing or stale)` at launch, process wall 0.49 s vs **0.12 s** cached (the 0.12 s is CUDA context + module load; hello-world-sized).
 - `CONCURRENT_MANAGED_ACCESS` satisfied (managed-memory path runs, no trap); `--gpu 8GB` accepted, same ms; `--gpu off --threads 48` on the same binary reproduces the CPU numbers.
 - **Every GPU checksum equals the CPU checksum of the same (N, FD)** (g1_add's `sum` depends on FD — the leaf chains start at different points; field_mul's `xor` does not).
-- nvidia-smi peak `memory.used` during the runs: **1169 MiB** (1 Hz sampling; idle 2 MiB).
+- nvidia-smi peak `memory.used` during the runs: **1169 MiB** first pass, **1327 MiB** on the `bend-cuda.sh` re-run (1 Hz sampling; idle 2 MiB).
 
 ## `bend2/tests/run.sh` (CPU, box): PASS
 
