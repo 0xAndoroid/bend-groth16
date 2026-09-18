@@ -3,14 +3,13 @@
 // `ntt_cuda::NTT` is in-place on a HOST slice: each sample includes H2D + kernel + D2H and a device sync.
 use ark_bn254::Fr;
 use ark_ff::UniformRand;
-use ark_std::rand::thread_rng;
 use sppark::NTTInputOutputOrder;
 use std::time::Instant;
 
 fn main() {
     let a: Vec<u32> = std::env::args().skip(1).map(|s| s.parse().unwrap()).collect();
     let (min, max, iters) = (a.get(0).copied().unwrap_or(10), a.get(1).copied().unwrap_or(20), a.get(2).copied().unwrap_or(10) as usize);
-    let mut rng = thread_rng();
+    let mut rng = ark_std::test_rng();
     print!("{{");
     for k in min..=max {
         let n = 1usize << k;

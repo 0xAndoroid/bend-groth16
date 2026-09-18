@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "framework": "gnark-icicle",
+  "versions": {
+    "gnark": "v0.16.3",
+    "gnark-crypto": "v0.21.0",
+    "go": "go1.25.7",
+    "icicle-gnark": "v3.2.2"
+  },
+  "host": "c7883eee4d97",
+  "cpu": "AMD Ryzen Threadripper 9960X 24-Cores",
+  "gpu": "NVIDIA GeForce RTX 5090, 595.84",
+  "threads": 47,
+  "git_head": "box",
+  "updated": "2026-09-18T06:53:53Z",
+  "notes": "icicleGroth.Prove on gnark rows; time includes gnark witness solving + H2D of witness-dependent vectors (PK vectors pinned only if pin_to_gpu); first_prove_ms includes ICICLE backend load + device warm-up. Proof verified with native gnark VK.",
+  "prove": {
+    "10": {
+      "log2": 10,
+      "num_constraints": 1024,
+      "ms": 26.460942,
+      "iters": 5,
+      "samples_ms": [
+        26.460942,
+        26.744006,
+        26.204017,
+        26.242956,
+        26.511768
+      ],
+      "first_prove_ms": 289.294994,
+      "solve_ms": 0.153009,
+      "setup_ms": 19.266762,
+      "pk_bytes": 395869,
+      "verified": true,
+      "gomaxprocs": 47,
+      "pin_to_gpu": false,
+      "timestamp": "2026-09-18T06:53:40Z"
+    },
+    "14": {
+      "log2": 14,
+      "num_constraints": 16384,
+      "ms": 31.20959,
+      "iters": 5,
+      "samples_ms": [
+        28.87758,
+        30.619447,
+        31.20959,
+        31.294748,
+        32.137259
+      ],
+      "first_prove_ms": 30.399078,
+      "solve_ms": 1.460697,
+      "setup_ms": 170.476473,
+      "pk_bytes": 6324829,
+      "verified": true,
+      "gomaxprocs": 47,
+      "pin_to_gpu": false,
+      "timestamp": "2026-09-18T06:53:41Z"
+    },
+    "18": {
+      "log2": 18,
+      "num_constraints": 262144,
+      "ms": 48.332544,
+      "iters": 3,
+      "samples_ms": [
+        47.788229,
+        48.332544,
+        56.528423
+      ],
+      "first_prove_ms": 270.998875,
+      "solve_ms": 9.696506,
+      "setup_ms": 1859.21989,
+      "pk_bytes": 101188189,
+      "verified": true,
+      "gomaxprocs": 47,
+      "pin_to_gpu": false,
+      "timestamp": "2026-09-18T06:53:43Z"
+    },
+    "20": {
+      "log2": 20,
+      "num_constraints": 1048576,
+      "ms": 203.240221,
+      "iters": 3,
+      "samples_ms": [
+        203.240221,
+        188.274598,
+        228.754547
+      ],
+      "first_prove_ms": 200.25996,
+      "solve_ms": 40.622933,
+      "setup_ms": 7333.067428,
+      "pk_bytes": 404750941,
+      "verified": true,
+      "gomaxprocs": 47,
+      "pin_to_gpu": false,
+      "timestamp": "2026-09-18T06:53:53Z"
+    }
+  }
+}

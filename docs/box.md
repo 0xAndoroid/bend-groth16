@@ -51,3 +51,46 @@ SquareChain(2^K), BN254, median wall ms, every proof verified. What each timer i
 - rapidsnark numbers are process launches (file-inclusive): the 562 MB K=20 zkey is read from page cache each run, so this is an upper bound on its in-memory prove time (the CLI has no warm-prove mode; see `docs/comparators.md`).
 - snarkjs K=20 is a single run (10.7 s); QAP domain for snarkjs is 2N (adds public/constant rows), gnark uses N.
 - Files: `bench/box-cpu-gnark.json`, `bench/box-cpu-gnark-1thread.json`, `bench/box-cpu-rapidsnark.json`, `bench/box-cpu-snarkjs.json`.
+
+## Results — RTX 5090 provers
+
+Same SquareChain rows; median wall ms; every proof verified (gnark VK / snarkjs VK).
+
+| K | gnark CPU (ref, all cores) | **gnark v0.16.3 + icicle-gnark v3.2.2** (`icicleGroth.Prove`, PK not pinned) | same, `WithPinKeysToGPU` | **ICICLE-SNARK bf00385** (`--device CUDA`, zkey cached) | ICICLE-SNARK cold (1st prove, zkey parse + H2D) |
+|---|---|---|---|---|---|
+| 10 | 3.6 | 26.5 (5) | 26.1 (5) | 19.7 (5) | 134.7 |
+| 14 | 19.0 | 31.2 (5) | 30.1 (5) | 21.3 (5) | 26.1 |
+| 18 | 189.4 | **48.3** (3) | 44.4 (3) | **41.3** (5) | 73.1 |
+| 20 | 665.7 | **203.2** (3) | 180.6 (3) | **114.3** (5) | 232.9 |
+
+- gnark+ICICLE time = gnark constraint solver (`solve_ms` 0.2 / 1.5 / 9.7 / 40.6 ms — CPU) + H2D of witness-dependent vectors + GPU MSMs/NTTs + proof D2H; PK vectors are re-uploaded each proof unless pinned. Speed-up vs gnark CPU on this box: K=18 3.9× (4.3× pinned), K=20 3.3× (3.7× pinned); K≤14 is *slower* than CPU (≈26 ms fixed launch/transfer floor). Admission gate passed: build with `-DCUDA_ARCH=120` on CUDA 12.8, valid verified proofs at all K. First prove of a process includes ICICLE backend load + device warm-up (`first_prove_ms` 289 ms at K=10).
+- ICICLE-SNARK: worker's own `proof took` timer; includes reading `witness.wtns` from disk (32 MB at K=20) and writing proof/public JSON, excludes zkey parsing (cached). Driver-side wall agrees within 0.1 ms. No witness solving (Circom wtns pre-generated) — so vs gnark+ICICLE subtract ~41 ms of solver at K=20 for a like-for-like view. Experimental per upstream README.
+- Files: `bench/box-gpu-gnark-icicle.json`, `bench/box-gpu-gnark-icicle-pinned.json`, `bench/box-gpu-icicle-snark.json`.
+
+## Results — RTX 5090 primitives (BN254 G1 MSM, Fr radix-2 NTT; median of 10 after 1 warm-up)
+
+| 2^k | ICICLE v4 MSM device-resident (kernel only) | ICICLE v4 MSM host scalars (H2D scalars, cached bases) | sppark v0.1.15 MSM `multi_scalar_mult_arkworks` (H2D points+scalars each call) | ICICLE v4 NTT fwd device in-place | ICICLE v4 NTT fwd host in/out | sppark NTT fwd host in-place (H2D+D2H) |
+|---|---|---|---|---|---|---|
+| 10 | 2.28 | 2.91 | 1.91 | 0.025 | 0.193 | 0.029 |
+| 12 | 2.61 | 3.17 | 2.05 | 0.025 | 0.144 | 0.038 |
+| 14 | 2.84 | 3.68 | 3.04 | 0.030 | 0.193 | 0.093 |
+| 16 | 2.78 | 3.80 | 7.91 | 0.055 | 0.317 | 0.217 |
+| 18 | 3.55 | 4.83 | 24.7 | 0.140 | 0.739 | 0.689 |
+| 19 | 4.83 | 5.20 | 47.2 | 0.249 | 1.373 | 1.335 |
+| 20 | **7.17** | 7.39 | 92.0 | **0.622** | 2.96 | 2.63 |
+
+- ICICLE (open-icicle v4.0.0, `-DCUDA_ARCH=120`, our `comparators/gpu/icicle-prim`): synchronous calls (`is_async=false`), precompute factor 1, `c` auto, batch 1; device result == host-path result at every size; NTT round-trip `ifft(fft(x)) == x` at every size; twiddle domain for 2^20 initialised once (1.1 ms, untimed). MSM has a ≈2.3 ms floor below 2^17 (kernel-launch/bucket setup bound). ICICLE's stock criterion benches were not used (their timer is async with sync outside the loop).
+- sppark MSM is the shipped `poc/msm-cuda` criterion bench (`BENCH_NPOW=k`, `--features bn254`; sm_120 selected by sppark's nvcc probe); its API takes host arkworks 0.3 slices and copies points **and** scalars every call, so it is host-inclusive and not comparable to the device-resident ICICLE column (2^20: 64 MB points + 32 MB scalars per call). sppark ships no BN254 NTT timing bench; `comparators/gpu/sppark/ntt_timer.rs` times `ntt_cuda::NTT/iNTT` (host in-place, round-trip checked).
+- File: `bench/box-gpu-primitives.json` (`icicle.*`, `sppark.*`, per-size samples).
+
+## Bend 2 on the box (for the Bend-CUDA lane)
+
+- Installed with `curl -fsSL https://bend-lang.com/install.sh | BEND_NO_TELEMETRY=1 sh` → `/root/.bend` (`/root/.bend/bin/bend` → `app/2.0.5/…`; installs bun into `/root/.bun`). `bend --version` = **bend 2.0.5**. PATH: `export PATH=/root/.bend/bin:/root/.bun/bin:/usr/local/cuda/bin:$PATH` (only added to `.bashrc`).
+- CLI: `bend file.bend` = check + run (interpreter, 74 ms for hello); `bend file.bend -o out` = native binary; `-o out.c` emits one C file.
+- C target: `bend hello.bend -o hello` → 1.1 MB static-ish binary (libc/libm only), prints. 0.3 s build.
+- CUDA target: a program using `!` (`pow2!(20n)`) needs **clang ≥ 19** — stock Ubuntu clang 18 is rejected ("bend needs clang 19"). Installed `clang-19` via `bash llvm.sh 19` (apt.llvm.org). Then `bend pow2.bend -o pow2` builds in 0.76 s, prints 1048576, links `libcuda.so.1` + `libnvrtc.so.12` (kernels are NVRTC-JIT'd at run time; emitted C contains `__global__ void bend_dev(...)`). Run 0.12 s.
+- Smoke script: `comparators/box/bend-smoke.sh`; files in `/root/bendtest/`.
+
+## Cost / time
+
+Started 05:47 UTC; all comparator runs done 07:00 UTC (~1.3 h ≈ $0.8 of the $40 budget at $0.628/h). Box left running for the Bend-CUDA lane.

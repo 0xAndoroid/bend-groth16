@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "framework": "icicle-snark",
+  "versions": {
+    "icicle-snark": "bf00385",
+    "circom": "2.2.3",
+    "snarkjs": "0.7.6"
+  },
+  "host": "c7883eee4d97",
+  "cpu": "AMD Ryzen Threadripper 9960X 24-Cores",
+  "gpu": "NVIDIA GeForce RTX 5090, 595.84",
+  "threads": 48,
+  "git_head": "box",
+  "updated": "2026-09-18T06:54:09Z",
+  "prove": {
+    "10": {
+      "log2": 10,
+      "num_constraints": 1024,
+      "ms": 19.72,
+      "iters": 5,
+      "samples_ms": [
+        20.18,
+        19.72,
+        19.76,
+        19.7,
+        19.72
+      ],
+      "wall_ms": 19.74,
+      "wall_samples_ms": [
+        20.21,
+        19.74,
+        19.77,
+        19.71,
+        19.73
+      ],
+      "first_prove_ms": 134.66,
+      "first_wall_ms": 146.25,
+      "verified": true,
+      "device": "CUDA",
+      "timestamp": "2026-09-18T06:54:07Z"
+    },
+    "14": {
+      "log2": 14,
+      "num_constraints": 16384,
+      "ms": 21.34,
+      "iters": 5,
+      "samples_ms": [
+        30.73,
+        21.34,
+        21.14,
+        21.18,
+        21.35
+      ],
+      "wall_ms": 21.38,
+      "wall_samples_ms": [
+        30.76,
+        21.38,
+        21.17,
+        21.21,
+        21.38
+      ],
+      "first_prove_ms": 26.1,
+      "first_wall_ms": 26.14,
+      "verified": true,
+      "device": "CUDA",
+      "timestamp": "2026-09-18T06:54:07Z"
+    },
+    "18": {
+      "log2": 18,
+      "num_constraints": 262144,
+      "ms": 41.25,
+      "iters": 5,
+      "samples_ms": [
+        50.9,
+        41.52,
+        40.85,
+        40.85,
+        41.25
+      ],
+      "wall_ms": 41.29,
+      "wall_samples_ms": [
+        50.95,
+        41.57,
+        40.9,
+        40.88,
+        41.29
+      ],
+      "first_prove_ms": 73.05,
+      "first_wall_ms": 73.11,
+      "verified": true,
+      "device": "CUDA",
+      "timestamp": "2026-09-18T06:54:08Z"
+    },
+    "20": {
+      "log2": 20,
+      "num_constraints": 1048576,
+      "ms": 114.32,
+      "iters": 5,
+      "samples_ms": [
+        123.27,
+        114.32,
+        113.42,
+        114.56,
+        112.38
+      ],
+      "wall_ms": 114.4,
+      "wall_samples_ms": [
+        123.34,
+        114.4,
+        113.49,
+        114.64,
+        112.44
+      ],
+      "first_prove_ms": 232.89,
+      "first_wall_ms": 232.98,
+      "verified": true,
+      "device": "CUDA",
+      "timestamp": "2026-09-18T06:54:09Z"
+    }
+  },
+  "notes": "ICICLE-SNARK worker, --device CUDA, one long-lived process; ms = worker's `proof took` timer with zkey cached on device (includes .wtns read from disk + proof/public JSON write; excludes zkey parse). first_prove_ms = cold command incl. zkey parse + H2D. wall_ms = driver-side wall around the command. Experimental (README excludes production use). Verified with snarkjs groth16 verify."
+}
