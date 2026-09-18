@@ -9,8 +9,10 @@
 use icicle_bn254::curve::{G1Affine, G1Projective, ScalarField};
 use icicle_core::msm::{msm, precompute_bases, MSMConfig};
 use icicle_core::ntt::{get_root_of_unity, initialize_domain, ntt, ntt_inplace, NTTConfig, NTTDir, NTTInitDomainConfig};
+use icicle_core::projective::Projective;
+use icicle_core::bignum::BigNum;
 use icicle_core::traits::GenerateRandom;
-use icicle_runtime::memory::{DeviceVec, HostOrDeviceSlice, HostSlice};
+use icicle_runtime::memory::{DeviceVec, HostSlice};
 use icicle_runtime::{device::Device, runtime::load_backend_from_env_or_default, set_device};
 use serde_json::{json, Value};
 use std::time::Instant;

@@ -35,3 +35,19 @@ Rented 2026-09-18 05:47 UTC by lane `bend-groth16 · w1 gpu-box`. **Not destroye
 ## Circuit check
 
 `snarkjs r1cs info` per K (`/root/art/square-K/r1cs-info.txt`): constraints = 2^K exactly, wires = 2^K + 2, 1 private input, 1 output, 0 public inputs. gnark runner asserts `GetNbConstraints() == N`.
+
+## Results — box CPU (Threadripper 9960X, 24C/48T; container exposes GOMAXPROCS=47)
+
+SquareChain(2^K), BN254, median wall ms, every proof verified. What each timer includes differs — read the row label.
+
+| K | gnark v0.16.3 all cores (prove incl. solver) | gnark GOMAXPROCS=1 | rapidsnark v0.0.8 CLI (cold: zkey+wtns load + prove + write) | snarkjs 0.7.6 CLI (cold, node) |
+|---|---|---|---|---|
+| 10 | **3.6** (5 runs; solve 0.5) | 35.3 | 22.0 (5) | 372.9 (5) |
+| 14 | **19.0** (5; solve 1.0) | 321.2 | 60.5 (5) | 669.1 (5) |
+| 18 | **189.4** (3; solve 9.7) | — | 643.9 (3) | 2894 (2) |
+| 20 | **665.7** (3; solve 43.2) | — | 2031 (2) | 10663 (1) |
+
+- gnark: `groth16.Setup` 19 / 151 / 1872 / 7339 ms; raw PK 0.39 MB (K=10) … see `pk_bytes` in the JSON; first (cold) prove within ±5 % of warm.
+- rapidsnark numbers are process launches (file-inclusive): the 562 MB K=20 zkey is read from page cache each run, so this is an upper bound on its in-memory prove time (the CLI has no warm-prove mode; see `docs/comparators.md`).
+- snarkjs K=20 is a single run (10.7 s); QAP domain for snarkjs is 2N (adds public/constant rows), gnark uses N.
+- Files: `bench/box-cpu-gnark.json`, `bench/box-cpu-gnark-1thread.json`, `bench/box-cpu-rapidsnark.json`, `bench/box-cpu-snarkjs.json`.

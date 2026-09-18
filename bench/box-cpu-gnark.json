@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "framework": "gnark",
+  "versions": {
+    "gnark": "v0.16.3",
+    "gnark-crypto": "v0.21.0",
+    "go": "go1.25.7"
+  },
+  "host": "c7883eee4d97",
+  "cpu": "AMD Ryzen Threadripper 9960X 24-Cores",
+  "threads": 47,
+  "git_head": "box",
+  "updated": "2026-09-18T06:49:37Z",
+  "notes": "groth16.Prove (CPU) on gnark rows; time includes gnark constraint solver (solve_ms measured separately via ccs.Solve). Proof verified with gnark VK.",
+  "prove": {
+    "10": {
+      "log2": 10,
+      "num_constraints": 1024,
+      "ms": 3.589683,
+      "iters": 5,
+      "samples_ms": [
+        4.147217,
+        3.589683,
+        2.85969,
+        3.485587,
+        3.692707
+      ],
+      "first_prove_ms": 3.730444,
+      "solve_ms": 0.490123,
+      "setup_ms": 19.365266,
+      "pk_bytes": 395869,
+      "verified": true,
+      "gomaxprocs": 47,
+      "timestamp": "2026-09-18T06:49:23Z"
+    },
+    "14": {
+      "log2": 14,
+      "num_constraints": 16384,
+      "ms": 18.963184,
+      "iters": 5,
+      "samples_ms": [
+        18.966198,
+        19.80945,
+        16.406287,
+        17.061326,
+        18.963184
+      ],
+      "first_prove_ms": 18.468714,
+      "solve_ms": 1.024483,
+      "setup_ms": 151.282315,
+      "pk_bytes": 6324829,
+      "verified": true,
+      "gomaxprocs": 47,
+      "timestamp": "2026-09-18T06:49:23Z"
+    },
+    "18": {
+      "log2": 18,
+      "num_constraints": 262144,
+      "ms": 189.436684,
+      "iters": 3,
+      "samples_ms": [
+        189.436684,
+        192.763695,
+        173.661383
+      ],
+      "first_prove_ms": 185.229178,
+      "solve_ms": 9.68763,
+      "setup_ms": 1871.704636,
+      "pk_bytes": 101188189,
+      "verified": true,
+      "gomaxprocs": 47,
+      "timestamp": "2026-09-18T06:49:26Z"
+    },
+    "20": {
+      "log2": 20,
+      "num_constraints": 1048576,
+      "ms": 665.690979,
+      "iters": 3,
+      "samples_ms": [
+        665.690979,
+        672.719641,
+        643.713805
+      ],
+      "first_prove_ms": 645.481079,
+      "solve_ms": 43.198079,
+      "setup_ms": 7339.151223,
+      "pk_bytes": 404750941,
+      "verified": true,
+      "gomaxprocs": 47,
+      "timestamp": "2026-09-18T06:49:37Z"
+    }
+  }
+}

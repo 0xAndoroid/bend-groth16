@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "framework": "snarkjs",
+  "versions": {
+    "snarkjs": "[binary.file]",
+    "circom": "2.2.3",
+    "node": "v22.23.2"
+  },
+  "host": "c7883eee4d97",
+  "cpu": "AMD Ryzen Threadripper 9960X 24-Cores",
+  "threads": 48,
+  "git_head": "box",
+  "updated": "2026-09-18T06:50:18Z",
+  "prove": {
+    "10": {
+      "log2": 10,
+      "num_constraints": 1024,
+      "ms": 372.89,
+      "iters": 5,
+      "samples_ms": [
+        374.43,
+        372.71,
+        367.56,
+        373.63,
+        372.89
+      ],
+      "verified": true,
+      "zkey_bytes": 550460,
+      "timestamp": "2026-09-18T06:49:56Z"
+    },
+    "14": {
+      "log2": 14,
+      "num_constraints": 16384,
+      "ms": 669.09,
+      "iters": 5,
+      "samples_ms": [
+        674.52,
+        674.85,
+        655.3,
+        669.09,
+        649.63
+      ],
+      "verified": true,
+      "zkey_bytes": 8783420,
+      "timestamp": "2026-09-18T06:50:01Z"
+    },
+    "18": {
+      "log2": 18,
+      "num_constraints": 262144,
+      "ms": 2894.37,
+      "iters": 2,
+      "samples_ms": [
+        2911.84,
+        2876.9
+      ],
+      "verified": true,
+      "zkey_bytes": 140510780,
+      "timestamp": "2026-09-18T06:50:08Z"
+    },
+    "20": {
+      "log2": 20,
+      "num_constraints": 1048576,
+      "ms": 10663.41,
+      "iters": 1,
+      "samples_ms": [
+        10663.41
+      ],
+      "verified": true,
+      "zkey_bytes": 562038332,
+      "timestamp": "2026-09-18T06:50:18Z"
+    }
+  },
+  "notes": "snarkjs groth16 prove CLI (node, wasm+workers); wall time of one process launch = zkey+wtns load from disk + prove + JSON write (cold/file-inclusive). No witness solving (wtns pre-generated). Verified with snarkjs groth16 verify (untimed)."
+}
