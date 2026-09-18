@@ -18,7 +18,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 ## Wave table
 | wave | shards | depends on | status |
 |---|---|---|---|
-| 0 | A bend-research (astra) · B bend-install-probe (fable) · C arkworks-ref (fable) · D prover-research (astra) · E circom-snarkjs-rapidsnark (fable) | — | building |
+| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) | — | building (A integrated) |
 | 1 | Bend field arithmetic Fr/Fq (Montgomery, limbs) + data loader · gnark bench · bellperson bench · vast box + ICICLE bench | 0 | draft |
 | 2 | Bend G1/G2 ops · Bend MSM (Pippenger) · Bend NTT | 1 | draft |
 | 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
@@ -32,7 +32,8 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - E: `comparators/circom/**`, `bench/snarkjs-*.json`, `bench/rapidsnark-*.json`. circom SquareChain, ptau, zkey, snarkjs + rapidsnark timings.
 
 ## Amendments log
-(none)
+- amend: bend-lang.com now ships **Bend 2** (bendlang/bend 2.0.5, 2026-09-17; HigherOrderCO/Bend redirects). Bend 1/HVM2 (bend-lang 0.2.38 + hvm 2.0.22) is dead since 2024-08 (u24-only, 64-node CUDA def cap). PRIMARY target → Bend 2 (U32, in-place arrays, C/Metal/CUDA). Added shard w0f (Bend 2 research+probe). w0b stays on Bend 1 as a legacy data point. Report must state the version boundary.
+- skip: w0a review — doc-only shard, orchestrator read sections 1–4; corrections folded by w0f if any.
 
 ## Verification matrix
 | id | wave | command/probe | expected | verifier | keep/kill | evidence |
