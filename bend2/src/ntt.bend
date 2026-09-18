@@ -156,19 +156,21 @@ def Ntt.early.zip(l: NTree, r: NTree, +lm: Nat, +w: F.Fr) -> NTree & NTree:
     case NNode{l1, r1} NLeaf{b}:
       (NNode{l1, r1}, NLeaf{b})
 
-# descend d levels (q = subtree index), then zip with w_q = ws^q, ws = ω_{2^(s+1)}
-def Ntt.early(d: Nat, t: NTree, +q: Nat, +lm: Nat, +ws: F.Fr, +bits: Nat) -> NTree & NTree:
+# descend d levels, then zip the subtree's halves with w = ws^q (q = subtree index, built
+# top-down: left child w^2, right child w^2 ws), ws = ω_{2^(s+1)}
+def Ntt.early(d: Nat, t: NTree, +w: F.Fr, +lm: Nat, +ws: F.Fr) -> NTree & NTree:
   match d:
     case 0n:
       match t:
         case NNode{l, r}:
-          Ntt.early.zip(l, r, lm, Ntt.pow(ws, q, bits))
+          Ntt.early.zip(l, r, lm, w)
         case NLeaf{a}:
           (NLeaf{a}, NLeaf{Array.new(U32, 0n, 0)})
     case 1n++p:
       match t:
         case NNode{l, r}:
-          x y = Ntt.early(p, l, (2n * q), lm, ws, bits) Ntt.early(p, r, (2n * q + 1n), lm, ws, bits)
+          +w2 = F.Fr.sqr(w)
+          x y = Ntt.early(p, l, w2, lm, ws) Ntt.early(p, r, F.Fr.mul(w2, ws), lm, ws)
           Ntt.join2(x, y)
         case NLeaf{a}:
           (NLeaf{a}, NLeaf{Array.new(U32, 0n, 0)})
@@ -222,15 +224,16 @@ def Ntt.late.leaf(a: Array<U32>, b: Array<U32>, +lm: Nat, +h: Nat, w: F.Fr, +rat
   +nq = (Nat.pow(2n, lm) / (2n * h))
   Ntt.late.b(b, h, nq, ratio, Ntt.bfr(nq, 0n, h, 0n, ratio, NBr{a, Array.new(U32, (lm + 4n), 0), Array.new(U32, (lm + 4n), 0), w}))
 
-# descend d = fd-1 levels (c = pair index), then butterfly the leaf pair; start twiddle ω_n^(c m)
-def Ntt.late(d: Nat, t: NTree, +c: Nat, +lm: Nat, +h: Nat, +wn: F.Fr, +ratio: F.Fr, +bits: Nat) -> NTree & NTree:
+# descend d = fd-1 levels, then butterfly the leaf pair c with start twiddle w = ω_n^(c m)
+# (built top-down: left child w^2, right child w^2 wm, wm = ω_n^m)
+def Ntt.late(d: Nat, t: NTree, +w: F.Fr, +lm: Nat, +h: Nat, +wm: F.Fr, +ratio: F.Fr) -> NTree & NTree:
   match d:
     case 0n:
       match t:
         case NNode{l, r}:
           match l r:
             case NLeaf{a} NLeaf{b}:
-              Ntt.late.leaf(a, b, lm, h, Ntt.pow(wn, (c * Nat.pow(2n, lm)), bits), ratio)
+              Ntt.late.leaf(a, b, lm, h, w, ratio)
             case NLeaf{a} NNode{l2, r2}:
               (NLeaf{a}, NNode{l2, r2})
             case NNode{l1, r1} NLeaf{b}:
@@ -242,7 +245,8 @@ def Ntt.late(d: Nat, t: NTree, +c: Nat, +lm: Nat, +h: Nat, +wn: F.Fr, +ratio: F.
     case 1n++p:
       match t:
         case NNode{l, r}:
-          x y = Ntt.late(p, l, (2n * c), lm, h, wn, ratio, bits) Ntt.late(p, r, (2n * c + 1n), lm, h, wn, ratio, bits)
+          +w2 = F.Fr.sqr(w)
+          x y = Ntt.late(p, l, w2, lm, h, wm, ratio) Ntt.late(p, r, F.Fr.mul(w2, wm), lm, h, wm, ratio)
           Ntt.join2(x, y)
         case NLeaf{a}:
           (NLeaf{a}, NLeaf{Array.new(U32, 0n, 0)})
@@ -252,9 +256,9 @@ def Ntt.late(d: Nat, t: NTree, +c: Nat, +lm: Nat, +h: Nat, +wn: F.Fr, +ratio: F.
 def Ntt.stage.go(early: Bool, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +log2: Nat, +j: Nat, ws: F.Fr, wn: F.Fr) -> NTree:
   match early:
     case True{}:
-      Ntt.pair_node(Ntt.early(s, t, 0n, lm, ws, s))
+      Ntt.pair_node(Ntt.early(s, t, F.Fr.one(), lm, ws))
     case False{}:
-      Ntt.pair_node(Ntt.late(Nat.sub(fd, 1n), t, 0n, lm, Nat.pow(2n, j), wn, ws, log2))
+      Ntt.pair_node(Ntt.late(Nat.sub(fd, 1n), t, F.Fr.one(), lm, Nat.pow(2n, j), Ntt.sqr_n(lm, wn), ws))
 
 # stage s: j = log2 - s - 1, h = 2^j, ω_{2^(s+1)} = wn^(2^j)
 def Ntt.stage(early: Bool, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +log2: Nat, +wn: F.Fr) -> NTree:
@@ -293,14 +297,19 @@ def Ntt.scale.fin(st: NSc) -> NTree:
   NSc{a, v} = st
   NLeaf{a}
 
-# chunk c holds elements c m .. (c+1) m - 1; bits bounds the exponent c m < 2^bits
-def Ntt.scale(t: NTree, +c: Nat, +lm: Nat, +start: F.Fr, +ratio: F.Fr, +bits: Nat) -> NTree:
+# chunk c holds elements c m .. (c+1) m - 1; rc = ratio^(c m) built top-down (ratm = ratio^m)
+def Ntt.scale.t(t: NTree, +rc: F.Fr, +lm: Nat, +start: F.Fr, +ratio: F.Fr, +ratm: F.Fr) -> NTree:
   match t:
     case NLeaf{a}:
-      Ntt.scale.fin(Ntt.scale.loop(Nat.pow(2n, lm), 0n, ratio, NSc{a, F.Fr.mul(start, Ntt.pow(ratio, (c * Nat.pow(2n, lm)), bits))}))
+      Ntt.scale.fin(Ntt.scale.loop(Nat.pow(2n, lm), 0n, ratio, NSc{a, F.Fr.mul(start, rc)}))
     case NNode{l, r}:
-      x y = Ntt.scale(l, (2n * c), lm, start, ratio, bits) Ntt.scale(r, (2n * c + 1n), lm, start, ratio, bits)
+      +r2 = F.Fr.sqr(rc)
+      x y = Ntt.scale.t(l, r2, lm, start, ratio, ratm) Ntt.scale.t(r, F.Fr.mul(r2, ratm), lm, start, ratio, ratm)
       NNode{x, y}
+
+# x[j] *= start ratio^j over the whole tree (m = 2^lm elements per chunk)
+def Ntt.scale(t: NTree, +lm: Nat, +start: F.Fr, +ratio: F.Fr) -> NTree:
+  Ntt.scale.t(t, F.Fr.one(), lm, start, ratio, Ntt.sqr_n(lm, ratio))
 
 # ---- tree-level transforms ----
 
@@ -309,14 +318,14 @@ def Ntt.t_fft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
 
 # n^-1 = two_inv^log2
 def Ntt.t_ifft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
-  Ntt.scale(Ntt.core(t, log2, fd, Ntt.omega_inv(log2)), 0n, Nat.sub(log2, fd), Ntt.pow(Ntt.two_inv(), log2, 6n), F.Fr.one(), log2)
+  Ntt.scale(Ntt.core(t, log2, fd, Ntt.omega_inv(log2)), Nat.sub(log2, fd), Ntt.pow(Ntt.two_inv(), log2, 6n), F.Fr.one())
 
 # evaluations over the coset g H: fft of (a_j g^j)
 def Ntt.t_coset_fft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
-  Ntt.core(Ntt.scale(t, 0n, Nat.sub(log2, fd), F.Fr.one(), Ntt.gen(), log2), log2, fd, Ntt.omega(log2))
+  Ntt.core(Ntt.scale(t, Nat.sub(log2, fd), F.Fr.one(), Ntt.gen()), log2, fd, Ntt.omega(log2))
 
 def Ntt.t_coset_ifft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
-  Ntt.scale(Ntt.core(t, log2, fd, Ntt.omega_inv(log2)), 0n, Nat.sub(log2, fd), Ntt.pow(Ntt.two_inv(), log2, 6n), Ntt.gen_inv(), log2)
+  Ntt.scale(Ntt.core(t, log2, fd, Ntt.omega_inv(log2)), Nat.sub(log2, fd), Ntt.pow(Ntt.two_inv(), log2, 6n), Ntt.gen_inv())
 
 # ---- pointwise (a b - c) z over three trees ----
 
@@ -381,9 +390,10 @@ def Ntt.point(d: Nat, ta: NTree, tb: NTree, tc: NTree, +lm: Nat, +z: F.Fr) -> NT
 
 # ---- flat API (frozen) ----
 
-# fork depth: 2^fd chunks of >= 1 element, up to 64 chunks
+# fork depth: 2^fd chunks of >= 1 element, up to 4096 chunks (the M4 has 4P + 6E cores and
+# no work stealing, so a stage needs many more tasks than cores to balance)
 def Ntt.fd(log2: Nat) -> Nat:
-  Nat.max(1n, Nat.min(6n, Nat.sub(log2, 1n)))
+  Nat.max(1n, Nat.min(12n, Nat.sub(log2, 1n)))
 
 def Ntt.fft_fd.go(z: Bool, a: Array<U32>, +log2: Nat, +fd: Nat) -> Array<U32>:
   match z:
@@ -413,18 +423,22 @@ def Ntt.coset_ifft_fd.go(z: Bool, a: Array<U32>, +log2: Nat, +fd: Nat) -> Array<
     case False{}:
       Ntt.to_array(Ntt.t_coset_ifft(Ntt.to_tree(fd, a), log2, fd))
 
-# explicit fork depth (1 <= fd < log2); the bench sweeps it and calls these with `!` for the GPU
+# clamp a requested fork depth into 1 <= fd < log2
+def Ntt.clamp(+log2: Nat, fd: Nat) -> Nat:
+  Nat.max(1n, Nat.min(fd, Nat.sub(log2, 1n)))
+
+# explicit fork depth (clamped to 1 <= fd < log2); the bench sweeps it and calls these with `!` for the GPU
 def Ntt.fft_fd(a: Array<U32>, +log2: Nat, fd: Nat) -> Array<U32>:
-  Ntt.fft_fd.go(Nat.is_eq(log2, 0n), a, log2, fd)
+  Ntt.fft_fd.go(Nat.is_eq(log2, 0n), a, log2, Ntt.clamp(log2, fd))
 
 def Ntt.ifft_fd(a: Array<U32>, +log2: Nat, fd: Nat) -> Array<U32>:
-  Ntt.ifft_fd.go(Nat.is_eq(log2, 0n), a, log2, fd)
+  Ntt.ifft_fd.go(Nat.is_eq(log2, 0n), a, log2, Ntt.clamp(log2, fd))
 
 def Ntt.coset_fft_fd(a: Array<U32>, +log2: Nat, fd: Nat) -> Array<U32>:
-  Ntt.coset_fft_fd.go(Nat.is_eq(log2, 0n), a, log2, fd)
+  Ntt.coset_fft_fd.go(Nat.is_eq(log2, 0n), a, log2, Ntt.clamp(log2, fd))
 
 def Ntt.coset_ifft_fd(a: Array<U32>, +log2: Nat, fd: Nat) -> Array<U32>:
-  Ntt.coset_ifft_fd.go(Nat.is_eq(log2, 0n), a, log2, fd)
+  Ntt.coset_ifft_fd.go(Nat.is_eq(log2, 0n), a, log2, Ntt.clamp(log2, fd))
 
 # 2^log2 Fr coefficients (Montgomery, natural order) -> evaluations over arkworks' radix-2 domain
 def Ntt.fft(a: Array<U32>, +log2: Nat) -> Array<U32>:
@@ -446,10 +460,13 @@ def Ntt.qap_h.pipe(a: Array<U32>, +log2: Nat, +fd: Nat) -> NTree:
 
 # h(x) = (A B - C) / Z_d over the coset, Z_d(g ω^i) = g^d - 1, exactly ark-groth16's
 # LibsnarkReduction::witness_map_from_matrices; output natural-order coefficients
-def Ntt.qap_h_fd(a: Array<U32>, b: Array<U32>, c: Array<U32>, +log2: Nat, +fd: Nat) -> Array<U32>:
+def Ntt.qap_h_fd.go(a: Array<U32>, b: Array<U32>, c: Array<U32>, +log2: Nat, +fd: Nat) -> Array<U32>:
   ta tb tc = Ntt.qap_h.pipe(a, log2, fd) Ntt.qap_h.pipe(b, log2, fd) Ntt.qap_h.pipe(c, log2, fd)
   +zinv = F.Fr.inv(F.Fr.sub(Ntt.sqr_n(log2, Ntt.gen()), F.Fr.one()))
   Ntt.to_array(Ntt.t_coset_ifft(Ntt.point(fd, ta, tb, tc, Nat.sub(log2, fd), zinv), log2, fd))
+
+def Ntt.qap_h_fd(a: Array<U32>, b: Array<U32>, c: Array<U32>, +log2: Nat, fd: Nat) -> Array<U32>:
+  Ntt.qap_h_fd.go(a, b, c, log2, Ntt.clamp(log2, fd))
 
 def Ntt.qap_h(a: Array<U32>, b: Array<U32>, c: Array<U32>, +log2: Nat) -> Array<U32>:
   Ntt.qap_h_fd(a, b, c, log2, Ntt.fd(log2))
