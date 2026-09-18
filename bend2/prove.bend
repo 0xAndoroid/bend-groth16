@@ -4,8 +4,8 @@
 # The two lines below are the only ones to flip when the real modules land:
 #   import ./src/msm.bend as Msm / import ./src/ntt.bend as Ntt
 import Base
-import ./src/naive.bend as Msm
-import ./src/naive.bend as Ntt
+import ./src/msm.bend as Msm
+import ./src/ntt.bend as Ntt
 import ./src/fr.bend as R
 import ./src/g1.bend as G
 import ./src/g2.bend as G2
@@ -30,7 +30,7 @@ def Pr.msm_a(st: P.S) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
   match h:
     case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
-      Pr.msm_a.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, P.Groth.empty(), zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, P.Groth.empty(), pb1, pb2, ph, pl, res1, res2, r, s}, Msm.Msm.g1(pa, z, U32.to_nat(na)))
+      Pr.msm_a.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, P.Groth.empty(), zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, P.Groth.empty(), pb1, pb2, ph, pl, res1, res2, r, s}, Msm.g1(pa, z, U32.to_nat(na)))
 
 def Pr.msm_b1.fin(st: P.S, p: Array<U32> & (Array<U32> & G.G1)) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
@@ -42,7 +42,7 @@ def Pr.msm_b1(st: P.S) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
   match h:
     case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
-      Pr.msm_b1.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, P.Groth.empty(), zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, P.Groth.empty(), pb2, ph, pl, res1, res2, r, s}, Msm.Msm.g1(pb1, z, U32.to_nat(nb)))
+      Pr.msm_b1.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, P.Groth.empty(), zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, P.Groth.empty(), pb2, ph, pl, res1, res2, r, s}, Msm.g1(pb1, z, U32.to_nat(nb)))
 
 def Pr.msm_b2.fin(st: P.S, p: Array<U32> & (Array<U32> & G2.G2)) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
@@ -54,7 +54,7 @@ def Pr.msm_b2(st: P.S) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
   match h:
     case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
-      Pr.msm_b2.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, P.Groth.empty(), zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, P.Groth.empty(), ph, pl, res1, res2, r, s}, Msm.Msm.g2(pb2, z, U32.to_nat(nb)))
+      Pr.msm_b2.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, P.Groth.empty(), zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, P.Groth.empty(), ph, pl, res1, res2, r, s}, Msm.g2(pb2, z, U32.to_nat(nb)))
 
 def Pr.msm_h.fin(st: P.S, p: Array<U32> & (Array<U32> & G.G1)) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
@@ -66,7 +66,7 @@ def Pr.msm_h(st: P.S) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
   match h:
     case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
-      Pr.msm_h.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, z, zl, ca, cb, cc, ea, eb, ec, P.Groth.empty(), g1, g2, pa, pb1, pb2, P.Groth.empty(), pl, res1, res2, r, s}, Msm.Msm.g1(ph, hh, U32.to_nat(nh)))
+      Pr.msm_h.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, z, zl, ca, cb, cc, ea, eb, ec, P.Groth.empty(), g1, g2, pa, pb1, pb2, P.Groth.empty(), pl, res1, res2, r, s}, Msm.g1(ph, hh, U32.to_nat(nh)))
 
 def Pr.msm_l.fin(st: P.S, p: Array<U32> & (Array<U32> & G.G1)) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
@@ -78,7 +78,7 @@ def Pr.msm_l(st: P.S) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
   match h:
     case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
-      Pr.msm_l.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, z, P.Groth.empty(), ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, P.Groth.empty(), res1, res2, r, s}, Msm.Msm.g1(pl, zl, U32.to_nat(nl)))
+      Pr.msm_l.fin(P.S{P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}, z, P.Groth.empty(), ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, P.Groth.empty(), res1, res2, r, s}, Msm.g1(pl, zl, U32.to_nat(nl)))
 
 def Pr.show(o: P.Out) -> IO(Unit):
   match o:
