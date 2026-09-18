@@ -1,0 +1,25 @@
+## D=20 A=27 ./limits
+list 2^20 non-tail build: len=1048576 ms=18
+Array.new 2^27 size=134217728 ms=88
+        0.13 real         0.05 user         0.06 sys
+           588840960  maximum resident set size
+## D=24 A=29 ./limits
+list 2^24 non-tail build: len=16777216 ms=241
+Array.new 2^29 size=536870912 ms=320
+        0.60 real         0.34 user         0.20 sys
+          1432141824  maximum resident set size
+## D=26 A=30 ./limits
+list 2^26 non-tail build: len=67108864 ms=2077
+Array.new 2^30 size=1073741824 ms=568
+        2.73 real         1.15 user         1.20 sys
+          2782527488  maximum resident set size
+## D=10 A=31 ./limits
+list 2^10 non-tail build: len=1024 ms=0
+Array.new 2^31 size=2147483648 ms=1062
+        1.10 real         0.64 user         0.36 sys
+          3006038016  maximum resident set size
+## D=10 A=32 ./limits
+list 2^10 non-tail build: len=1024 ms=0
+bend: an array past the deepest block class 31
+        0.01 real         0.00 user         0.00 sys
+             1671168  maximum resident set size

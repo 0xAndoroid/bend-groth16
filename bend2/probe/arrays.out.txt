@@ -1,0 +1,20 @@
+## N=20 ./arrays
+N=20
+new ms=1
+fill(in-place loop) ms=0
+fill_idx ms=1
+gather ms=1
+gather_sum=4085386809 fill_sum=633864192
+sum(out) ms=0
+sum(src) ms=0
+real 0.18
+## N=24 ./arrays
+N=24
+new ms=8
+fill(in-place loop) ms=4
+fill_idx ms=20
+gather ms=62
+gather_sum=2685122939 fill_sum=1551892480
+sum(out) ms=3
+sum(src) ms=2
+real 0.11

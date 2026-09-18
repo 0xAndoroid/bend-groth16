@@ -1,0 +1,18 @@
+## MODE=seq N=24 ./parallel
+seq N=24 FD=14 K=4 sum=702212909 ms=159
+## MODE=par N=24 FD=14 ./parallel --threads 1
+par N=24 FD=14 K=4 sum=2214652166 ms=159
+## MODE=par N=24 FD=14 ./parallel --threads 4
+par N=24 FD=14 K=4 sum=2214652166 ms=47
+## MODE=par N=24 FD=14 ./parallel --threads 10
+par N=24 FD=14 K=4 sum=2214652166 ms=26
+## MODE=gpu N=24 FD=14 ./parallel --gpu off
+gpu N=24 FD=14 K=4 sum=2214652166 ms=24
+## MODE=gpu N=24 FD=14 ./parallel
+gpu N=24 FD=14 K=4 sum=2214652166 ms=504
+## MODE=gpu N=24 FD=14 ./parallel
+gpu N=24 FD=14 K=4 sum=2214652166 ms=64
+## MODE=gpu N=24 FD=20 ./parallel
+gpu N=24 FD=20 K=4 sum=3259248909 ms=67
+## MODE=gpu N=24 FD=24 ./parallel
+gpu N=24 FD=24 K=4 sum=1217926959 ms=66

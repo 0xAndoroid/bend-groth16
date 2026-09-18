@@ -1,0 +1,13 @@
+## FILE=pk_small.bin N=17 ./io  (expect words=131072 sum32=3547773459)
+words=131072 sum32=3547773459 read+pack ms=3
+real 0.42
+## FILE=pk.bin N=21 ./io  (expect words=2097152 sum32=71746649)
+words=2097152 sum32=71746649 read+pack ms=35
+real 0.13
+## FILE=pk.bin N=21 CHUNK=65536 ./io
+words=2097152 sum32=71746649 read+pack ms=25
+real 0.04
+## stdin via /dev/stdin
+words=131072 sum32=3547773459 read+pack ms=3
+## positional arg:
+bend: unknown option foo

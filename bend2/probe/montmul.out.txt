@@ -1,0 +1,81 @@
+## MODE=bench N=16 FD=10 ./montmul --threads 1
+bench N=16 FD=10 K=1 xor=14675 ms=8
+real 0.02
+## MODE=bench N=16 FD=10 ./montmul --threads 10
+bench N=16 FD=10 K=1 xor=14675 ms=2
+real 0.02
+## MODE=gpu N=16 FD=10 ./montmul --gpu off
+gpu N=16 FD=10 K=1 xor=14675 ms=2
+real 0.01
+## MODE=gpu N=16 FD=10 ./montmul
+gpu N=16 FD=10 K=1 xor=14675 ms=347
+real 0.36
+## MODE=gpu N=16 FD=10 ./montmul
+gpu N=16 FD=10 K=1 xor=14675 ms=57
+real 0.12
+## MODE=gpu N=16 FD=16 ./montmul
+gpu N=16 FD=16 K=1 xor=14675 ms=61
+real 0.07
+## MODE=bench N=20 FD=12 ./montmul --threads 1
+bench N=20 FD=12 K=1 xor=18562 ms=118
+real 0.13
+## MODE=bench N=20 FD=12 ./montmul --threads 10
+bench N=20 FD=12 K=1 xor=18562 ms=26
+real 0.04
+## MODE=gpu N=20 FD=12 ./montmul
+gpu N=20 FD=12 K=1 xor=18562 ms=58
+real 0.07
+## MODE=gpu N=20 FD=16 ./montmul
+gpu N=20 FD=16 K=1 xor=18562 ms=61
+real 0.07
+## MODE=gpu N=20 FD=20 ./montmul
+gpu N=20 FD=20 K=1 xor=18562 ms=57
+real 0.07
+## MODE=bench N=24 FD=14 ./montmul --threads 1
+bench N=24 FD=14 K=1 xor=42215 ms=1914
+real 1.93
+## MODE=bench N=24 FD=14 ./montmul --threads 10
+bench N=24 FD=14 K=1 xor=42215 ms=440
+real 0.45
+## MODE=gpu N=22 FD=14 ./montmul
+gpu N=22 FD=14 K=1 xor=43193 ms=337
+real 0.35
+## MODE=gpu N=24 FD=14 ./montmul
+gpu N=24 FD=14 K=1 xor=42215 ms=101
+real 0.12
+## MODE=gpu N=24 FD=18 ./montmul
+gpu N=24 FD=18 K=1 xor=42215 ms=78
+real 0.09
+## MODE=bench N=20 FD=12 K=8 ./montmul --threads 1
+bench N=20 FD=12 K=8 xor=46836 ms=931
+real 0.95
+## MODE=bench N=20 FD=12 K=8 ./montmul --threads 10
+bench N=20 FD=12 K=8 xor=46836 ms=227
+real 0.24
+## MODE=gpu N=20 FD=12 K=8 ./montmul
+gpu N=20 FD=12 K=8 xor=46836 ms=159
+real 0.17
+## MODE=gpu N=20 FD=16 K=8 ./montmul
+gpu N=20 FD=16 K=8 xor=46836 ms=77
+real 0.09
+## MODE=gpu N=22 FD=14 ./montmul
+gpu N=22 FD=14 K=1 xor=43193 ms=392
+real 0.43
+## MODE=gpu N=22 FD=14 ./montmul
+gpu N=22 FD=14 K=1 xor=43193 ms=76
+real 2.21
+## MODE=gpu N=24 FD=16 ./montmul
+gpu N=24 FD=16 K=1 xor=42215 ms=78
+real 0.14
+## MODE=gpu N=24 FD=20 ./montmul
+gpu N=24 FD=20 K=1 xor=42215 ms=85
+real 0.10
+## MODE=gpu N=24 FD=24 ./montmul
+gpu N=24 FD=24 K=1 xor=42215 ms=78
+real 0.09
+## MODE=gpu N=24 FD=16 K=8 ./montmul
+gpu N=24 FD=16 K=8 xor=12737 ms=201
+real 0.21
+## MODE=bench N=24 FD=16 K=8 ./montmul --threads 10
+bench N=24 FD=16 K=8 xor=12737 ms=3317
+real 3.33
