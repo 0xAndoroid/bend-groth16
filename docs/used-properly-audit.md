@@ -1,12 +1,12 @@
 ---
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-18 (w5fix: checklist #3/#6, GPU-entry rows, loader/runner status)
 tags: [bend, audit, benchmark]
 ---
 
 # Verdict: PARTIAL
 
-The Bend 2 prover uses real balanced fork trees in NTT and MSM, but retains serial evaluation/conversion/reduction passes, copying array boundaries, and no GPU entry in the full prover.
+The Bend 2 prover uses real balanced fork trees in NTT and MSM, but retains serial evaluation/conversion/reduction passes and copying array boundaries; the full prover's GPU entries (five MSM + one QAP `!` per proof since `d524023`) measure slower than the CPU path on both hosts.
 
 ## Module checklist
 
@@ -21,7 +21,7 @@ Source snapshot: `09a409c`; Bend **2.0.5**. Numbers below refer to `docs/bend2-i
 | ntt | P — Benchmark driver documents compiled native binary execution. | partial — Balanced stages; tiny leaves and device underfill remain. `bend2/src/ntt.bend:143`, `bend2/src/ntt.bend:396` | P — Benchmark dispatch covers one complete pure transform. | P — Fr records hold values; Nat controls indexing. | F — Array boundaries structurally split and join buffers. `bend2/src/ntt.bend:95`, `bend2/src/ntt.bend:105` |
 | msm v2 | P — Benchmark driver documents compiled native binary execution. | F — Balanced accumulation retains serial joins and bucket scans. `bend2/src/msm.bend:148`, `bend2/src/msm.bend:182` | P — Benchmark dispatch covers the complete pure MSM. | P — Points and scalar digits use U32 limbs. | F — Point splits and bucket splits copy blocks. `bend2/src/msm.bend:173`, `bend2/src/msm.bend:223` |
 | groth16 wiring | P — Prover script compiles the imported wiring module. | F — Evaluation and scalar conversion traverse arrays serially. `bend2/src/groth16.bend:149`, `bend2/src/groth16.bend:214` | N/A — Host wiring declares no separate device entry. | P — Field values remain records throughout phase wiring. | P — CSR and witness reads use indexed stages. |
-| prove.bend | P — Prover script builds before running proof generation. | partial — State threading serializes otherwise independent proof phases. `bend2/prove.bend:103` | F — No GPU phase entry exists in prover. `bend2/prove.bend:21`, `bend2/prove.bend:33` | P — Delegated kernels retain their fixed limb representation. | N/A — Entry point delegates array handling to modules. |
+| prove.bend | P — Prover script builds before running proof generation. | partial — State threading serializes otherwise independent proof phases. `bend2/prove.bend:103` | P — Five MSM `!` entries and one QAP `!` entry per GPU proof (`BENDG_GPU=1`, since `d524023`). `bend2/prove.bend:28`, `bend2/prove.bend:38`, `bend2/prove.bend:48` | P — Delegated kernels retain their fixed limb representation. | N/A — Entry point delegates array handling to modules. |
 | benches | P — All four drivers document native binary builds. | partial — Kernel trees coexist with serial timed checksums. `bend2/bench/ntt.bend:135` | P — Each selected GPU benchmark issues one dispatch. | P — Generated operands and checksums use U32 words. | partial — Kernel array copying remains inside measured calls. `bend2/bench/ntt.bend:106`, `bend2/src/ntt.bend:95` |
 
 | Module | 6: thread/backend parity | 7: input transport | 8: version/tool selection | 9: tail recursion | 10: justified unsafe |
@@ -32,8 +32,8 @@ Source snapshot: `09a409c`; Bend **2.0.5**. Numbers below refer to `docs/bend2-i
 | bin_io | N/A — File effects have no equivalent GPU backend. | P — Chunked File.read_bytes feeds packed little endian arrays. | P — Prover driver selects documented compiler and telemetry settings. | partial — Recursive IO bind retains a return continuation. `bend2/src/bin_io.bend:63` | N/A — No termination checker bypass appears in source. |
 | ntt | partial — Mode parity reported; forced fallback parity undocumented. `bend2/bench/ntt_results.md:3` | P — Benchmark operands generated; prover consumes binary inputs. | P — Version recorded; build command selects absolute compiler. | P — Stage and leaf loops tail recurse explicitly. | N/A — No termination checker bypass appears in source. |
 | msm v2 | partial — Large default lacks complete three mode measurement coverage. `bend2/bench/msm_results.md:65` | P — Binary keys and witnesses feed indexed arrays. | P — Version recorded; build command selects absolute compiler. | partial — Oversized array peeling retains bounded nonparallel continuations. `bend2/src/msm.bend:253`, `bend2/src/msm.bend:270` | N/A — No termination checker bypass appears in source. |
-| groth16 wiring | F — Full prover GPU parity has no execution path. `bend2/prove.bend:103` | P — Loader consumes binary headers, matrices and keys. | P — Prover driver suppresses telemetry and selects absolute compiler. | partial — Small header helpers retain bounded nonparallel recursion. `bend2/src/groth16.bend:77`, `bend2/src/groth16.bend:88` | N/A — No termination checker bypass appears in source. |
-| prove.bend | F — Full prover lacks the required backend comparison. `bend2/prove.bend:129`, `.journals/ultra-code-bend-groth16.md:76` | P — Environment directory selects binary inputs without literals. | P — Build script supplies compiler and telemetry settings. | N/A — Phase sequence contains no source level recursion. | N/A — No termination checker bypass appears in source. |
+| groth16 wiring | partial — CPU1 / CPU-all / Metal / CUDA full-prover rows all verify OK+EQUAL, but the `--gpu off` fallback path is not recorded. `bend2/bench/prover_results.md:3` | P — Loader consumes binary headers, matrices and keys. | P — Prover driver suppresses telemetry and selects absolute compiler. | partial — Small header helpers retain bounded nonparallel recursion. `bend2/src/groth16.bend:77`, `bend2/src/groth16.bend:88` | N/A — No termination checker bypass appears in source. |
+| prove.bend | partial — Backend comparison exists (OK+EQUAL per row); largest-size CPU1 coverage and a `--gpu off` record are missing. `bend2/bench/prover_results.md:3` | P — Environment directory selects binary inputs without literals. | P — Build script supplies compiler and telemetry settings. | N/A — Phase sequence contains no source level recursion. | N/A — No termination checker bypass appears in source. |
 | benches | partial — V2 coverage incomplete; some timing configurations differ. `bend2/bench/msm_results.md:61`, `bend2/bench/msm_results.md:65` | P — Seeded inputs or binary keys avoid bulk literals. | P — Reports pin version; drivers document absolute compiler. | P — Driver loops tail recurse or use forks. | N/A — No termination checker bypass appears in source. |
 
 Pass evidence: `bend2/src/fr.bend:7`, `bend2/src/fr.bend:269`, `bend2/src/fq2.bend:31`, `bend2/src/g1.bend:182`, `bend2/README.md:54`, `bend2/bench/msm_results.md:6`, `bend2/bench/box_results.md:17`, `bend2/scripts/prove.sh:14`. Strict #6 partials distinguish documented `MODE=cpu/gpu` parity from a recorded `MODE=gpu --gpu off` fallback check; they are not wrong-result findings. No `@unsafe` or Nat literal ≥5000 occurs in the reachable project modules.
@@ -60,18 +60,18 @@ Let **D=2^L** be the QAP domain, **f=max(1,min(12,L−1))**, **m=D/2^f**; MSM us
 
 **Sequential is sometimes correct:** CIOS carry chains, fixed inversion chains and individual point formulas are coarse-leaf work; forking their few field operations would add scheduling overhead. Sequential stage dependencies and ≤256-bit scalar multiplication are not failures merely because CPU algorithms have them. The independent batch traversals above are the missed opportunities.
 
-**Excluded fallback:** `bend2/src/naive.bend:147` and `bend2/src/naive.bend:161` implement serial quadratic DFT; its MSM clones arrays recursively (`bend2/src/naive.bend:50`). It is not imported by the current prover (`bend2/prove.bend:7`); these are fallback defects, not the measured real NTT/MSM shape.
+**Excluded fallback (deleted in w5fix):** `bend2/src/naive.bend` implemented a serial quadratic DFT and an array-cloning MSM; it was never imported by the prover and has been removed.
 
 ## GPU usage
 
 | Entry | `!` calls per execution | Device work | Host work / evidence |
 |---|---|---|---|
-| Current full prover | **0** | None. `MODE=gpu` does not select anything here. | Loading, evaluation, QAP, all five MSMs, combination, formatting; `bend2/prove.bend:94`, `bend2/prove.bend:129`. `--gpu` alone cannot turn ordinary calls into GPU entries. |
+| Current full prover (`BENDG_GPU=1`, since `d524023`) | **6** (5 MSM + 1 `qap_h`) | Each MSM phase and the whole QAP `h` pipeline; `bend2/prove.bend:28`, `bend2/prove.bend:38`, `bend2/prove.bend:48`. | Loading, evaluation, canonical conversion, affine accumulation, combination, formatting. Without `BENDG_GPU` the prover makes no `!` call. |
 | NTT bench | **1** for selected fft/ifft/coset_fft/qap_h | Complete selected transform; qap_h includes all seven transforms, pointwise work and tree conversion in one entry. | Input generation, final checksum, timing, output; `bend2/bench/ntt.bend:103`, `bend2/bench/ntt.bend:135`. |
 | MSM bench | **1** for selected G1/G2 MSM | Point/scalar splits, accumulation, bucket joins, reduction, window weighting and input reconstruction. | File load, canonical conversion, affine conversion and formatting; `bend2/bench/msm.bend:98`, `bend2/bench/msm.bend:107`, `bend2/bench/msm.bend:145`. |
 | Field / G1-add benches | **1** per GPU batch | Entire balanced arithmetic tree and leaf chains. | Environment parsing, timing, result printing; `bend2/bench/field_mul.bend:68`, `bend2/bench/g1_add.bend:69`. |
 
-These are language dispatch counts, **not GPU kernel-launch counts**. A hypothetical phase-wise GPU prover would use six entries (one qap_h + five MSM), not seven separate QAP entries; that route is unimplemented at this snapshot. Its fixed Metal cost alone would be roughly 330 ms, excluding first-use initialization and internal rounds.
+These are language dispatch counts, **not GPU kernel-launch counts**. The phase-wise GPU prover uses exactly these six entries (one qap_h + five MSM); measured in `bend2/bench/prover_results.md` it is slower than the CPU path on both hosts. Its fixed Metal cost alone is roughly 330 ms, excluding first-use initialization and internal rounds.
 
 | Why Metal loses | Evidence | Implementation choice versus runtime limit |
 |---|---|---|
@@ -92,7 +92,7 @@ A GPU-specific layout could improve this implementation; **matching native share
 | U32/F32/Nat only; no mul-hi | Exact field multiplication uses 16×16-bit U32 limbs; 32-bit limbs cannot use a native widened product. `docs/bend2-idioms.md:38`, `docs/bend2-idioms.md:56`. | Bend 2 numeric interface limit. |
 | Nat is 48-bit, not arbitrary precision | Values beyond 2^48−1 abort. 5000n compiled; ≥10000n checker stack failure: [#791](https://github.com/bendlang/bend/issues/791), #779. Large sizes use `Nat.pow`. `docs/bend2-idioms.md:43`, `docs/bend2-idioms.md:46`. | Runtime bound plus compiler bug. |
 | Single-owner arrays; split/join copies | No shared read-only Array; matching ANode copies both halves, joining copies again ([#804](https://github.com/bendlang/bend/issues/804)). Indexed loads/stores are constant time. `docs/bend2-idioms.md:62`. | Language ownership plus runtime representation. |
-| Array size / index wrap | ≤2^31 U32 cells; index masks by size−1. Current MSM bench still loads 262146 G1 points/scalars into 262144-record buffers (`bend2/bench/msm.bend:73`, `bend2/bench/msm.bend:144`); G2 capacity also follows requested n (`bend2/bench/msm.bend:84`). | Runtime semantics; v2's G1 loader correction remains incomplete. |
+| Array size / index wrap | ≤2^31 U32 cells; index masks by size−1. The MSM bench loaded 262146 G1 points/scalars into 262144-record buffers until w5fix; `bend2/bench/msm.bend` now sizes every buffer from `header.bin`. | Runtime semantics; all published msm bench checksums predate the fix (`bend2/bench/msm_results.md`). |
 | Memory span and private buckets | Metal default 2 GB; 8 GB used for large MSM. c=12,d=8 OOM at 8 GB; c=10,d=7 G1 leaf buckets alone need 1 GiB. `bend2/bench/msm_results.md:41`, `bend2/bench/msm_results.md:49`. | Layout choice meets finite arena; consumed blocks are freed, not inherently leaked. |
 | Device lane stack / fixed placement | 2^11 words/lane; deep non-tail calls can reach ERR_DEEP. No work stealing; enough similar-duration leaves required. `docs/bend2-idioms.md:16`, `docs/bend2-idioms.md:72`. | Runtime limits; task shape is tunable. |
 | No ordinary argv / stdin effect | `IO.get_env`; File.read_bytes yields a byte list, possibly short. Loader uses 1 MiB chunks. #792 documents eager max-sized receive allocation and failure exit. `docs/bend2-idioms.md:65`, `docs/bend2-idioms.md:96`. | IO interface and reported runtime issue. |
@@ -101,10 +101,10 @@ A GPU-specific layout could improve this implementation; **matching native share
 | Compile time / generated size | Probe: hello 0.66 s; 1.8k-line Montgomery + Metal 6 s. Box field/G1 binaries 2/3 s. This audit: complete prover C emission 1.59 s, **not** a native build measurement. Whole-program C, no separate compilation. `docs/bend2-idioms.md:34`, `docs/bend2-idioms.md:104`, `bend2/bench/box_results.md:15`. | Measured costs; no prover compilation ceiling established. |
 | Checker / host backend traps | Shrinking parameter first (#770); Homebrew clang modules (#769); JS recursion (#798/#802); unused argument run/native mismatch (#775); sequential IO compile blowup reported in #785. `docs/bend2-idioms.md:94`, `docs/bend2-idioms.md:96`, `docs/bend-idioms.md:214`. | Documented upstream issues, not all reproduced by this audit. #767 plain-call parallelism is fixed. |
 | Record arity | Prover S stores point accumulators in arrays because flattened record payload is limited to 255 words (`bend2/src/groth16.bend:21`). | Compiler arity limit, not an arithmetic limit. |
-| Campaign application defects | G2 affine-store indexing fixed; stale workaround comment remains (`bend2/src/g2.bend:213`, `bend2/src/groth16.bend:290`). MSM failure exit fixed; NTT failure exit and runner omissions remained in journal at this snapshot (`.journals/ultra-code-bend-groth16.md:24`, `.journals/ultra-code-bend-groth16.md:85`). | Do not label these Bend runtime bugs. |
+| Campaign application defects | G2 affine-store indexing fixed and the `Groth.g2_store` workaround removed (w5fix). MSM and NTT failure exits fixed (w4fix); `bend2/tests/run.sh` now runs every test incl. the K=4 prove; `bench_prover.sh` enforces the CFG mode and rejects unverified runs (w5fix). | Do not label these Bend runtime bugs. |
 | Bend 1 / HVM2 only | u24/12-bit limbs; ~6.4 GB heap; embedded literals ~2^16 compiled/~2^18 interpreted; one of three compiled multiply runs returned garbage `x1fffffff`; signed-byte IO decoder was a probe bug. `docs/bend-probe.md:99`, `docs/bend-probe.md:154`, `docs/bend-probe.md:155`. | Separate probe generation, **not** evidence against Bend 2. |
 
-**Loader evidence:** local K=18 `pk_a.bin` is 33554688 bytes versus 33554432 allocated; `witness.bin` is 16777344 versus 16777216; `pk_b2.bin` is 67109376 versus 67108864 at bench N=18 (worse at smaller N). Thus two leading records are overwritten even after v2. Cross-backend checksums can still agree on the same altered inputs; the claim that the bench uses the file's first n records is false (`bend2/bench/msm_results.md:51`). Full-prover allocations use header-derived lengths and are not affected (`bend2/src/groth16.bend:243`).
+**Loader evidence (historical, fixed in w5fix):** local K=18 `pk_a.bin` is 33554688 bytes versus 33554432 allocated; `witness.bin` is 16777344 versus 16777216; `pk_b2.bin` is 67109376 versus 67108864 at bench N=18 (worse at smaller N). Thus two leading records were overwritten even after v2. Cross-backend checksums can still agree on the same altered inputs; the claim that the bench uses the file's first n records is false (`bend2/bench/msm_results.md:51`). Full-prover allocations use header-derived lengths and are not affected (`bend2/src/groth16.bend:243`).
 
 ## What a native Bend 2 expert would change
 
@@ -117,7 +117,7 @@ A GPU-specific layout could improve this implementation; **matching native share
 
 ### Further experiments
 
-- **[expected-gain: small; possible today: yes]** Sweep device-specific NTT depth/stage fusion and rerun fixed-config v2 CPU1/CPU-default/GPU parity on a quiet host; add six coarse prover GPU entries only as a measured alternative, not an assumed speedup.
+- **[expected-gain: small; possible today: yes]** Sweep device-specific NTT depth/stage fusion and rerun fixed-config v2 CPU1/CPU-default/GPU parity on a quiet host; the six coarse prover GPU entries exist (`d524023`) and measure slower than CPU, so further GPU work needs a device-filling design, not more entries.
 - **[expected-gain: medium; possible today: yes, unmeasured]** Try signed MSM digits and owned segmented point/digit partitions; include sort/duplication cost. Do not repeat per-leaf window streaming without new evidence: it already lost 5846 versus ~3700 ms (`bend2/bench/msm_results.md:74`).
 - **[expected-gain: large; possible today: no without runtime/compiler changes]** Zero-copy owned views/shared immutable buffers, device-resident scheduling, and widened integer products would remove documented limits. None is a source-level idiom available to this prover in 2.0.5.
 
@@ -131,4 +131,4 @@ BEND_NO_TELEMETRY=1 ~/.bend/bin/bend bend2/prove.bend -o "$TMPDIR/bend-groth16/w
 rg -n '![[:space:]]*\(|@unsafe' bend2/prove.bend bend2/src/*.bend
 ```
 
-Results: version `bend 2.0.5`; C emission exit 0; reachable source has **0 bangs, 0 unsafe bypasses, 0 Nat literals ≥5000**. Source-count, table-note, citation-range, line-count, whitespace and spelling checks accompany the documentation commit. Prior field/NTT reviews remain evidence, not blanket approval of later wiring; v2's depth improvement does not erase its serial join/scan or copying paths.
+Results: version `bend 2.0.5`; C emission exit 0; reachable source had **0 bangs, 0 unsafe bypasses, 0 Nat literals ≥5000** at snapshot `09a409c`; since `d524023` `bend2/prove.bend` has three bang call sites (six dynamic entries per `BENDG_GPU=1` proof), still 0 unsafe bypasses. Source-count, table-note, citation-range, line-count, whitespace and spelling checks accompany the documentation commit. Prior field/NTT reviews remain evidence, not blanket approval of later wiring; v2's depth improvement does not erase its serial join/scan or copying paths.

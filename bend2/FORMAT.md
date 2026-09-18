@@ -30,4 +30,4 @@ All binaries are little-endian, written by `bend2/tools/export_bin.py` from the 
 - `ntt_small_<n>.bin` for n ∈ {8, 64, 1024}: u32 n; omega (Fr Montgomery); n_inv (Fr Montgomery); n coeffs (Montgomery); n evals (Montgomery); n icoeffs_of_evals (Montgomery).
 
 ## Proof output (Bend → verifier)
-The Bend prover prints exactly three lines to stdout: `A <x_hex> <y_hex>`, `B <x0_hex> <x1_hex> <y0_hex> <y1_hex>`, `C <x_hex> <y_hex>` — canonical (non-Montgomery) big-endian 0x hex. `bend2/tools/proof_to_json.py` converts to the arkworks `proof.json` encoding for `groth16-ref verify`.
+The Bend prover prints three proof lines to stdout: `A <x_hex> <y_hex>`, `B <x0_hex> <x1_hex> <y0_hex> <y1_hex>`, `C <x_hex> <y_hex>` — canonical (non-Montgomery) big-endian 0x hex — followed by timing lines `T <phase> <ms>` (`load evals qap msm_a msm_b1 msm_b2 msm_h msm_l total`). Filter `^[ABC] ` before `bend2/tools/proof_to_json.py`, which converts to the arkworks `proof.json` encoding for `groth16-ref verify` (`bend2/scripts/prove.sh` does this).

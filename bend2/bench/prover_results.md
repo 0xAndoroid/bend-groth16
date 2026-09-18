@@ -102,26 +102,32 @@ exit 0) and `test_ntt` PASS on the box (`msm_small_{8,64,1024}`, `ntt_small_{8,6
 
 nvidia-smi (1 Hz) during the CUDA MSM runs: peak `memory.used` **12983 MiB** (v2, 2^20 fd 9, c 10) / **16695 MiB** (v1, 2^20 fd 8,
 c 12), `utilization.gpu` 100 % whenever a leaf kernel was resident (73 % average over the small-size sweep, where launches and
-host-side joins dominate). Mini primitive numbers (Metal) are in `msm_results.md` / `ntt_results.md` and copied into
-`bench/bend2-macmini.json`.
+host-side joins dominate). Mini primitive numbers (Metal) are in `msm_results.md` / `ntt_results.md`; only the v1 G1 series
+(`msm_g1_v1`) and the fft series (`ntt`) are copied into `bench/bend2-macmini.json` — the mini v2 MSM table has no JSON series.
+The mini Metal MSM rows at 2^14 / 2^16 used c = 10 / 12 (CPU rows c = 8), so those CPU/GPU pairs are not fixed-config ratios.
+
+Caveat on the CPU rows: they were taken with the bang-bearing binary (`d524023`+) without `--gpu off`, so the runtime's
+GPU-backed arena was active; the v1 rows predate the GPU switch. "Everything else identical" between v1 and v2 therefore
+holds for the source, not necessarily for the binary.
 
 ## Where the time goes
 
 The prover is ~90 % MSM at every size and on both hosts: at K=18 the five MSMs are 31.2 of 33.5 s on the mini (10 threads, v2) and
-33.1 of 34.9 s on the box (48 threads); load + evals + qap are 7 % and everything else is noise. The single G2 MSM (`msm_b2`, 2^18
+33.1 of 34.9 s on the box (48 threads); load + evals + qap are 5 % (box) / 7 % (mini) and everything else is noise. The single G2 MSM (`msm_b2`, 2^18
 points over Fq2) is the largest phase — 41–45 % of the total, ≈ 3.3× a G1 MSM of the same size, because every Fq2 mul is three
 Fq muls and the Jacobian G2 add carries 96-word points through the bucket arrays. The 2^19-point `msm_h` is the second (15–17 %),
 then `msm_a` / `msm_b1` (12 % each) and the shorter `msm_l` (8–9 %); `qap` (7 NTT passes at 2^19) is 4 % on the mini and 2 % on
 the box. Threads help the MSMs far less than the NTTs: 1 → 10 threads at K=14 gives 2.1× on the whole prover (msm_b2 1.8×, qap
-4.6×), 1 → 48 threads on the box 4.4× (msm_b2 3.8×, qap 8.5×), so the bucket join and the per-leaf array copies, not raw
-arithmetic, bound the parallel MSM. MSM v2 (more leaves, smaller windows) is a clear win on the M4 — K=18 10-thread 88.6 → 33.5 s
+4.6×), 1 → 48 threads on the box 4.4× (msm_b2 3.8×, qap 8.5×). Hypothesis (not isolated by measurement): the bucket join and
+the per-leaf array copies, not raw arithmetic, bound the parallel MSM. MSM v2 (more leaves, smaller windows) is a clear win on the M4 — K=18 10-thread 88.6 → 33.5 s
 (2.6×), K=14 6.7 → 5.5 s — but a regression on the Threadripper — 48-thread K=20 103 → 115 s (+12 %), K=14 2.9 → 3.7 s, 1-thread
-K=14 12.1 → 16.3 s; the box has 2.3× more hardware threads per leaf-tree level and larger caches, so v1's 16 large leaves with c=12
-already saturated it and v2's 128 leaves × 32 windows add join work. The GPU switch does not rescue the prover either:
+K=14 12.1 → 16.3 s (hypothesis: v1's 16 large leaves with c=12 already kept 48 threads busy and v2's 128 leaves × 32 windows add
+join work; not isolated). The GPU switch does not rescue the prover either:
 `BENDG_GPU=1` is 1.8× slower than CPU48 on the box (K=20 207 s vs 115 s; K=18 56 vs 35 s; K=10 4.5 vs 0.86 s) and 7× slower than
 10 CPU threads on the M4 (K=18 240 s vs 33.5 s), with the same shape as the primitives — the best CUDA 2^20 G1 MSM is 17.1 s vs
-9.5 s on 48 threads, the CUDA NTT 7× slower than CPU48 at 2^20 (3.1 s vs 0.42 s) — because a `!` runs a few hundred leaves, each
-a sequential GPU thread, so the GPU reads 100 % busy while ~1 000× under-occupied; the G2 phase suffers most (CUDA K=20
-`msm_b2` 77 s vs 52 s). A GPU-competitive prover needs a bucket-sorted MSM with a shared read-only point array and a stage-parallel NTT, neither
-of which the current single-owner array model expresses; on CPU the next lever is the G2 MSM (GLV/endomorphism or a cheaper G2
-add path) and a parallel bucket join.
+9.5 s on 48 threads, the CUDA NTT 7× slower than CPU48 at 2^20 (3.1 s vs 0.42 s); the G2 phase suffers most (CUDA K=20
+`msm_b2` 77 s vs 52 s). Hypothesis: a `!` runs a few hundred leaves, each a sequential GPU thread, so the device is far
+under-occupied even while `nvidia-smi` (1 Hz) reads 100 % — the occupancy was not measured. A GPU-competitive prover likely
+needs a bucket-sorted MSM with a shared read-only point array (an owned sorted/segmented design is possible without shared
+arrays, see `docs/used-properly-audit.md`) and a device-filling NTT (a stage-parallel NTT exists, `src/ntt.bend:152`; it
+underfills the device); on CPU the next lever is the G2 MSM (GLV/endomorphism or a cheaper G2 add path) and a parallel bucket join.
