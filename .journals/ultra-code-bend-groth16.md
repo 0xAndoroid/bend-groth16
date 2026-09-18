@@ -18,9 +18,9 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 ## Wave table
 | wave | shards | depends on | status |
 |---|---|---|---|
-| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (A,C,D,E integrated; B reviewing; F building) |
-| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] Bend 2 field arithmetic Fr/Fq + loader · review gnark ebecad7b | 0 (D landed) | gnark integrated; box building |
-| 2 | Bend G1/G2 ops · Bend MSM (Pippenger) · Bend NTT | 1 | draft |
+| 0 | A bend-research fca3d86a (astra) · B bend-probe 9b7f93c3 (fable) · C arkworks-ref 4618ccc0 (fable) · D prover-research 150cad70 (astra) · E circom-rapidsnark e4be3580 (fable) · F bend2-probe 454fe86d (fable) · review C 2b106e2c · review B 401804b1 (astra) | — | building (A,C,D,E,F integrated; B reviewing) |
+| 1 | gnark-mini 8e7167e8 (fable) · gpu-box 6b6fc33c (fable: rent pika-bend-5090, box-CPU gnark/rapidsnark/snarkjs, GPU gnark+icicle, ICICLE-SNARK, ICICLE/sppark primitives, Bend 2 install) · [after w0f] bend2-field-curve 41379b12 (Fr/Fq/Fq2/G1/G2 + tests + field bench) · bend2-export 53ed8004 (JSON→.bin per bend2/FORMAT.md) · review gnark ebecad7b | 0 | gnark integrated; box + bend2 lanes building |
+| 2 | Bend MSM (Pippenger, G1 then G2) · Bend NTT + QAP h-poly · loader/prover skeleton | 1 | draft |
 | 3 | Bend groth16 prove + correctness vs arkworks verifier · CPU bench sweep · Bend-CUDA on box | 2 | draft |
 | 4 | quiet-host CPU bench rerun (all mini comparators + Bend, serial) · "used properly" audit (astra+fable) · report (html-report-design) · teardown | 3 | draft |
 
@@ -36,6 +36,8 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - amend: comparators per w0d — CPU gnark v0.16.3 + rapidsnark v0.0.8 (+snarkjs ref, arkworks ref); GPU gnark+icicle-gnark v3.2.2 + ICICLE-SNARK bf00385 (experimental) + ICICLE v4/sppark BN254 primitives. bellperson dropped (BLS12-381 only), bellman-ce archived. w0d merged (doc-only; skip review, orchestrator read).
 - skip: w0e per-shard review — scripts shard; covered by the quiet-host rerun lane (re-executes gen.sh/bench.py) + final whole-diff review.
 - amend: ownership overlap .gitignore between w0e,w1gnark (both append-only) — resolved by union; .gitignore stays orchestrator-owned from now on (lanes list ignores in their reply instead).
+- amend: Bend 2 = compiled strict affine language (NOT HVM; fork-join runtime, no work stealing), U32 only (wrapping, no mul-hi) + 48-bit Nat → 16×16-bit limbs, R=2^256; Metal works on the mini; CUDA via NVRTC (sm_120 iff NVRTC accepts). Frozen bend2/FORMAT.md (Montgomery-form LE u32 words, CSR r1cs). Wave 1 Bend = field+curve single shard (sequential dependency) ‖ exporter.
+- skip: w0f review — probe shard; montmul claims re-validated by w1field tests vs arkworks vectors.
 - skip: w0a review — doc-only shard, orchestrator read sections 1–4; corrections folded by w0f if any.
 
 ## Verification matrix
@@ -46,6 +48,7 @@ Started 2026-09-18 01:22 ET. Owner reads result in the morning. Report: ~/.pika/
 - arkworks prove 2^10/14/18/20: 17 / 142 / 1791 / 12762(load 17!) ms under sibling load; MSM G1 2^18 186 ms, 2^20 703 ms. ALL mini CPU numbers must be re-run on a quiet host in a final bench wave (arkworks, gnark, rapidsnark, snarkjs, Bend) — record loadavg.
 - gnark prove 2^10/14/18/20 (10 thr): 13.4 / 97 / 928 / 3929 ms; 1 thr 2^14 1845 ms; MSM G1 2^20 848 ms (10 thr); FFT 2^20 43 ms.
 - rapidsnark (10 thr) 2^10/14/18/20: 20.8 / 151 / 2723 / 9792 ms; snarkjs 402 / 1419 / 18425 / 59408 ms (under load; zkey load included in wall). circom constraint counts exact.
+- Bend 2 (2.0.5): montmul 2^24 batch 1914 ms 1-thr (8.8 M/s), 440 ms 10-thr (38 M/s), Metal 78 ms (~200 M/s; chained ~670 M/s). Arrays 2^24 gather 62 ms; 8 MB file→Array 30 ms. No argv; Nat literal ≥10000n crashes checker; Metal call overhead ~55 ms.
 - Bend 1/HVM2: u24 only, 12-bit limbs ×22; 254-bit schoolbook mul ≈ 51k interactions; 2^16 muls = 4.98 s on 8 thr compiled (~13k muls/s; ~2.7k 1-thr). Tree reduce scales 5.1× on 8 thr; loops 0×. Embedded literals cap 2^16 (compiled)/2^18 (interp); IO/FS/read_file works (~1 s per 2^18 limbs). Heap prealloc 6.4 GB RSS per compiled process.
 
 ## Residuals
