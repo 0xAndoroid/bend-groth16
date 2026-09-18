@@ -93,3 +93,10 @@ plan waves → spec wave → build → review → integrate → verify → fix(�
 - `2c12d9c` merged w4fix (run.sh runs 6 tests, exits non-zero on FAIL / PASS 0 / empty vectors; dead helpers dropped).
 - b3ef68f2 (prover-bench) messaged to re-merge and produce gpu rows with BENDG_GPU=1 (mini Metal, box CUDA).
 - Remaining: b3ef68f2 → quiet-host rerun → report lane → final review → merge main → teardown.
+
+## 04:40 — w3 prover-bench merged, box destroyed, w5 spawned
+- Merged `baab824` (bench/bend2-macmini.json, bend2-box.json, prover_results.md, bench_prover.sh). 55 runs OK+EQUAL.
+- Key: mini 10thr K=18 33.5 s (v1 88.6 s); Metal K=18 240 s. Box 48thr K=20 115 s (v1 103 s — v2 regresses +12 % on box); CUDA K=20 207 s, 21.3 GB peak. Box CUDA MSM 2^20 17.1 s vs CPU48 9.5 s; CUDA fft 2^20 3.1 s vs CPU48 0.42 s. gnark same box: 666 ms CPU / 203 ms GPU.
+- Vast 51392026 (pika-bend-5090) destroyed 04:38, verified gone. ~4.3 h × $0.628 ≈ $2.7.
+- w5 lanes: 6f07139f quiet-rerun (Fable, worktree w5-quiet, bench/quiet/**), 53bb57ce final-review (astra-xhigh, findings-only, no load).
+- Next: merge quiet → report lane (Fable, html-report-design) → fix review findings → merge main → teardown.
