@@ -115,3 +115,7 @@ plan waves → spec wave → build → review → integrate → verify → fix(�
 ## 05:15 — quiet rerun merged, teardown started
 - Merged `8a36ee9` (w5quiet). Quiet mini (10 thr): gnark 8.2/69/800/2953 ms; arkworks 17.6/139/1670/6573 (matrices 17.2/124/1513/6030); rapidsnark 16.8/104/1351/5011; snarkjs 255/935/9120/36000; Bend 2 v2 629/6000/31836 (K=10/14/18; `--gpu off` K=14 5569; 1-thr 846/11456). MSM G1 2^20 Bend 10302 vs gnark 391 vs arkworks 641; FFT 2^20 389 vs 22.4 vs 40.7. Ratios Bend/gnark 77×/86×/40× at K=10/14/18; loaded comparator numbers were 1.3–2.8× inflated; ordering unchanged.
 - 20 lane worktrees removed, local+remote branches deleted; only integration + w6-report remain. Box already destroyed.
+
+## 05:20 — report delivered, verifier spawned
+- b8526215 report: `~/.pika/web/reports/bend-groth16-bench-2026-09.html` (lint clean, 16 tables, 3 charts; verdict "Not competitive": Bend 2 CPU 40× behind gnark at 2^18 on the mini, 173–184× on the box; Bend CUDA 1,020× behind gnark+ICICLE at 2^20, slower than its own CPU path; Jolt answer: no). README link merged (`c9ad27a`); w6 worktree removed.
+- bb547442 astra report-verify (numbers vs JSON, claims, caveats). Then: merge main → kanban done → reply parent.
