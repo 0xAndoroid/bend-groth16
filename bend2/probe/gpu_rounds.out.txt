@@ -1,0 +1,111 @@
+# gpu_rounds sweep, M4 Mac mini, Bend 2.0.5, 2026-09-18. Built by bend2/probe/gpu_rounds.sh; BEND_ROUNDS=1 line = instrumented cube_run (host-synchronised scheduler rounds) followed by the bench's own line.
+## A fmul gpu FD0 N18
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=502.0 gpu field_mul gpu N=18 FD=0 xor=36312 ms=502 
+## A fmul cpu1 FD0 N18
+field_mul cpu N=18 FD=0 xor=36312 ms=29 
+## A g1add gpu FD0 N14
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=645.7 gpu g1_add gpu N=14 FD=0 sum=41096 ms=646 
+## A g1add cpu1 FD0 N14
+g1_add cpu N=14 FD=0 sum=41096 ms=24 
+## A fmul gpu FD0 N18
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=493.8 gpu field_mul gpu N=18 FD=0 xor=36312 ms=494 
+## A fmul cpu1 FD0 N18
+field_mul cpu N=18 FD=0 xor=36312 ms=29 
+## A g1add gpu FD0 N14
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=643.9 gpu g1_add gpu N=14 FD=0 sum=41096 ms=644 
+## A g1add cpu1 FD0 N14
+g1_add cpu N=14 FD=0 sum=41096 ms=24 
+## B fmul gpu N22 FD4
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=497.8 gpu field_mul gpu N=22 FD=4 xor=18660 ms=498 
+## B fmul gpu N22 FD4
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=500.1 gpu field_mul gpu N=22 FD=4 xor=18660 ms=500 
+## B fmul gpu N22 FD7
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=224.5 gpu field_mul gpu N=22 FD=7 xor=18660 ms=225 
+## B fmul gpu N22 FD7
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=223.5 gpu field_mul gpu N=22 FD=7 xor=18660 ms=223 
+## B fmul gpu N22 FD8
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=146.4 gpu field_mul gpu N=22 FD=8 xor=18660 ms=147 
+## B fmul gpu N22 FD8
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=137.9 gpu field_mul gpu N=22 FD=8 xor=18660 ms=138 
+## B fmul gpu N22 FD10
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=74.5 gpu field_mul gpu N=22 FD=10 xor=18660 ms=75 
+## B fmul gpu N22 FD10
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=72.8 gpu field_mul gpu N=22 FD=10 xor=18660 ms=73 
+## B fmul gpu N22 FD12
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=56.6 gpu field_mul gpu N=22 FD=12 xor=18660 ms=56 
+## B fmul gpu N22 FD12
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=53.8 gpu field_mul gpu N=22 FD=12 xor=18660 ms=54 
+## B fmul gpu N22 FD14
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=51.3 gpu field_mul gpu N=22 FD=14 xor=18660 ms=52 
+## B fmul gpu N22 FD14
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=55.9 gpu field_mul gpu N=22 FD=14 xor=18660 ms=56 
+## B fmul gpu N22 FD16
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=49.5 gpu field_mul gpu N=22 FD=16 xor=18660 ms=50 
+## B fmul gpu N22 FD16
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=50.9 gpu field_mul gpu N=22 FD=16 xor=18660 ms=51 
+## B fmul cpu10 N22 FD14
+rounds=1 frontier_sum=2 frontier_max=2 f1=0 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=94.2 cpu field_mul cpu N=22 FD=14 xor=18660 ms=94 
+## B fmul cpu10 N22 FD14
+rounds=1 frontier_sum=2 frontier_max=2 f1=0 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=87.3 cpu field_mul cpu N=22 FD=14 xor=18660 ms=87 
+## B fmul cpu1 N22 FD14
+rounds=1 frontier_sum=2 frontier_max=2 f1=0 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=452.5 cpu field_mul cpu N=22 FD=14 xor=18660 ms=453 
+## B fmul gpu N24 FD16
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=65.8 gpu field_mul gpu N=24 FD=16 xor=33036 ms=66 
+## B fmul cpu10 N24 FD14
+rounds=1 frontier_sum=2 frontier_max=2 f1=0 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=353.0 cpu field_mul cpu N=24 FD=14 xor=33036 ms=353 
+## B g1add gpu N20 FD7
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=1490.7 gpu g1_add gpu N=20 FD=7 sum=4696832 ms=1491 
+## B g1add gpu N20 FD10
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=272.7 gpu g1_add gpu N=20 FD=10 sum=57562112 ms=272 
+## B g1add gpu N20 FD14
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=122.5 gpu g1_add gpu N=20 FD=14 sum=917307392 ms=123 
+## B g1add cpu10 N20 FD14
+rounds=1 frontier_sum=2 frontier_max=2 f1=0 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=324.9 cpu g1_add cpu N=20 FD=14 sum=917307392 ms=325 
+## C msm cpu10 N10
+rounds=1 frontier_sum=2 frontier_max=2 f1=0 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=87.3 cpu msm g1 N=10 c=8 fd=1 mode=cpu ms=98 
+## C msm cpu1 N10
+rounds=1 frontier_sum=2 frontier_max=2 f1=0 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=113.1 cpu msm g1 N=10 c=8 fd=1 mode=cpu ms=123 
+## C msm gpu N10
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=5046.1 gpu msm g1 N=10 c=8 fd=1 mode=gpu ms=5046 
+## C msm gpu N10
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=5034.1 gpu msm g1 N=10 c=8 fd=1 mode=gpu ms=5034 
+## C msm cpu10 N14
+rounds=2 frontier_sum=4 frontier_max=2 f1=0 f<=128=2 f<=1024=0 f<=16384=0 f>16384=0 ms=653.0 cpu msm g1 N=14 c=8 fd=5 mode=cpu ms=662 
+## C msm cpu1 N14
+rounds=2 frontier_sum=4 frontier_max=2 f1=0 f<=128=2 f<=1024=0 f<=16384=0 f>16384=0 ms=1352.6 cpu msm g1 N=14 c=8 fd=5 mode=cpu ms=1362 
+## C msm gpu N14
+rounds=2 frontier_sum=3 frontier_max=2 f1=1 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=6454.5 gpu msm g1 N=14 c=8 fd=5 mode=gpu ms=6455 
+## C msm gpu N14
+rounds=2 frontier_sum=3 frontier_max=2 f1=1 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=6463.2 gpu msm g1 N=14 c=8 fd=5 mode=gpu ms=6463 
+## C msm gpu N14 FD1
+rounds=1 frontier_sum=1 frontier_max=1 f1=1 f<=128=0 f<=1024=0 f<=16384=0 f>16384=0 ms=16960.8 gpu msm g1 N=14 c=8 fd=1 mode=gpu ms=16961 
+## C msm gpu N14 FD3
+rounds=2 frontier_sum=3 frontier_max=2 f1=1 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=7684.4 gpu msm g1 N=14 c=8 fd=3 mode=gpu ms=7685 
+## C msm gpu N14 FD5
+rounds=2 frontier_sum=3 frontier_max=2 f1=1 f<=128=1 f<=1024=0 f<=16384=0 f>16384=0 ms=6439.4 gpu msm g1 N=14 c=8 fd=5 mode=gpu ms=6439 
+## C msm cpu1 N14 FD5
+rounds=2 frontier_sum=4 frontier_max=2 f1=0 f<=128=2 f<=1024=0 f<=16384=0 f>16384=0 ms=1370.2 cpu msm g1 N=14 c=8 fd=5 mode=cpu ms=1380 
+## D fft cpu10 N10
+rounds=12 frontier_sum=24 frontier_max=2 f1=0 f<=128=12 f<=1024=0 f<=16384=0 f>16384=0 ms=2.2 cpu ntt fft cpu N=10 FD=9 sum=33561138 ms=2 
+## D fft gpu N10
+rounds=12 frontier_sum=23 frontier_max=2 f1=1 f<=128=11 f<=1024=0 f<=16384=0 f>16384=0 ms=63.8 gpu ntt fft gpu N=10 FD=14 sum=33561138 ms=64 
+## D fft gpu N10
+rounds=12 frontier_sum=23 frontier_max=2 f1=1 f<=128=11 f<=1024=0 f<=16384=0 f>16384=0 ms=70.4 gpu ntt fft gpu N=10 FD=14 sum=33561138 ms=70 
+## D fft cpu10 N14
+rounds=16 frontier_sum=32 frontier_max=2 f1=0 f<=128=16 f<=1024=0 f<=16384=0 f>16384=0 ms=9.7 cpu ntt fft cpu N=14 FD=12 sum=535536455 ms=10 
+## D fft gpu N14
+rounds=16 frontier_sum=31 frontier_max=2 f1=1 f<=128=15 f<=1024=0 f<=16384=0 f>16384=0 ms=124.6 gpu ntt fft gpu N=14 FD=14 sum=535536455 ms=125 
+## D fft gpu N14
+rounds=16 frontier_sum=31 frontier_max=2 f1=1 f<=128=15 f<=1024=0 f<=16384=0 f>16384=0 ms=118.1 gpu ntt fft gpu N=14 FD=14 sum=535536455 ms=118 
+## D fft cpu10 N18
+rounds=20 frontier_sum=40 frontier_max=2 f1=0 f<=128=20 f<=1024=0 f<=16384=0 f>16384=0 ms=128.2 cpu ntt fft cpu N=18 FD=12 sum=4292556153 ms=130 
+## D fft gpu N18
+rounds=20 frontier_sum=39 frontier_max=2 f1=1 f<=128=19 f<=1024=0 f<=16384=0 f>16384=0 ms=885.6 gpu ntt fft gpu N=18 FD=14 sum=4292556153 ms=886 
+## D fft gpu N18
+rounds=20 frontier_sum=39 frontier_max=2 f1=1 f<=128=19 f<=1024=0 f<=16384=0 f>16384=0 ms=888.6 gpu ntt fft gpu N=18 FD=14 sum=4292556153 ms=889 
+## D fft gpu N18 FD10
+rounds=20 frontier_sum=39 frontier_max=2 f1=1 f<=128=19 f<=1024=0 f<=16384=0 f>16384=0 ms=979.9 gpu ntt fft gpu N=18 FD=10 sum=4292556153 ms=980 
+## D qap_h cpu10 N15
+rounds=51 frontier_sum=231 frontier_max=6 f1=0 f<=128=51 f<=1024=0 f<=16384=0 f>16384=0 ms=113.4 cpu ntt qap_h cpu N=15 FD=12 sum=1064265856 ms=114 
+## D qap_h gpu N15 FD12
+rounds=51 frontier_sum=229 frontier_max=6 f1=1 f<=128=50 f<=1024=0 f<=16384=0 f>16384=0 ms=246.8 gpu ntt qap_h gpu N=15 FD=12 sum=1064265856 ms=247 

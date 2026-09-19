@@ -1,0 +1,4 @@
+# gpu_lane probe, M4 Mac mini, Bend 2.0.5, 2026-09-18 (N=n: 2^n ops; ms; --threads 1)
+gpu_lane N=16 fmul_gpu1=172 fmul_gpu2=113 fmul_cpu=7 walk_gpu=13 walk_cpu=0 x=56930/56784/56930 w=1650688000/1650688000
+gpu_lane N=18 fmul_gpu1=501 fmul_gpu2=450 fmul_cpu=29 walk_gpu=51 walk_cpu=0 x=36312/51008/36312 w=2307784704/2307784704
+gpu_lane N=20 fmul_gpu1=1850 fmul_gpu2=1800 fmul_cpu=199 walk_gpu=210 walk_cpu=2 x=21587/53400/21587 w=641204224/641204224
