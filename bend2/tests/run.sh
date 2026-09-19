@@ -37,7 +37,7 @@ for t in test_fr test_fq test_g1 test_g2 test_ntt test_msm probe_show; do
   esac
 done
 printf "proofs: "
-sh "$ROOT/bend2/proofs/check.sh" >/dev/null 2>&1 && echo OK || { echo "  -> FAIL"; fail=1; }
+out=$(sh "$ROOT/bend2/proofs/check.sh" 2>&1) && echo OK || { echo "$out" | grep FAIL; echo "  -> FAIL"; fail=1; }
 printf 'test_prove: '
 out=$(sh "$ROOT/bend2/tests/test_prove.sh" 2>&1) || fail=1
 echo "$out" | tail -1

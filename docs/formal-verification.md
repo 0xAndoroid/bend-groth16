@@ -62,7 +62,7 @@ rewrite whose motive restates the whole goal, so the 16-limb `Fr.add_comm` is 16
 | Prover ≡ reference | Bend output equals a mathematical Groth16 prover on (pk, witness) | differential test only (`sh bend2/tests/run.sh`, K=4 prove vs arkworks) | **4–6 wk** wiring once layers exist. Equality to *arkworks* is not provable in any tool (Rust, no shared spec); the test stays as the bridge. |
 | Checker/compiler trust | `bend.ts` ≡ `bend.lean`; `comp.ts` C/Metal emission preserves semantics | README: mismatch, unaudited | out of scope for this repo; the ceiling on what any Bend proof means. |
 
-Total for an in-language end-to-end proof: **~35–60 engineer-weeks**, dominated by the missing libraries, and the
+Total for an in-language end-to-end proof: **~33–61 engineer-weeks** (sum of the rows above), dominated by the missing libraries, and the
 result is "correct relative to Bend 2.0.5's checker and compiler". A cheaper credible alternative is to port the
 *algorithms* (not the Bend code) to Lean 4/Mathlib and prove them there — that verifies a model, not this binary.
 
