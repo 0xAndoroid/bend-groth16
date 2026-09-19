@@ -36,7 +36,7 @@ checker `bend2/bend.ts`, base library `bend2/base.bend`, `guide/GUIDE.md`). Prot
 | Export / independent kernel | None (no Lean/Agda/Rocq exporter; Kind/Kind2 lineage not carried over as tooling). | search, upstream repo |
 | HVM / interaction nets | **Irrelevant to Bend 2**: runtime is BendRT (flat C state machine, fork-join), not HVM. No mechanized proofs of interaction-combinator or HVM correctness exist either way. | `GUIDE.md` §Under the Hood; bend2.dev notes |
 
-## Prototype (`bend2/proofs/`, checked into this PR)
+## Prototype (`bend2/proofs/`)
 
 ```sh
 sh bend2/proofs/check.sh          # also wired into bend2/tests/run.sh ("proofs: OK")

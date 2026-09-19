@@ -3,8 +3,7 @@
 **Checked 2026-09-18 on the Mac mini (Apple M4, 10 cores, 16 GB, Metal).** Target: **Bend 2.0.5**
 (`bendlang/bend` @ [`0b7e2b1`](https://github.com/bendlang/bend/commit/0b7e2b11c1054f5d0f4eb955cadb47997ef1115d),
 version commit 38ad338 2026-09-17). Bend 2 is the primary target; Bend 1 / HVM2 is covered by
-`docs/bend-idioms.md` and shares nothing with this note (README §Limitations: "Bend 1 programs and
-HVM do not carry over"). All file:line cites are into `bendlang/bend` at `0b7e2b1`. Probes:
+`docs/bend-idioms.md` and shares nothing with this note (Bend 1 programs and HVM do not carry over). All file:line cites are into `bendlang/bend` at `0b7e2b1`. Probes:
 `bend2/probe/*.bend`, raw outputs `bend2/probe/*.out.txt`.
 
 ## 1. What Bend 2 is

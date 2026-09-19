@@ -1,6 +1,7 @@
 # Bend 2 Groth16 prover — full-prover numbers (`bend2/prove.bend`)
 
-2026-09-18, Bend 2.0.5. Every run below printed `OK` (arkworks verify) and `EQUAL`
+2026-09-18, Bend 2.0.5, repo `baab824` (mini) / `92ac2c4` (box) — before the PR #5/#6 fixes listed in
+`docs/review-notes.md` §B (mini K=14 −22 %, K=18 −4 %). Every run below printed `OK` (arkworks verify) and `EQUAL`
 (A, B, C bit-identical to `data/K/proof_ref.json`). Raw per-run JSON: `bench/bend2-macmini.json`, `bench/bend2-box.json`
 (`prove` = MSM **v2**, `prove_v1` = MSM v1; `msm_g1`, `msm_g1_v1`, `ntt` primitives). Runner: `bend2/scripts/bench_prover.sh`
 (`run CFG RUNS K [args]` → one JSON line per `prove.sh` run; `merge META OUT RUNS` → the bench file).

@@ -10,7 +10,9 @@ per-leaf bucket sets, U32-only limbs. Details: `docs/used-properly-audit.md`, `b
 
 All numbers: SquareChain(2^K) over BN254 (K constraints, K+2 wires, one public scalar), median wall-clock ms.
 Bend rows = the prover's own `T total` (includes key/witness loading; excludes compile, runtime start-up and the
-external verify), MSM v2 defaults. Raw data: `bench/*.json`, `bench/quiet/*.json`; per-phase tables:
+external verify), MSM v2 defaults, measured at `baab824` (mini, quiet rerun) / `92ac2c4` (box) — before the
+algorithmic fixes of PRs #5/#6 (`docs/review-notes.md` §B: mini 10 threads K=14 5.49 → 4.28 s, K=18 31.4 → 30.1 s,
+`evals` K=18 163 → 54 ms). Tables were not re-run; ratios are pessimistic by that margin. Raw data: `bench/*.json`, `bench/quiet/*.json`; per-phase tables:
 `bend2/bench/prover_results.md`; loaded-vs-quiet analysis: `bench/quiet-results.md`.
 
 ## Headline ratios (Bend 2 ÷ comparator)

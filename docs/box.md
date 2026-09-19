@@ -1,8 +1,3 @@
----
-created: 2026-09-18
-updated: 2026-09-18
-tags: [bend-groth16, gpu, benchmark]
----
 # CUDA box — hardware, toolchain, reproduction
 
 Every `bench/box-*.json` and `bench/bend2-box.json` row, `bend2/bench/box_results.md` and the box half of
