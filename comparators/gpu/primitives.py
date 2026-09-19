@@ -8,13 +8,13 @@ ap.add_argument("--out", required=True)
 ap.add_argument("--min", type=int, default=10); ap.add_argument("--max", type=int, default=20)
 ap.add_argument("--iters", type=int, default=10)
 ap.add_argument("--cpu", default=""); ap.add_argument("--gpu", default=""); ap.add_argument("--git-head", default="")
-ap.add_argument("--repo", default="/root/w1"); ap.add_argument("--dev", default="/root/dev"); ap.add_argument("--art", default="/root/art")
+ap.add_argument("--repo", default=os.environ.get("REPO", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))); ap.add_argument("--dev", default=os.environ.get("DEV", "/root/dev")); ap.add_argument("--art", default=os.environ.get("ART", "/root/art"))
 ap.add_argument("--skip-sppark", action="store_true")
 a = ap.parse_args()
 doc = {"schema": 1, "framework": "gpu-primitives", "host": platform.node(), "cpu": a.cpu, "gpu": a.gpu, "git_head": a.git_head, "updated": "",
        "icicle": {}, "sppark": {}}
 
-# ICICLE v4 (open-icicle v4.0.0), CUDA backend built with -DCUDA_ARCH=120 into /root/art/icicle4-install
+# ICICLE v4 (open-icicle v4.0.0), CUDA backend built with -DCUDA_ARCH=120 into $ART/icicle4-install
 env = dict(os.environ, ICICLE_BACKEND_INSTALL_DIR=f"{a.art}/icicle4-install/lib/backend", LD_LIBRARY_PATH=f"{a.art}/icicle4-install/lib")
 r = subprocess.run([f"{a.repo}/comparators/gpu/icicle-prim/target/release/icicle-prim", "--min", str(a.min), "--max", str(a.max), "--iters", str(a.iters)],
                    capture_output=True, text=True, env=env)

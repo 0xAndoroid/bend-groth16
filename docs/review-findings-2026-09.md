@@ -1,8 +1,8 @@
-# Final whole-diff review (gpt-6-astra-xhigh, 2026-09-18 04:45 ET) — verdict fix-first; fixes landed in 7b5c495/fb129e7
+# Review findings (September 2026)
 
-Reviewed `main=968b531...HEAD=c72aa5d`; the extra commit after the requested 69-commit snapshot changes only the journal. Read-only source, installed Bend 2.0.5 runtime/guide, ark-groth16 0.5 source, JSON, and file-size inspection. No build, test, benchmark, compiler invocation, or repo mutation. `git diff --check` finds one trailing blank line (`bend2/src/msm.bend:511`).
+Independent read-only review of the repository at `c72aa5d` against the installed Bend 2.0.5 runtime/guide, the ark-groth16 0.5 source and the benchmark JSON. Line numbers refer to that revision. The P1/P2 items in the first table were fixed in `7b5c495` / `fb129e7` (bench loader sized from `header.bin`, `bench_prover.sh` enforcing the CFG mode and rejecting unverified runs, `run.sh` running every test); the remaining tables are kept as the caveat list for reading the numbers.
 
-## Fix before presenting this as a validated, reproducible comparison
+## Fixed before publication
 
 | Priority | Location | Finding |
 |---|---|---|
@@ -77,7 +77,7 @@ Unretained data, not numeric contradictions: `bench/bend2-*.json` retain only ag
 | `docs/used-properly-audit.md:35`, `:36` checklist #6 | “No execution path / no backend comparison” is stale: full-prover CPU1/CPU-all/Metal/CUDA rows now carry OK+EQUAL. Under the audit's strict criterion, use partial rather than unconditional P: the exact GPU-entry path with `--gpu off` is not recorded, and largest-size CPU1 coverage remains missing. |
 | `docs/used-properly-audit.md:34`, `:37`, `:84` | V2 coverage improved on box sizes 10/12/14/16 across modes; mini K20 v2/default still has no same-config CPU1/Metal row. Keep remaining coverage partials with current evidence. This audit already reviewed MSM v2 (`:13`, `:22`): the v2 change does not invalidate the serial-join/scan or array-copy findings. |
 | `docs/used-properly-audit.md:21`, `:22`, `:23`, `:24`, `:32` | Still applicable: copying array boundaries; serial bucket joins/scans; serial CSR/scalar passes; serialized top-level phases; non-tail loader continuation. Full prover also allocates buckets for padded empty point leaves (`:59`). These support PARTIAL after the GPU switch. |
-| `docs/used-properly-audit.md:95`, `:107`, `:104` | Loader-wrap finding remains TRUE, not stale; test runner omissions and NTT failure-exit assertions at line 104 are stale after w4fix. `Groth.g2_store` workaround remains despite the actual G2 store fix. |
+| `docs/used-properly-audit.md:95`, `:107`, `:104` | Loader-wrap finding remains TRUE, not stale; test runner omissions and NTT failure-exit assertions at line 104 were fixed in a later revision. `Groth.g2_store` workaround remains despite the actual G2 store fix. |
 
 ## Stale documentation / maintainability
 
@@ -87,11 +87,11 @@ Unretained data, not numeric contradictions: `bench/bend2-*.json` retain only ag
 | `bend2/README.md:14`, `:15`, `:37`, `:49` | Layout/API section predates MSM/NTT/prover; field-only test list no longer describes `run.sh`; “wave 2 builds” language remains. `FORMAT.md:33` promises exactly three stdout lines, but `prove.bend:158` emits T lines too. `tools/README.md:10` pipes unfiltered prover output to a parser that rejects T lines; actual `prove.sh` filters them. |
 | `bend2/prove.bend:4`; `bend2/src/groth16.bend:290` | Remove “flip imports when real modules land” and fixed-bug workaround claims. `Groth.g2_store` duplicates the now-correct `G2Aff.to_array` and exists only for that obsolete workaround. |
 | `bend2/src/naive.bend:1`; `bend2/scripts/gen_naive_consts.py:1`; `bend2/gen/vectors_to_bin.py:1` | Temporary stand-ins and fallback converter remain. No checked-in caller/test imports naive.bend; either retain as an explicitly exercised oracle or remove it and its helper. Canonical exporter already replaces the fallback. |
-| `bend2/src/fq.bend:2476`, `:2482`, `:2490`; `bend2/gen/gen_field.py:263` | Fq shift/limb/bit-window helpers remain uncalled outside their own helper chain; generator still emits them. This journal residual was not fully removed. Generated 2500-line field files themselves are explained by straight-line CIOS/inversion generation, not an unexplained abstraction problem. |
+| `bend2/src/fq.bend:2476`, `:2482`, `:2490`; `bend2/gen/gen_field.py:263` | Fq shift/limb/bit-window helpers remain uncalled outside their own helper chain; generator still emits them. This residual was not fully removed. Generated 2500-line field files themselves are explained by straight-line CIOS/inversion generation, not an unexplained abstraction problem. |
 | `docs/bend2-idioms.md:133`, `:135`, `:165` | These are old proposed designs/estimates: per-window GPU dispatch and parallel bucket joins/prefix reduction are not the implemented MSM; recursive DIT/twiddle-array NTT is not the implemented Stockham chunk tree. The 0.1–0.5 s Metal MSM estimate missed per-window work and is contradicted by measured seconds. Label as superseded plan and link actual modules/results. |
 | `docs/bend2-idioms.md:65`, `:100` | G1 affine points occupy 32 U32 limbs, not the example's eight: 2^18 points require 32 MiB, not 8 MiB. The warning about +sharing a proving-key Array conflicts with the actual rule that Array is non-reusable (`:103`; installed GUIDE.md:183). |
 | `bend2/bench/msm_results.md:8`, `:51`, `:83` | First tables need an explicit v1 heading; current defaults are v2. “First n points / files exactly fill” is false (loader defect). Attributing OOM to “no GC” omits affine freeing/recycling; private dense bucket memory is the demonstrated issue. |
-| `bend2/bench/box_results.md:59`, `:61`; `docs/box.md:8`, `:96` | Box results are an old snapshot, but current-facing future instructions still predict a huge speedup, say MSM/NTT absent, and imply a live rental. Box is destroyed per journal. Keep snapshot provenance while linking current results and teardown state. |
+| `bend2/bench/box_results.md:59`, `:61`; `docs/box.md:8`, `:96` | Box results are an old snapshot, but current-facing future instructions still predict a huge speedup, say MSM/NTT absent, and imply a live rental. The box no longer exists. Keep snapshot provenance while linking current results and teardown state. |
 | `docs/comparators.md:196`, `:203`, `:259` | Clearly marked research plan, but not the implemented recipe: arkworks 0.6 proposed versus 0.5 used; gnark GPU recipe only builds BN254 whereas actual runner links all four curves (`comparators/box/build.sh:14`); final comparison table still says Bend/HVM2. Add a current-results/recipe pointer rather than treating these as run instructions. |
 | `docs/comparators.md:89`, `:103`, `:195` | Plan download/build recipes were superseded by actual findings: Hermez URLs 403; Mac rapidsnark make target expects unavailable nproc. Actual Circom README documents working alternatives. |
 | `comparators/gpu/icicle-prim/Cargo.toml:6` | Claims ICICLE_RS override, but dependency paths are hardcoded `/root/dev/open-icicle/...`; no environment override is read. Box-only build works in its specified layout; advertised relocation does not. |
@@ -106,18 +106,8 @@ Unretained data, not numeric contradictions: `bench/bend2-*.json` retain only ag
 | `comparators/gnark/main.go:72` | Load sampling is macOS-only sysctl; Linux use records an empty loadavg. Box uses a separate runner with no load sample at all. |
 | `.gitignore:1` | Covers targets, node_modules, large proving artifacts and /data. Does not cover documented root-output Bend executables or their .gpu caches, GPU Go binary, Python __pycache__. No such binaries/data were tracked at reviewed HEAD; largest tracked blobs are ~106 KB generated Bend source. Small probe output files are useful evidence, not large artifacts. |
 | `_typos.toml:6` | JSON benchmarks entirely excluded from spelling checks; reasonable for machine data, but it also skips free-text notes. No typos process run (quiet-host restriction); static diff check reports only MSM's final blank line. |
-| `docs/box.md:18`; `comparators/box/bend-cuda.sh:5` | Hardcoded rental IP/port and local SSH-key filename. Not a credential; acceptable historical metadata in a private repo, but unnecessary in a shareable benchmark and unusable after teardown. Replace with placeholders before publishing. Targeted secret-pattern scan found no committed key/token material. |
+| `docs/box.md`; `comparators/box/*.sh` | Rental-specific host details were removed and script paths made variables (`REPO`, `DEV`, `ART`, `TOOLS`). Targeted secret-pattern scan found no committed key/token material. |
 | Tracked source/docs | No TODO/FIXME/HACK/XXX markers found. No repo changes staged or left unstaged by this review. |
-
-## Journal values not safe as report inputs
-
-| Location | Current JSON / correction |
-|---|---|
-| `.journals/ultra-code-bend-groth16.md:72` | gnark prove 13.4/97/928/3929 -> `bench/gnark-macmini.json` `prove.{10,14,18,20}.ms` = 14.385417/194.095875/1249.76725/3330.942291. K14 CPU1 1845 -> `prove_1t.14.ms=431.069709`. MSM848 -> `msm_g1.20.ms=399.895583`; FFT43 -> `ntt.20.fft_ms=29.2705`. Historical runs may have existed, but they are not the retained JSON series. |
-| `.journals/ultra-code-bend-groth16.md:76`, `:78`, `:79` | K10 Bend 1103 ms is an older probe, current `bend2-macmini.json` `prove.10.cpu_all.ms=627`, `prove_v1.10.cpu_all.ms=732`. Old MSM ratio ~25x becomes 20808/399.895583=~52x for v1; old NTT ratio ~12x becomes 529/29.2705=~18.1x. These remain shared-host data, not quiet reruns. |
-| `.journals/ultra-code-bend-groth16.md:77` | 59038 ms CPU1 uses fd8; 11087 ms CPU10 uses fd7 (`msm_results.md:65`, `:66`). Not fixed-config scaling. |
-| `.journals/ultra-code-bend-groth16.md:85`, `:86` | Resolved runner/exit/head1 items still mixed with unresolved loader/Fq-helper items. |
-| `.journals/ultra-code-bend-groth16.md:98`, `:100` | 55 counts v2 only; both JSON files retain 92 samples including 37 historical v1 samples (50 mini +42 box). Label that subset. Listed rental 05:47 UTC to teardown 04:38 ET = 2h51, ~1.79 USD at 0.628/h, not 4.3h/~2.7 USD. |
 
 ## Full-prover integer presentation differences
 
@@ -135,4 +125,3 @@ Harmless precision differences, not failed measurements: table values mostly tru
 | 76 | bench/bend2-box.json: prove_v1.18.cpu_all | load: 885 -> 885.5; msm_b1: 4220 -> 4220.5; msm_b2: 13694 -> 13694.5; msm_l: 2955 -> 2955.5; total: 31638 -> 31638.5 |
 | 77 | bench/bend2-box.json: prove_v1.20.cpu_all | load: 3493 -> 3493.5; msm_a: 13942 -> 13942.5; msm_b1: 13858 -> 13858.5; msm_b2: 45371 -> 45371.5 |
 
-Review artifact retained at the requested scratch path for parent handoff; no other scratch created. Remove it after collecting findings.

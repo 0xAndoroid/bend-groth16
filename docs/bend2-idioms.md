@@ -29,7 +29,7 @@ PATH="$HOME/.bend/bin:$PATH" BEND_NO_TELEMETRY=1 sh install.sh   # PATH pre-set 
 
 - Layout: `~/.bend/bin/bend` is a 3.5 KB **sh launcher** that runs `bun ~/.bend/current/bend2/main.ts`; `current -> app/2.0.5/wYTOWc` (704 KB: `bend2/{main,bend,comp}.ts`, `base.bend`, `effs/*.{c,js}`, `guide/GUIDE.md`). Installs Bun if missing.
 - The launcher **auto-updates and pings** `bend-lang.com` on every run unless `BEND_NO_TELEMETRY=1` (`install.sh` launcher comment). Always export it.
-- **PATH collision:** a sibling lane installs Bend 1 as `~/.cargo/bin/bend`. The installer prepends `~/.bend/bin` to the rc file only when it is not already on `PATH`; with the trick above nothing is written (verified: `grep .bend ~/.zshrc` empty). **Invoke Bend 2 by absolute path `~/.bend/bin/bend`** in scripts; `which bend` on this machine is Bend 1.
+- **PATH collision:** a Bend 1 install may exist as `~/.cargo/bin/bend`. The installer prepends `~/.bend/bin` to the rc file only when it is not already on `PATH`; with the trick above nothing is written (verified: `grep .bend ~/.zshrc` empty). **Invoke Bend 2 by absolute path `~/.bend/bin/bend`** in scripts; `which bend` on this machine is Bend 1.
 - Needs clang: Apple clang 21 (`/usr/bin/clang`) works incl. Metal; Homebrew clang fails with `-fmodules` (issue #769). No CUDA on the mini.
 - Compile times: hello 0.66 s; `montmul.bend` (1.8k lines, with Metal pipeline build) 6 s.
 

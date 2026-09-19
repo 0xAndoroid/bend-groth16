@@ -1,6 +1,6 @@
-# Quiet-host rerun of the Mac mini CPU numbers (w5quiet)
+# Quiet-host rerun of the Mac mini CPU numbers
 
-Mac mini, Apple M4 (10 cores, 16 GB), 2026-09-18 04:37–05:10 ET, head `baab824`. Every earlier mini number was taken while 6–15 sibling lanes loaded the host (load1 9–20); this rerun is **strictly sequential** (one benchmark process at a time) with a gate that waits for load1 ≤ 4 before every run (60 s × ≤5 retries; no run was aborted, the gate waited once or twice after each heavy step because our own previous run inflates load1). Raw JSON: `bench/quiet/*.json` (same schemas as `bench/`). Wall-clock ms, **median**; `load1` = 1-min load average right before the run.
+Mac mini, Apple M4 (10 cores, 16 GB), 2026-09-18 04:37–05:10 ET, head `baab824`. Every earlier mini number was taken while other builds and benchmarks loaded the host (load1 9–20); this rerun is **strictly sequential** (one benchmark process at a time) with a gate that waits for load1 ≤ 4 before every run (60 s × ≤5 retries; no run was aborted, the gate waited once or twice after each heavy step because our own previous run inflates load1). Raw JSON: `bench/quiet/*.json` (same schemas as `bench/`). Wall-clock ms, **median**; `load1` = 1-min load average right before the run.
 
 Notes on what is verified: gnark verifies every timed proof; rapidsnark/snarkjs `bench.py` verifies every timed proof with `snarkjs groth16 verify`; Bend `prove.sh` verifies every run with the arkworks harness and compares to `proof_ref` (all OK + EQUAL); **arkworks `groth16-ref bench` verifies only the untimed warm-up proof per size** (`ref/src/bench.rs:88`), the `iters` timed proofs are not individually verified.
 
@@ -35,7 +35,7 @@ Primitives (10 threads): G1 MSM 2^16 / 2^18 / 2^20 = 34.4 / 115 / 391 ms; FFT 2^
 | 18 | 1351 | 1422, 1351, 1351 | 9120 | 9115, 9120, 9249 |
 | 20 | 5011 | 5250, 5011, 4990 | 36000 | 36000 |
 
-load1 at start: rapidsnark 3.04 (one process for all K), snarkjs 2.76 (K ≤ 18) / 3.38 (K = 20). Wall time includes process start + zkey load (562 MB at K=20). Artefacts from `$TMPDIR/bend-groth16/w0e` (zkeys/witnesses from the original w0e lane, reused).
+load1 at start: rapidsnark 3.04 (one process for all K), snarkjs 2.76 (K ≤ 18) / 3.38 (K = 20). Wall time includes process start + zkey load (562 MB at K=20). Artefacts: the zkeys/witnesses generated for the first pass (`comparators/circom/`), reused.
 
 ## Bend 2 prover (bend2/prove.bend, Bend 2.0.5, MSM v2 defaults)
 

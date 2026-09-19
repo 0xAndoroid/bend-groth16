@@ -10,7 +10,7 @@
  "threads": 10,
  "git_head": "1628377",
  "updated": "2026-09-18T08:28:16Z",
- "notes": "MSM v2 (788b49e: fd 7, c 8/10) for prove; prove_v1 = a2d704a defaults (fd 4, c 8/12; also holds the only K=18 --threads 1 run). prove.<k>.gpu = BENDG_GPU=1 (d524023: one ! per MSM / qap phase, Metal); K=18 needs --gpu 8GB (default span: out of memory); cpu_all = prove.sh default (10 threads); other lanes were running on the mini (see loadavg). msm_g1/ntt: medians from bend2/bench/msm_results.md (G1, v1 defaults fd 4, c 8/12, a2d704a) and ntt_results.md (fft), ms per config {cpu1, cpu_all, gpu=Metal}.",
+ "notes": "MSM v2 (788b49e: fd 7, c 8/10) for prove; prove_v1 = a2d704a defaults (fd 4, c 8/12; also holds the only K=18 --threads 1 run). prove.<k>.gpu = BENDG_GPU=1 (d524023: one ! per MSM / qap phase, Metal); K=18 needs --gpu 8GB (default span: out of memory); cpu_all = prove.sh default (10 threads); other processes were running on the host (see loadavg). msm_g1/ntt: medians from bend2/bench/msm_results.md (G1, v1 defaults fd 4, c 8/12, a2d704a) and ntt_results.md (fft), ms per config {cpu1, cpu_all, gpu=Metal}.",
  "msm_g1_v1": {
   "10": {
    "log2": 10,

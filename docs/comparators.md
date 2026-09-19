@@ -45,7 +45,7 @@ curl -fsSL https://crates.io/api/v1/crates/bellperson/0.27.0 | jq '.version|{num
 
 ## Production, formats, and hardware fit
 
-“Mac CPU” below is source/platform support, not a completed build in this lane. No CUDA runs on Apple Silicon. Linux means x86_64; CUDA rows require the separate Blackwell gate below.
+“Mac CPU” below is source/platform support, not a completed build here. No CUDA runs on Apple Silicon. Linux means x86_64; CUDA rows require the separate Blackwell gate below.
 
 | Candidate | Deployment evidence and BN254 | Circuit input / parallelism | macOS arm64 / Ubuntu 24.04 + RTX 5090 |
 |---|---|---|---|
@@ -237,7 +237,7 @@ Send eleven `prove` lines followed by `exit` to one worker, separately for each 
 
 ## Primitive benchmarks — built-ins and required adjustments
 
-Use BN254 **G1** with full-width Fr scalars, and radix-2 **Fr** transforms; sizes `2^k`, `k=10…20`. Batch=1; report base/twiddle setup separately, host-transfer versus device-resident time separately. Correctness checks compare outputs against arkworks, never infer success from elapsed time. Commands run in the named pinned checkout; benchmark source edits are planned local benchmark patches, not changes made by this research lane.
+Use BN254 **G1** with full-width Fr scalars, and radix-2 **Fr** transforms; sizes `2^k`, `k=10…20`. Batch=1; report base/twiddle setup separately, host-transfer versus device-resident time separately. Correctness checks compare outputs against arkworks, never infer success from elapsed time. Commands run in the named pinned checkout; benchmark source edits are planned local benchmark patches, not changes made as part of this plan.
 
 | Library | Exact available command | Coverage / adjustment needed before comparable numbers |
 |---|---|---|

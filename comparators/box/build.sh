@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Build every comparator on the GPU box (Ubuntu 24.04, CUDA 12.8 devel, RTX 5090 = sm_120).
-# Layout: sources /root/dev/<repo> (see comparators/box/README.md), builds/installs under /root/art.
+# Layout: sources $DEV/<repo> (see comparators/box/README.md), builds/installs under $ART.
 set -euxo pipefail
-export PATH=/home/pika/.cargo/bin:/usr/local/go/bin:/root/tools:/root/tools/node_modules/.bin:$PATH
+DEV=${DEV:-/root/dev}; ART=${ART:-/root/art}; TOOLS=${TOOLS:-/root/tools}
+REPO=${REPO:-$(cd "$(dirname "$0")/../.." && pwd)}
+export PATH=$HOME/.cargo/bin:/usr/local/go/bin:$TOOLS:$TOOLS/node_modules/.bin:$PATH
 THREADS=${THREADS:-$(nproc)}
-ART=/root/art; DEV=/root/dev; REPO=${REPO:-/root/w1}
+
 # rapidsnark v0.0.8 (CPU)
 if [ ! -x $DEV/rapidsnark/package/bin/prover ]; then
   (cd $DEV/rapidsnark && ./build_gmp.sh host && make host -j"$THREADS")
@@ -37,4 +39,4 @@ fi
 (cd $DEV/sppark/poc/msm-cuda && cargo bench --features bn254 --bench msm --no-run -q)
 cp $REPO/comparators/gpu/sppark/ntt_timer.rs $DEV/sppark/poc/ntt-cuda/examples/ntt_timer.rs 2>/dev/null || { mkdir -p $DEV/sppark/poc/ntt-cuda/examples && cp $REPO/comparators/gpu/sppark/ntt_timer.rs $DEV/sppark/poc/ntt-cuda/examples/; }
 (cd $DEV/sppark/poc/ntt-cuda && cargo build -q --release --features bn254 --example ntt_timer)
-touch /root/done-build
+touch $ART/done-build

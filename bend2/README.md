@@ -1,6 +1,6 @@
 # bend2 — Groth16 prover in Bend 2 (BN254)
 
-Bend **2.0.5** (`~/.bend/bin/bend`, always with `BEND_NO_TELEMETRY=1`; plain `bend` on the mini is Bend 1).
+Bend **2.0.5** (`~/.bend/bin/bend`, always with `BEND_NO_TELEMETRY=1`; a plain `bend` on PATH may be Bend 1).
 Facts and measured limits: `docs/bend2-idioms.md`. Binary interchange format: `FORMAT.md`.
 
 Prove: `sh bend2/scripts/prove.sh K [--threads 1]` builds `prove.bend`, proves `data/K/bend`, verifies with the

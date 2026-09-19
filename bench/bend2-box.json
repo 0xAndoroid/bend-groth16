@@ -6,7 +6,7 @@
   "clang": "19.1.7",
   "cuda": "12.8"
  },
- "host": "pika-bend-5090",
+ "host": "rtx5090-box",
  "cpu": "AMD Ryzen Threadripper 9960X 24-Cores",
  "gpu": "NVIDIA GeForce RTX 5090 32607 MiB (CUDA)",
  "threads": 48,
