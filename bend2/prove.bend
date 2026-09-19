@@ -3,7 +3,7 @@
 # Build: BEND_NO_TELEMETRY=1 ~/.bend/bin/bend bend2/prove.bend -o prove_bin  (bend2/scripts/prove.sh)
 import Base
 import ./src/msm.bend as Msm
-import ./src/ntt.bend as Ntt
+import ./src/ntt.bend as N
 import ./src/fr.bend as R
 import ./src/g1.bend as G
 import ./src/g2.bend as G2
@@ -40,14 +40,14 @@ def Pr.g2_run(gpu: Bool, pts: Array<U32>, scs: Array<U32>, +n: Nat) -> Array<U32
       Msm.g2(pts, scs, n)
 
 def Pr.qap_dev(a: Array<U32>, b: Array<U32>, c: Array<U32>, +lg: Nat) -> Array<U32>:
-  Ntt.Ntt.qap_h(a, b, c, lg)
+  N.Ntt.qap_h(a, b, c, lg)
 
 def Pr.qap_run(gpu: Bool, a: Array<U32>, b: Array<U32>, c: Array<U32>, +lg: Nat) -> Array<U32>:
   match gpu:
     case True{}:
       Pr.qap_dev!(a, b, c, lg)
     case False{}:
-      Ntt.Ntt.qap_h(a, b, c, lg)
+      N.Ntt.qap_h(a, b, c, lg)
 
 # ---------------------------------------------------------------- phase: h coefficients (canonical)
 

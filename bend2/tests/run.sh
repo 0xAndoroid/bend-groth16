@@ -1,7 +1,7 @@
 #!/bin/sh
 # Build + run every bend2 test against data/vectors/bend/*.bin and data/{4,10}/bend, then the
 # end-to-end K=4 prove (tests/test_prove.sh). Run from anywhere.
-# Vectors: `groth16-ref vectors data/vectors` then `bend2/tools/export_bin.py --vectors data/vectors`;
+# Vectors: `groth16-ref vectors --out data/vectors` then `bend2/tools/export_bin.py --vectors data/vectors`;
 # QAP refs via bend2/gen/ref_qap.py.
 # Exit 1 unless every test exits 0 and prints only PASS lines (no FAIL, no `PASS 0`).
 set -eu
