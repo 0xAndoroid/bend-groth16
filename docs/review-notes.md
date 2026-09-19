@@ -61,12 +61,12 @@ The "~55 ms per `!`" folklore is a **per-process first-call cost** (50–60 ms: 
 | `Fr.mul` ×2^22 EP tree, FD 4 / 7 / 10 / 12 / 16 | 16 / 128 / 1k / 4k / 64k leaves, 1 round | 453–463 | 87–100 | 500 / 230 / 74–89 / 55–72 / 50–61 | 5.5× / 2.5× / 0.9× / 0.7× / 0.6× (÷ CPU×10) |
 | `Fr.mul` ×2^24 EP tree, FD 16 | 65536 / 1 | — | 353–387 | **66–75** | **0.19× (GPU wins 5×)** |
 | `G1.add_mixed` chains ×2^20, FD 7 / 14 | 128 / 16384, 1 round | — | 325–357 | 1480 / **98–123** | 4.4× / **0.3×** |
-| MSM G1 2^10, c=8 fd=1 (`bench/msm.bend` default) | 2 leaves / 1 | 123 | 94–98 | 5040 | **51–54×** |
+| MSM G1 2^10, c=8 fd=1 (`bend2/bench/msm.bend` default) | 2 leaves / 1 | 123 | 94–98 | 5040 | **51–54×** |
 | MSM G1 2^14, c=8 fd=5 (default) | 32 leaves / 2 | 1362–1380 | 662–684 | 6441–6455 | **9.4–9.8×** |
-| fft 2^10 / 2^14 / 2^18, FD 14 (`bench/ntt.bend`) | ≤8192 tasks / **12 / 16 / 20 rounds** | — | 2 / 9–10 / 120–130 | 59–64 / 120 / 886–889 | 30× / 12× / 7× |
+| fft 2^10 / 2^14 / 2^18, FD 14 (`bend2/bench/ntt.bend`) | ≤8192 tasks / **12 / 16 / 20 rounds** | — | 2 / 9–10 / 120–130 | 59–70 / 118–125 / 886–889 | 30× / 12× / 7× |
 | qap_h 2^15 FD 12 (7 transforms, 3 pipelines) | 3×2048 / 51 rounds | — | 98–114 | 243–247 | 2.2–2.5× |
 
-Box (RTX 5090 vs 48 threads; `bench/box_results.md`, `prover_results.md`, `bench/bend2-box.json`): `field_mul` 2^28 **19 vs 2098 ms**, `g1_add` 2^26 65 vs 6776 (GPU 100×+ faster); MSM 2^20 c=10 fd=9
+Box (RTX 5090 vs 48 threads; `bend2/bench/box_results.md`, `bend2/bench/prover_results.md`, `bench/bend2-box.json`): `field_mul` 2^28 **19 vs 2098 ms**, `g1_add` 2^26 65 vs 6776 (GPU 100×+ faster); MSM 2^20 c=10 fd=9
 (512 leaves) **17.1 vs 9.5 s**, fft 2^20 3.1 vs 0.42 s, prover K=20 207 vs 115 s (GPU 1.8–7.4× slower). Same shape, smaller lane penalty: 14.1 G mul/s ÷ 16384 lanes = 0.86 M/s per lane vs 6.0–6.2 M/s
 per thread ⇒ ≈7× per lane.
 
@@ -74,13 +74,13 @@ per thread ⇒ ≈7× per lane.
 *L*/*s* > *P* **and** the tasks are SIMD-uniform: a lane is an independent `switch`-driven state machine and 32 lanes step in lockstep, so absent or divergent neighbours idle a SIMD group (measured:
 16 leaves run at full lane speed, 128 at ¼ each; throughput saturates past ~2^12 leaves at ≈0.7–1 G mul/s ≈ 80–110 core-equivalents). **Break-even: ≈70–90 busy uniform ALU lanes on the mini (≈500 for
 memory-walking code), ≈125 / ~1000 on the box.**
-- **MSM v2** (`src/msm.bend`): 2^fd ≤ 128 leaves (32 at 2^14, 2 at 2^10), each a *sequential* Pippenger over W windows with a private 2^c-bucket array (8 MiB at c=10); every bucket add moves 48+48
+- **MSM v2** (`bend2/src/msm.bend`): 2^fd ≤ 128 leaves (32 at 2^14, 2 at 2^10), each a *sequential* Pippenger over W windows with a private 2^c-bucket array (8 MiB at c=10); every bucket add moves 48+48
   bucket words + a 32-word point at random offsets (memory-shaped). The join then adds (2^fd−1)·W·2^c buckets in a tree whose top level is **one lane**. 2^14/fd 5: critical path ≈ 16k leaf + 5×8k join
   = 56k adds × 39 µs per lane add (`g1_add` FD 0: 646 ms / 2^14) = 2.2 s ALU floor; 6.4 s measured, the rest is bucket latency + the ∞-fill/read of 32×256×64 words per leaf. The model only brackets
   this: with *s* = 15 (ALU) *L*/*s* = 2 ≈ *P* predicts parity, with *s* ≈ 100 (bucket traffic) it predicts 1362 ms × 100 / 32 ≈ 4.3 s + join ≈ 7–10× (9.4–9.8× measured); 2^10 (L=2) is ≫ slower either
   way. The box 2^20 fd 9 run (1.8×) sits between the same two bounds. `nvidia-smi` 100 % = one resident kernel, not occupancy. The winning `field_mul`/`g1_add` benches had register inputs, no arrays,
   2^14–2^16 identical leaves, one round.
-- **NTT** (`src/ntt.bend`, Stockham chunk tree): every radix-2 stage's join returns to the host ⇒ **rounds = log2 n + 2** (measured, CPU and GPU). Per round at 2^18: 2^17 butterflies over ≥8192 lanes
+- **NTT** (`bend2/src/ntt.bend`, Stockham chunk tree): every radix-2 stage's join returns to the host ⇒ **rounds = log2 n + 2** (measured, CPU and GPU). Per round at 2^18: 2^17 butterflies over ≥8192 lanes
   = a few tens of `Fr.mul` per lane ≈ 0.05 ms of ALU, yet 44 ms measured: the stage streams 2×16 MB of cells (+ a freshly allocated output chunk per task) through per-lane 8-byte accesses ⇒ ≈0.8 GB/s
   effective vs ~100 GB/s peak; 10 CPU threads move the same 32 MB in 6 ms. qap_h loses least (2.2–2.5×): 3 pipelines overlap.
 
@@ -95,5 +95,5 @@ memory-walking code), ≈125 / ~1000 on the box.**
 4. Without 1–2 the phase-wise `BENDG_GPU=1` prover cannot win at any K: its five MSMs offer ≤128 (mini) / ≤512 (box) busy lanes.
 
 **Reproduce** (mini; needs `data/18/bend`; macOS/Metal): `sh bend2/probe/gpu_rounds.sh bend2/bench/msm.bend $TMPDIR/gr` (patches `cube_run` in the emitted C; `BEND_ROUNDS=1` prints `rounds=…
-frontier_max=… ms=…` per `!`), then `BEND_ROUNDS=1 MODE=gpu N=14 $TMPDIR/gr/msm` vs `MODE=cpu N=14 $TMPDIR/gr/msm --threads 10`; same for `bench/ntt.bend` (`OP=0 N=18 FD=14`), `bench/field_mul.bend`
+frontier_max=… ms=…` per `!`), then `BEND_ROUNDS=1 MODE=gpu N=14 $TMPDIR/gr/msm` vs `MODE=cpu N=14 $TMPDIR/gr/msm --threads 10`; same for `bend2/bench/ntt.bend` (`OP=0 N=18 FD=14`), `bend2/bench/field_mul.bend`
 (`N=22 FD=4..16`). Lane speed: `cd bend2/probe && ~/.bend/bin/bend gpu_lane.bend -o gl && N=20 ./gl --threads 1`. Box: `comparators/box/bend-cuda.sh`.
