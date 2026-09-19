@@ -12,6 +12,7 @@ export BEND_NO_TELEMETRY=1
 BEND=${BEND:-$HOME/.bend/bin/bend}
 [ -f "$ROOT/data/vectors/bend/fr_ops.bin" ] || (cd "$ROOT" && uv run python bend2/tools/export_bin.py --vectors data/vectors)
 for k in 4 10; do
+  [ -f "$ROOT/data/$k/pk.json" ] || { echo "run.sh: missing data/$k (see README: cargo run --release --manifest-path ref/Cargo.toml -- gen --log2 $k --out data/$k)" >&2; exit 1; }
   [ -f "$ROOT/data/$k/bend/header.bin" ] || (cd "$ROOT" && uv run python bend2/tools/export_bin.py "data/$k")
   [ -f "$ROOT/data/$k/bend/h_ref.bin" ] || (cd "$ROOT" && uv run python bend2/gen/ref_qap.py "data/$k")
 done
