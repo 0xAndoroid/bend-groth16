@@ -322,5 +322,5 @@ if __name__ == "__main__":
     out += curve("G1", "G.G1", "Q.Fq", "Q.Fq.from_array", 1, 32, "g1", "g1_with")
     out += curve("G2", "G2.G2", "Q2.Fq2", "Q2.Fq2.from_array_at", 2, 64, "g2", "g2_with")
     dst = ROOT / "bend2" / "src" / "msm.bend"
-    dst.write_text(out)
+    dst.write_text(out.rstrip("\n") + "\n")
     print("wrote", dst)
