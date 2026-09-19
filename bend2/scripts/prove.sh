@@ -2,13 +2,12 @@
 # Build bend2/prove.bend, prove data/<K>, verify with the arkworks harness, compare to proof_ref.
 # Usage: bend2/scripts/prove.sh K [binary args, e.g. --threads 1]
 # Prints the prover's T lines, then OK|INVALID and EQUAL|DIFFERENT; exit 1 unless OK + EQUAL.
-# Data: $BENDG_DATA_ROOT, else <repo>/data, else ~/dev/bend-groth16/data (gitignored, main checkout).
+# Data: $BENDG_DATA_ROOT, else <repo>/data (gitignored).
 set -eu
 K=$1
 shift
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 DATA=${BENDG_DATA_ROOT:-$ROOT/data}
-[ -d "$DATA/$K/bend" ] || DATA=$HOME/dev/bend-groth16/data
 OUT=${TMPDIR:-/tmp}/bend-groth16
 mkdir -p "$OUT"
 export BEND_NO_TELEMETRY=1
