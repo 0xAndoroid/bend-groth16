@@ -70,10 +70,10 @@ G1 add), phase breakdowns, hardware and reproduction steps: [docs/benchmarks.md]
 
 ## Open questions for the Bend team
 
-Collected in [docs/review-notes.md](docs/review-notes.md) (language/runtime questions raised by the prover:
-shared read-only buffers, zero-copy views, widened integer products, device-resident scheduling, work stealing)
-and [docs/formal-verification.md](docs/formal-verification.md) (what Bend 2's type system could check about this
-code). Bend issues hit: [bendlang/bend#804](https://github.com/bendlang/bend/issues/804) (array split copies),
+Collected in `docs/review-notes.md` (language/runtime questions raised by the prover: shared read-only buffers,
+zero-copy views, widened integer products, device-resident scheduling, work stealing) and
+`docs/formal-verification.md` (what Bend 2's type system could check about this code) — both land in follow-up
+PRs. Bend issues hit: [bendlang/bend#804](https://github.com/bendlang/bend/issues/804) (array split copies),
 #791 / #779 (`Nat` literals ≥ 10000n crash the checker).
 
 ## License
