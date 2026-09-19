@@ -107,9 +107,19 @@ def Msm.g1.jadd.fin(pi: Bool, qi: Bool, p: G.G1, q: G.G1) -> G.G1:
 def Msm.g1.jadd(+p: G.G1, +q: G.G1) -> G.G1:
   Msm.g1.jadd.fin(U32.is_eq(G.G1.is_inf(p), 1), U32.is_eq(G.G1.is_inf(q), 1), p, q)
 
+def Msm.g1.badd.s.fin(inf: Bool, +u: Nat, p: G.G1Aff, q: G.G1, b: Array<U32>) -> Array<U32>:
+  match inf:
+    case True{}:
+      Msm.g1.bset(b, u, G.G1.from_affine(p))
+    case False{}:
+      Msm.g1.bset(b, u, G.G1.add_mixed(q, p))
+
+# bucket[u] += p; an empty bucket (infinity) takes p directly -- add_mixed evaluates the
+# full 7M+4S formula before its own infinity test, so the first touch of each bucket per
+# leaf would otherwise cost a whole mixed add (43% of bucket adds at K<=14, 12% at K=18)
 def Msm.g1.badd.s(+u: Nat, +p: G.G1Aff, pr: Array<U32> & G.G1) -> Array<U32>:
-  (b, q) = pr
-  Msm.g1.bset(b, u, G.G1.add_mixed(q, p))
+  (b, +q) = pr
+  Msm.g1.badd.s.fin(U32.is_eq(G.G1.is_inf(q), 1), u, p, q, b)
 
 # bucket[u] += p unless the digit was zero
 def Msm.g1.badd(zero: Bool, +u: Nat, +p: G.G1Aff, b: Array<U32>) -> Array<U32>:
@@ -329,9 +339,19 @@ def Msm.g2.jadd.fin(pi: Bool, qi: Bool, p: G2.G2, q: G2.G2) -> G2.G2:
 def Msm.g2.jadd(+p: G2.G2, +q: G2.G2) -> G2.G2:
   Msm.g2.jadd.fin(U32.is_eq(G2.G2.is_inf(p), 1), U32.is_eq(G2.G2.is_inf(q), 1), p, q)
 
+def Msm.g2.badd.s.fin(inf: Bool, +u: Nat, p: G2.G2Aff, q: G2.G2, b: Array<U32>) -> Array<U32>:
+  match inf:
+    case True{}:
+      Msm.g2.bset(b, u, G2.G2.from_affine(p))
+    case False{}:
+      Msm.g2.bset(b, u, G2.G2.add_mixed(q, p))
+
+# bucket[u] += p; an empty bucket (infinity) takes p directly -- add_mixed evaluates the
+# full 7M+4S formula before its own infinity test, so the first touch of each bucket per
+# leaf would otherwise cost a whole mixed add (43% of bucket adds at K<=14, 12% at K=18)
 def Msm.g2.badd.s(+u: Nat, +p: G2.G2Aff, pr: Array<U32> & G2.G2) -> Array<U32>:
-  (b, q) = pr
-  Msm.g2.bset(b, u, G2.G2.add_mixed(q, p))
+  (b, +q) = pr
+  Msm.g2.badd.s.fin(U32.is_eq(G2.G2.is_inf(q), 1), u, p, q, b)
 
 # bucket[u] += p unless the digit was zero
 def Msm.g2.badd(zero: Bool, +u: Nat, +p: G2.G2Aff, b: Array<U32>) -> Array<U32>:
@@ -508,3 +528,4 @@ def g2_with(points: Array<U32>, scalars: Array<U32>, n: Nat, +c: Nat, +fd: Nat) 
 # sum_i scalars[i] * points[i] over the first n entries; returns (points, (scalars, result))
 def g2(points: Array<U32>, scalars: Array<U32>, +n: Nat) -> Array<U32> & (Array<U32> & G2.G2):
   g2_with(points, scalars, n, Msm.pick_c(n), Msm.pick_fd(n, Msm.pick_c(n)))
+

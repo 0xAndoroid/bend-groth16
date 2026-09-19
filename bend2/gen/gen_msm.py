@@ -119,9 +119,19 @@ def {M}.jadd.fin(pi: Bool, qi: Bool, p: {GT}, q: {GT}) -> {GT}:
 def {M}.jadd(+p: {GT}, +q: {GT}) -> {GT}:
   {M}.jadd.fin(U32.is_eq({GT}.is_inf(p), 1), U32.is_eq({GT}.is_inf(q), 1), p, q)
 
+def {M}.badd.s.fin(inf: Bool, +u: Nat, p: {GA}, q: {GT}, b: Array<U32>) -> Array<U32>:
+  match inf:
+    case True{{}}:
+      {M}.bset(b, u, {GT}.from_affine(p))
+    case False{{}}:
+      {M}.bset(b, u, {GT}.add_mixed(q, p))
+
+# bucket[u] += p; an empty bucket (infinity) takes p directly -- add_mixed evaluates the
+# full 7M+4S formula before its own infinity test, so the first touch of each bucket per
+# leaf would otherwise cost a whole mixed add (43% of bucket adds at K<=14, 12% at K=18)
 def {M}.badd.s(+u: Nat, +p: {GA}, pr: Array<U32> & {GT}) -> Array<U32>:
-  (b, q) = pr
-  {M}.bset(b, u, {GT}.add_mixed(q, p))
+  (b, +q) = pr
+  {M}.badd.s.fin(U32.is_eq({GT}.is_inf(q), 1), u, p, q, b)
 
 # bucket[u] += p unless the digit was zero
 def {M}.badd(zero: Bool, +u: Nat, +p: {GA}, b: Array<U32>) -> Array<U32>:
