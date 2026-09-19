@@ -454,9 +454,10 @@ def Ntt.coset_fft(a: Array<U32>, +log2: Nat) -> Array<U32>:
 def Ntt.coset_ifft(a: Array<U32>, +log2: Nat) -> Array<U32>:
   Ntt.coset_ifft_fd(a, log2, Ntt.fd(log2))
 
-# ifft then coset_fft (one of the three a/b/c pipelines)
+# ifft then coset_fft (one of the three a/b/c pipelines): the ifft's n^-1 and the coset's
+# g^j are one scale pass (x[j] *= n^-1 g^j) instead of t_ifft's scale followed by t_coset_fft's
 def Ntt.qap_h.pipe(a: Array<U32>, +log2: Nat, +fd: Nat) -> NTree:
-  Ntt.t_coset_fft(Ntt.t_ifft(Ntt.to_tree(fd, a), log2, fd), log2, fd)
+  Ntt.core(Ntt.scale(Ntt.core(Ntt.to_tree(fd, a), log2, fd, Ntt.omega_inv(log2)), Nat.sub(log2, fd), Ntt.pow(Ntt.two_inv(), log2, 6n), Ntt.gen()), log2, fd, Ntt.omega(log2))
 
 # h(x) = (A B - C) / Z_d over the coset, Z_d(g ω^i) = g^d - 1, exactly ark-groth16's
 # LibsnarkReduction::witness_map_from_matrices; output natural-order coefficients

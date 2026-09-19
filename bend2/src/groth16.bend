@@ -109,9 +109,17 @@ def Groth.first_word(path: String) -> IO(U32):
 # ---------------------------------------------------------------- evaluation vectors
 # CSR file words: [nnz][offs[0..N]][entries: col, 16-word coeff]; entry e starts at word 2 + N + 17e
 
-def Ev.ent.s2(acc: R.Fr, coef: R.Fr, csr: Array<U32>, r: Array<U32> & R.Fr) -> Array<U32> & (Array<U32> & R.Fr):
+def Ev.ent.s2.fin(one: Bool, acc: R.Fr, coef: R.Fr, zv: R.Fr) -> R.Fr:
+  match one:
+    case True{}:
+      R.Fr.add(acc, zv)
+    case False{}:
+      R.Fr.add(acc, R.Fr.mul(coef, zv))
+
+# acc + coef z[col]; a coefficient of 1 (Montgomery R, the common case) skips the Fr.mul
+def Ev.ent.s2(acc: R.Fr, +coef: R.Fr, csr: Array<U32>, r: Array<U32> & R.Fr) -> Array<U32> & (Array<U32> & R.Fr):
   (z, zv) = r
-  (csr, (z, R.Fr.add(acc, R.Fr.mul(coef, zv))))
+  (csr, (z, Ev.ent.s2.fin(U32.is_eq(R.Fr.eq(coef, R.Fr.one()), 1), acc, coef, zv)))
 
 def Ev.ent.s1(acc: R.Fr, +col: U32, z: Array<U32>, r: Array<U32> & R.Fr) -> Array<U32> & (Array<U32> & R.Fr):
   (csr, coef) = r
@@ -259,7 +267,7 @@ def Groth.evals.fin2(+h: Hdr, ea: Array<U32>, eb: Array<U32>, ec: Array<U32>, hh
   match h:
     case Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
       (z, zl) = p
-      S{Hdr{nc, ni, nw, lg, na, nb, nh, nl}, Sc.canon(U32.to_nat(na), 0n, z), Sc.canon(U32.to_nat(nl), 0n, zl), Groth.empty(), Groth.empty(), Groth.empty(), ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s}
+      S{Hdr{nc, ni, nw, lg, na, nb, nh, nl}, z, zl, Groth.empty(), Groth.empty(), Groth.empty(), ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s}
 
 def Groth.evals.fin(+h: Hdr, hh: Array<U32>, g1: Array<U32>, g2: Array<U32>, pa: Array<U32>, pb1: Array<U32>, pb2: Array<U32>, ph: Array<U32>, pl: Array<U32>, res1: Array<U32>, res2: Array<U32>, +r: R.Fr, +s: R.Fr, p: Array<U32> & (Array<U32> & (Array<U32> & Array<U32>))) -> S:
   match h:
@@ -267,9 +275,10 @@ def Groth.evals.fin(+h: Hdr, hh: Array<U32>, g1: Array<U32>, g2: Array<U32>, pa:
       (z, p1) = p
       (ea, p2) = p1
       (eb, ec) = p2
-      Groth.evals.fin2(Hdr{nc, ni, nw, lg, na, nb, nh, nl}, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s, Ev.copy(U32.to_nat(nw), 0n, 2n, 0n, (z, Array.new(U32, Groth.clog2((nw * 16 : U32)), 0))))
+      Groth.evals.fin2(Hdr{nc, ni, nw, lg, na, nb, nh, nl}, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s, Ev.copy(U32.to_nat(nw), 0n, 2n, 0n, (Sc.canon(U32.to_nat(na), 0n, z), Array.new(U32, Groth.clog2((nw * 16 : U32)), 0))))
 
-# ea/eb/ec over the domain (ea with the input-consistency rows), then z and zl = z[2..] canonical
+# ea/eb/ec over the domain (ea with the input-consistency rows), then z canonical and
+# zl = z[2..] copied from it (converted once, not once per array)
 def Groth.evals(st: S) -> S:
   S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
   match h:
