@@ -1,10 +1,8 @@
----
-created: 2026-09-18
-updated: 2026-09-18 (post-fix: checklist #3/#6, GPU-entry rows, loader/runner status)
-tags: [bend, audit, benchmark]
----
+# Bend 2 usage audit — is the prover written the way Bend 2 wants?
 
-# Verdict: PARTIAL
+2026-09-18, Bend 2.0.5 (updated post-fix: checklist #3/#6, GPU-entry rows, loader/runner status).
+
+## Verdict: PARTIAL
 
 The Bend 2 prover uses real balanced fork trees in NTT and MSM, but retains serial evaluation/conversion/reduction passes and copying array boundaries; the full prover's GPU entries (five MSM + one QAP `!` per proof since `d524023`) measure slower than the CPU path on both hosts.
 

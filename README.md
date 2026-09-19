@@ -39,8 +39,11 @@ BENDG_GPU=1 sh bend2/scripts/prove.sh 10     # Metal / CUDA `!` dispatch for the
 sh bend2/tests/run.sh                        # every bend2 test, ends with the K=4 prove (OK + EQUAL)
 ```
 
+The tests need `data/4`, `data/10` and the arkworks vectors: `cargo run --release --manifest-path ref/Cargo.toml -- gen
+--log2 4 --out data/4`, same for 10, then `… -- vectors --out data/vectors` (`run.sh` exports the `.bin` files itself).
+
 The prover prints `A x y`, `B x0 x1 y0 y1`, `C x y`, then `T <phase> <ms>` lines
-(`load evals qap msm_a msm_b1 msm_b2 msm_h msm_l total`). K=18 needs `--gpu 8GB` (arena span), K=20 about 20 GB.
+(`load evals qap msm_a msm_b1 msm_b2 msm_h msm_l total`). K=18 needs `prove.sh 18 --gpu 8GB` (arena span), K=20 about 20 GB.
 
 ## What was measured
 
@@ -55,7 +58,9 @@ SquareChain(2^K) — K squaring constraints, K+2 wires, one public output — at
 | gnark + ICICLE, RTX 5090 | 26.5 | 31.2 | 48.3 | 203 |
 
 MSM is 93–99 % of every Bend run; the single G2 MSM alone is 37–53 %. All numbers, primitives (MSM, NTT, `Fr.mul`,
-G1 add), phase breakdowns, hardware and reproduction steps: [docs/benchmarks.md](docs/benchmarks.md).
+G1 add), phase breakdowns, hardware and reproduction steps: [docs/benchmarks.md](docs/benchmarks.md). Bend rows were
+measured at `baab824` (mini) / `92ac2c4` (box), before the fixes in [docs/review-notes.md](docs/review-notes.md) §B
+(PRs #5/#6: mini 10 threads K=14 −22 %, K=18 −4 %); the ratios above are therefore slightly pessimistic.
 
 ## Bend usage notes
 
@@ -66,13 +71,14 @@ G1 add), phase breakdowns, hardware and reproduction steps: [docs/benchmarks.md]
 - [docs/review-findings-2026-09.md](docs/review-findings-2026-09.md) — independent review: timer boundaries,
   apples-to-oranges caveats, stale-doc list.
 - [bend2/README.md](bend2/README.md), [bend2/FORMAT.md](bend2/FORMAT.md) — module layout, binary interchange format.
-- Bend 1 / HVM2: [docs/bend-idioms.md](docs/bend-idioms.md), [docs/bend-probe.md](docs/bend-probe.md).
+- Bend 1 / HVM2 (legacy, pre-Bend 2 planning notes and probes; kept for the comparison only):
+  [docs/bend-idioms.md](docs/bend-idioms.md), [docs/bend-probe.md](docs/bend-probe.md).
 
 ## Open questions for the Bend team
 
-Collected in [docs/review-notes.md](docs/review-notes.md) (section A, Bend 2 usage, is in; B Algorithms and
-C Why GPU < CPU follow) and `docs/formal-verification.md` (what Bend 2's type system could check about this
-code; follow-up PR). Bend issues hit: [bendlang/bend#804](https://github.com/bendlang/bend/issues/804) (array split copies),
+Collected in [docs/review-notes.md](docs/review-notes.md) (A Bend 2 usage, B Algorithms, C Why GPU < CPU) and
+[docs/formal-verification.md](docs/formal-verification.md) (what Bend 2's type system can check about this code today,
+with a prototype in `bend2/proofs/`). Bend issues hit: [bendlang/bend#804](https://github.com/bendlang/bend/issues/804) (array split copies),
 #791 / #779 (`Nat` literals ≥ 10000n crash the checker).
 
 ## License

@@ -2,7 +2,7 @@
 # Build + run every bend2 test against data/vectors/bend/*.bin and data/{4,10}/bend, then the
 # end-to-end K=4 prove (tests/test_prove.sh). Run from anywhere.
 # Vectors: `groth16-ref vectors --out data/vectors` then `bend2/tools/export_bin.py --vectors data/vectors`;
-# QAP refs via bend2/gen/ref_qap.py.
+# QAP refs via bend2/gen/ref_qap.py; data/{4,10}/bend via tools/export_bin.py (both run here when missing).
 # Exit 1 unless every test exits 0 and prints only PASS lines (no FAIL, no `PASS 0`).
 set -eu
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
@@ -12,6 +12,8 @@ export BEND_NO_TELEMETRY=1
 BEND=${BEND:-$HOME/.bend/bin/bend}
 [ -f "$ROOT/data/vectors/bend/fr_ops.bin" ] || (cd "$ROOT" && uv run python bend2/tools/export_bin.py --vectors data/vectors)
 for k in 4 10; do
+  [ -f "$ROOT/data/$k/pk.json" ] || { echo "run.sh: missing data/$k (see README: cargo run --release --manifest-path ref/Cargo.toml -- gen --log2 $k --out data/$k)" >&2; exit 1; }
+  [ -f "$ROOT/data/$k/bend/header.bin" ] || (cd "$ROOT" && uv run python bend2/tools/export_bin.py "data/$k")
   [ -f "$ROOT/data/$k/bend/h_ref.bin" ] || (cd "$ROOT" && uv run python bend2/gen/ref_qap.py "data/$k")
 done
 fail=0
