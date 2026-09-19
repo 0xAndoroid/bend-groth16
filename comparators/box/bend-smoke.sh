@@ -1,9 +1,9 @@
 #!/bin/bash
-export PATH=/root/.bend/bin:/root/.bun/bin:/usr/local/cuda/bin:$PATH
+export PATH=$HOME/.bend/bin:$HOME/.bun/bin:/usr/local/cuda/bin:$PATH; export BEND_NO_TELEMETRY=1
 # Bend 2 smoke test on the box: interpreter run, native C build (clang), GPU `!` build (needs clang-19: curl -fsSL https://apt.llvm.org/llvm.sh | bash -s 19).
 set -x
-bend --version; ls -la /root/.bend/bin /root/.bend/current; bend --help 2>&1 | head -40
-mkdir -p /root/bendtest && cd /root/bendtest
+bend --version; bend --help 2>&1 | head -40
+T=${T:-${TMPDIR:-/tmp}/bendtest}; mkdir -p "$T" && cd "$T"
 cat > hello.bend <<'B'
 import Base
 def main() -> IO(Unit):

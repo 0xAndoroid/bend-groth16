@@ -8,7 +8,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--prover", required=True, choices=["snarkjs", "rapidsnark"])
 ap.add_argument("--ks", nargs="+", type=int, default=[10, 14, 18, 20])
 ap.add_argument("--runs", nargs="*", default=[], help="K=N overrides; default 5 for K<=14, 3 for K=18, 2 for K=20")
-ap.add_argument("--art", default="/root/art")
+ap.add_argument("--art", default=os.environ.get("ART", "/root/art"))
 ap.add_argument("--out", required=True)
 ap.add_argument("--cpu", default="")
 ap.add_argument("--git-head", default="")
@@ -19,7 +19,7 @@ runs = {10: 5, 14: 5, 18: 3, 20: 2}
 for kv in a.runs:
     k, n = kv.split("="); runs[int(k)] = int(n)
 snarkjs = os.environ.get("SNARKJS", "snarkjs")
-rapid = os.environ.get("RAPID_PROVER", "/root/dev/rapidsnark/package/bin/prover")
+rapid = os.environ.get("RAPID_PROVER", os.path.join(os.environ.get("DEV", "/root/dev"), "rapidsnark/package/bin/prover"))
 versions = {"snarkjs": subprocess.run([snarkjs, "--version"], capture_output=True, text=True).stdout.strip().split()[-1] if shutil.which(snarkjs) else "0.7.6", "circom": "2.2.3", "node": platform.python_version() and subprocess.run(["node", "--version"], capture_output=True, text=True).stdout.strip()}
 if a.prover == "rapidsnark":
     versions["rapidsnark"] = "v0.0.8"

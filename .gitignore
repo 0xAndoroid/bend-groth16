@@ -7,3 +7,5 @@ bench/raw/*.bin
 /data/
 comparators/circom/build/
 comparators/gnark/gnark-bench
+.journals/
+comparators/gpu/icicle-prim/open-icicle

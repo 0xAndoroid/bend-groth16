@@ -1,7 +1,7 @@
 # Bend 1 / HVM2 empirical probe (Mac mini M4, 10 cores, 16 GB)
 
-Measured 2026-09-18 by lane `bend-groth16 · w0 bend-probe 2/5`. Sources: `bend/probe/*.bend`,
-`bend/probe/embed_gen.sh`. Companion docs-based idioms note is written by another lane.
+Measured 2026-09-18. Sources: `bend/probe/*.bend`, `bend/probe/embed_gen.sh`. Companion docs-based note:
+`docs/bend-idioms.md`.
 
 ## 1. Toolchain
 
@@ -134,7 +134,7 @@ interactions (≈105 per limb-product) per 254-bit multiply: at 670 MIPS that is
 - **Thread control:** always `bend gen-c … | clang -O2 -DTPC_L2=3` (8 threads); `-DTPC_L2=0` for single-thread
   baselines. Do not benchmark with `bend run-c` (interpreter, 2–5× slower, fixed 8 threads).
 - **Box hygiene:** one HVM2 compiled process at a time on the 16 GB mini (6.4 GB heap each); timings taken
-  while other lanes build (load > 20) are 2–3× off — record `uptime` with every number.
+  while other builds run (load > 20) are 2–3× off — record `uptime` with every number.
 
 ## Exact commands
 
@@ -148,7 +148,7 @@ bend/probe/embed_gen.sh 65536 > embed_16.bend && /usr/bin/time -l bend run-c emb
 bend gen-c bend/probe/limbmul.bend > lm.c && clang -O2 -DTPC_L2=3 lm.c -o lm -lm -lpthread && /usr/bin/time -l ./lm
 ```
 
-## 7. Independent review (astra, 2026-09-18 02:17) — verdicts
+## 7. Independent review — verdicts
 - keep: numeric table (all rows reproduced; u32 rejected; 4 independent bigint pairs limb-exact, 44/44 limbs).
 - keep: parallel scaling 174.8 → 896.2 MIPS (5.13×, load 2.6).
 - **kill → runtime instability:** compiled probe A (2^16 254-bit muls) returned garbage `x1fffffff` in 1 of 3 identical runs (2/3: checksum 15636624, 3.99/4.12 s, 3.33 G ITRS ≈ 50 860/mul, 6.45 GB RSS). HVM2 2.0.22 compiled C output is not deterministic-safe on this box — a ceiling in itself.

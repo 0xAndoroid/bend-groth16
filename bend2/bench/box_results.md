@@ -1,7 +1,7 @@
 # Bend 2 on the GPU box — CUDA (RTX 5090) + CPU (Threadripper 9960X)
 
-2026-09-18, box `pika-bend-5090` (`docs/box.md`), repo `92ac2c4` (`bend-groth16-integration`). Re-run: `comparators/box/bend-cuda.sh`.
-Raw lines: `/root/w3/results.txt`, `/root/w3/smi.log`, `/root/step1.log` on the box.
+2026-09-18, RTX 5090 box (`docs/box.md`), repo `92ac2c4`. Re-run: `comparators/box/bend-cuda.sh`.
+Raw lines (`results.txt`, `smi.log`) were kept on the box only.
 
 | | |
 |---|---|
@@ -53,9 +53,9 @@ Raw lines: `/root/w3/results.txt`, `/root/w3/smi.log`, `/root/step1.log` on the 
 - 2^26: CUDA 65 ms vs CPU48 6776 ms → **104×**; M4 Metal was 99 ms at 2^20 (10.6 M/s) → ~100× in throughput.
 - Scaling is linear from 2^24 (18 ms) to 2^26 (65 ms); 2^20–2^22 sit on the 3–7 ms floor.
 
-## For the prover lane
+## Notes for running the prover on CUDA
 
 - Path is clear: `bend f.bend -o f` on the box builds the CUDA program in the same step. Bend's `cc_find` tries `$CC`, `clang`, then every `clang-NN` on PATH newest-first and needs clang ≥ 19 for a `!` program — stock `/usr/bin/clang` is 18, `/usr/bin/clang-19` (apt.llvm.org) is picked up automatically.
 - Expect the `!` phases (MSM/NTT) to sit on a 2–7 ms floor below ~2^22 and to run ~100× faster than CPU48 above; the CUDA `--gpu` span default is not documented (`--help`: "over 2GB on Metal") — pass `--gpu 8GB` if a K=20 phase traps on memory (the benches allocate little, so untested here).
 - `uv` is not on the box; `bend2/scripts/prove.sh` calls `uv run python` and `cargo run` — use `python3` + `ref/target/release/groth16-ref verify` directly, or install uv.
-- Step 4 (msm/ntt benches, `prove.sh` with `MODE=gpu`) skipped: `bend2/src/msm.bend`/`ntt.bend` do not exist on `bend-groth16-integration` at `92ac2c4`, `prove.bend` imports `naive.bend`.
+- Step 4 (msm/ntt benches, `prove.sh` with `MODE=gpu`) skipped: `bend2/src/msm.bend`/`ntt.bend` did not exist at `92ac2c4`, `prove.bend` imports `naive.bend`.

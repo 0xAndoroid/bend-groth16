@@ -1,6 +1,6 @@
 # Bend 2 Groth16 prover — full-prover numbers (`bend2/prove.bend`)
 
-2026-09-18, Bend 2.0.5, lane w3 bend2-prover-bench 1/3. Every run below printed `OK` (arkworks verify) and `EQUAL`
+2026-09-18, Bend 2.0.5. Every run below printed `OK` (arkworks verify) and `EQUAL`
 (A, B, C bit-identical to `data/K/proof_ref.json`). Raw per-run JSON: `bench/bend2-macmini.json`, `bench/bend2-box.json`
 (`prove` = MSM **v2**, `prove_v1` = MSM v1; `msm_g1`, `msm_g1_v1`, `ntt` primitives). Runner: `bend2/scripts/bench_prover.sh`
 (`run CFG RUNS K [args]` → one JSON line per `prove.sh` run; `merge META OUT RUNS` → the bench file).
@@ -12,7 +12,7 @@
   `--gpu 16GB`). Mini K=18 needs `--gpu 8GB` — the default span dies with `bend: out of memory`. The v1 tables predate
   the switch and have no gpu rows.
 - ms are the prover's own `T` lines (medians; `samples` = per-run totals); `load1` = 1-min load average at the start of
-  each run (other lanes were active on the mini during v1 — load 6–15 on 10 cores — and quieter, 2–6, during v2).
+  each run (other processes were active on the mini during v1 — load 6–15 on 10 cores — and quieter, 2–6, during v2).
   The bend compile (~15 s) and the arkworks verify are outside the timers.
 
 ## Mini (Apple M4, 10 cores, 16 GB) — MSM v2

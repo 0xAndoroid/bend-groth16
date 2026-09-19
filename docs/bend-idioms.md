@@ -2,7 +2,7 @@
 
 **Checked 2026-09-18. Target: Bend 1 (`bend-lang 0.2.38`) + HVM2 (`hvm 2.0.22`), not Bend 2.**
 Use native unsigned limbs, small arithmetic helpers, and balanced trees of independent field/point operations.
-CUDA/RTX 5090 execution needs a hardware gate; this research lane did not install or execute either runtime.
+CUDA/RTX 5090 execution needs a hardware gate; this research did not install or execute either runtime.
 All links below were accessed **2026-09-18**; issue dates distinguish historical reports from current status.
 
 ## 1. Version boundary and installation
@@ -114,7 +114,7 @@ HVM2 ships C/CUDA sources and historical working RTX 4090 benchmarks; its README
 RTX 5090 is **compute capability 12.0**; CUDA **12.8** introduced native `sm_120` compilation. HVM2's generic “CUDA 12.x” guidance predates it. Old binaries need compatible PTX or a rebuild; the build script does not select `sm_120` explicitly. [NVIDIA GPU table](https://developer.nvidia.com/cuda/gpus), [CUDA 12.8 features](https://docs.nvidia.com/cuda/archive/12.8.0/cuda-features-archive/index.html), [PTX compatibility](https://docs.nvidia.com/cuda/blackwell-compatibility-guide/index.html).
 
 The 96 KiB dynamic request is below Blackwell CC12.0's 99 KiB block limit, but static shared data/register pressure also count; **this is feasibility evidence, not a successful launch**. [NVIDIA limits](https://docs.nvidia.com/cuda/blackwell-tuning-guide/), [HVM launch setup](https://github.com/HigherOrderCO/HVM2/blob/349483954fe78a76fd420460ce0c8a8259a44c25/src/hvm.cu#L2332).
-GPU lane must record toolkit/driver, build flags, `sm_120` or retained PTX, a scalar-correctness run, a branching tree run, peak memory, and field-vector parity against Rust/C. An explicit generated-source attempt is `nvcc -O3 -arch=sm_120 kernel.cu -o kernel`; its success is still unverified here. Search of HVM1/HVM2/Bend issue histories found no `5090` or `sm_120` result.
+GPU runs must record toolkit/driver, build flags, `sm_120` or retained PTX, a scalar-correctness run, a branching tree run, peak memory, and field-vector parity against Rust/C. An explicit generated-source attempt is `nvcc -O3 -arch=sm_120 kernel.cu -o kernel`; its success is still unverified here. Search of HVM1/HVM2/Bend issue histories found no `5090` or `sm_120` result.
 
 ## 4. Parallelism idioms
 

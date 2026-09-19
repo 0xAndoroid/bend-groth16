@@ -1,6 +1,6 @@
 ---
 created: 2026-09-18
-updated: 2026-09-18 (w5fix: checklist #3/#6, GPU-entry rows, loader/runner status)
+updated: 2026-09-18 (post-fix: checklist #3/#6, GPU-entry rows, loader/runner status)
 tags: [bend, audit, benchmark]
 ---
 
@@ -60,7 +60,7 @@ Let **D=2^L** be the QAP domain, **f=max(1,min(12,L−1))**, **m=D/2^f**; MSM us
 
 **Sequential is sometimes correct:** CIOS carry chains, fixed inversion chains and individual point formulas are coarse-leaf work; forking their few field operations would add scheduling overhead. Sequential stage dependencies and ≤256-bit scalar multiplication are not failures merely because CPU algorithms have them. The independent batch traversals above are the missed opportunities.
 
-**Excluded fallback (deleted in w5fix):** `bend2/src/naive.bend` implemented a serial quadratic DFT and an array-cloning MSM; it was never imported by the prover and has been removed.
+**Excluded fallback (since removed):** `bend2/src/naive.bend` implemented a serial quadratic DFT and an array-cloning MSM; it was never imported by the prover and has been removed.
 
 ## GPU usage
 
@@ -92,7 +92,7 @@ A GPU-specific layout could improve this implementation; **matching native share
 | U32/F32/Nat only; no mul-hi | Exact field multiplication uses 16×16-bit U32 limbs; 32-bit limbs cannot use a native widened product. `docs/bend2-idioms.md:38`, `docs/bend2-idioms.md:56`. | Bend 2 numeric interface limit. |
 | Nat is 48-bit, not arbitrary precision | Values beyond 2^48−1 abort. 5000n compiled; ≥10000n checker stack failure: [#791](https://github.com/bendlang/bend/issues/791), #779. Large sizes use `Nat.pow`. `docs/bend2-idioms.md:43`, `docs/bend2-idioms.md:46`. | Runtime bound plus compiler bug. |
 | Single-owner arrays; split/join copies | No shared read-only Array; matching ANode copies both halves, joining copies again ([#804](https://github.com/bendlang/bend/issues/804)). Indexed loads/stores are constant time. `docs/bend2-idioms.md:62`. | Language ownership plus runtime representation. |
-| Array size / index wrap | ≤2^31 U32 cells; index masks by size−1. The MSM bench loaded 262146 G1 points/scalars into 262144-record buffers until w5fix; `bend2/bench/msm.bend` now sizes every buffer from `header.bin`. | Runtime semantics; all published msm bench checksums predate the fix (`bend2/bench/msm_results.md`). |
+| Array size / index wrap | ≤2^31 U32 cells; index masks by size−1. The MSM bench loaded 262146 G1 points/scalars into 262144-record buffers until the loader fix; `bend2/bench/msm.bend` now sizes every buffer from `header.bin`. | Runtime semantics; all published msm bench checksums predate the fix (`bend2/bench/msm_results.md`). |
 | Memory span and private buckets | Metal default 2 GB; 8 GB used for large MSM. c=12,d=8 OOM at 8 GB; c=10,d=7 G1 leaf buckets alone need 1 GiB. `bend2/bench/msm_results.md:41`, `bend2/bench/msm_results.md:49`. | Layout choice meets finite arena; consumed blocks are freed, not inherently leaked. |
 | Device lane stack / fixed placement | 2^11 words/lane; deep non-tail calls can reach ERR_DEEP. No work stealing; enough similar-duration leaves required. `docs/bend2-idioms.md:16`, `docs/bend2-idioms.md:72`. | Runtime limits; task shape is tunable. |
 | No ordinary argv / stdin effect | `IO.get_env`; File.read_bytes yields a byte list, possibly short. Loader uses 1 MiB chunks. #792 documents eager max-sized receive allocation and failure exit. `docs/bend2-idioms.md:65`, `docs/bend2-idioms.md:96`. | IO interface and reported runtime issue. |
@@ -101,10 +101,10 @@ A GPU-specific layout could improve this implementation; **matching native share
 | Compile time / generated size | Probe: hello 0.66 s; 1.8k-line Montgomery + Metal 6 s. Box field/G1 binaries 2/3 s. This audit: complete prover C emission 1.59 s, **not** a native build measurement. Whole-program C, no separate compilation. `docs/bend2-idioms.md:34`, `docs/bend2-idioms.md:104`, `bend2/bench/box_results.md:15`. | Measured costs; no prover compilation ceiling established. |
 | Checker / host backend traps | Shrinking parameter first (#770); Homebrew clang modules (#769); JS recursion (#798/#802); unused argument run/native mismatch (#775); sequential IO compile blowup reported in #785. `docs/bend2-idioms.md:94`, `docs/bend2-idioms.md:96`, `docs/bend-idioms.md:214`. | Documented upstream issues, not all reproduced by this audit. #767 plain-call parallelism is fixed. |
 | Record arity | Prover S stores point accumulators in arrays because flattened record payload is limited to 255 words (`bend2/src/groth16.bend:21`). | Compiler arity limit, not an arithmetic limit. |
-| Campaign application defects | G2 affine-store indexing fixed and the `Groth.g2_store` workaround removed (w5fix). MSM and NTT failure exits fixed (w4fix); `bend2/tests/run.sh` now runs every test incl. the K=4 prove; `bench_prover.sh` enforces the CFG mode and rejects unverified runs (w5fix). | Do not label these Bend runtime bugs. |
+| Application defects | G2 affine-store indexing fixed and the `Groth.g2_store` workaround removed (fixed). MSM and NTT failure exits fixed (fixed); `bend2/tests/run.sh` now runs every test incl. the K=4 prove; `bench_prover.sh` enforces the CFG mode and rejects unverified runs (fixed). | Do not label these Bend runtime bugs. |
 | Bend 1 / HVM2 only | u24/12-bit limbs; ~6.4 GB heap; embedded literals ~2^16 compiled/~2^18 interpreted; one of three compiled multiply runs returned garbage `x1fffffff`; signed-byte IO decoder was a probe bug. `docs/bend-probe.md:99`, `docs/bend-probe.md:154`, `docs/bend-probe.md:155`. | Separate probe generation, **not** evidence against Bend 2. |
 
-**Loader evidence (historical, fixed in w5fix):** local K=18 `pk_a.bin` is 33554688 bytes versus 33554432 allocated; `witness.bin` is 16777344 versus 16777216; `pk_b2.bin` is 67109376 versus 67108864 at bench N=18 (worse at smaller N). Thus two leading records were overwritten even after v2. Cross-backend checksums can still agree on the same altered inputs; the claim that the bench uses the file's first n records is false (`bend2/bench/msm_results.md:51`). Full-prover allocations use header-derived lengths and are not affected (`bend2/src/groth16.bend:243`).
+**Loader evidence (historical, since fixed):** local K=18 `pk_a.bin` is 33554688 bytes versus 33554432 allocated; `witness.bin` is 16777344 versus 16777216; `pk_b2.bin` is 67109376 versus 67108864 at bench N=18 (worse at smaller N). Thus two leading records were overwritten even after v2. Cross-backend checksums can still agree on the same altered inputs; the claim that the bench uses the file's first n records is false (`bend2/bench/msm_results.md:51`). Full-prover allocations use header-derived lengths and are not affected (`bend2/src/groth16.bend:243`).
 
 ## What a native Bend 2 expert would change
 
@@ -123,11 +123,11 @@ A GPU-specific layout could improve this implementation; **matching native share
 
 ## Audit checks
 
-Read-only source/generator/journal/benchmark review; no performance runs or Rust commands. C emission confirms genuine join tasks plus two child tasks for MSM point recursion and NTT chunk recursion, and three child tasks for QAP pipelines; array cases emit `blk_half`/`blk_node`. Runtime inspected at installed Bend 2.0.5 (`bend2/comp.ts:2474`, `bend2/comp.ts:4006`, `bend2/comp.ts:4876`); scratch C removed after inspection.
+Read-only source/generator/benchmark review; no performance runs or Rust commands. C emission confirms genuine join tasks plus two child tasks for MSM point recursion and NTT chunk recursion, and three child tasks for QAP pipelines; array cases emit `blk_half`/`blk_node`. Runtime inspected at installed Bend 2.0.5 (`bend2/comp.ts:2474`, `bend2/comp.ts:4006`, `bend2/comp.ts:4876`); scratch C removed after inspection.
 
 ```sh
 BEND_NO_TELEMETRY=1 ~/.bend/bin/bend --version
-BEND_NO_TELEMETRY=1 ~/.bend/bin/bend bend2/prove.bend -o "$TMPDIR/bend-groth16/w4audit/prove.c"
+BEND_NO_TELEMETRY=1 ~/.bend/bin/bend bend2/prove.bend -o "$TMPDIR/bend-groth16/prove.c"
 rg -n '![[:space:]]*\(|@unsafe' bend2/prove.bend bend2/src/*.bend
 ```
 

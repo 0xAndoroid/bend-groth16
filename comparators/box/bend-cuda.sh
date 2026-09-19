@@ -1,15 +1,14 @@
 #!/bin/bash
-# Bend 2 CUDA smoke + benchmarks on the RTX 5090 box (root; repo at /root/bend-groth16 on bend-groth16-integration).
-# Results: bend2/bench/box_results.md. Run:  nohup /root/bend-groth16/comparators/box/bend-cuda.sh > /root/bend-cuda.log 2>&1 &
-# The box has no GitHub credentials: push the branch from the mini with
-#   git remote add box ssh://root@<ip>:<port>/root/bend-groth16   (box: git config receive.denyCurrentBranch updateInstead)
-#   GIT_SSH_COMMAND='ssh -i <key>' git push box origin/bend-groth16-integration:refs/heads/bend-groth16-integration
-export PATH=/root/.bend/bin:/root/.bun/bin:/usr/local/cuda/bin:/home/pika/.cargo/bin:$PATH
-export CARGO_HOME=/home/pika/.cargo RUSTUP_HOME=/home/pika/.rustup BEND_NO_TELEMETRY=1
-PY=/usr/bin/python3            # no uv on the box; the exporters are stdlib-only
-W=/root/w3; R=$W/results.txt; mkdir -p $W; : > $R
+# Bend 2 CUDA smoke + benchmarks on a CUDA box (RTX 5090 = sm_120; see docs/box.md). Results: bend2/bench/box_results.md.
+# Run from a clone of this repo:  nohup comparators/box/bend-cuda.sh > bend-cuda.log 2>&1 &
+# Env: REPO (default: this checkout), W (scratch dir for binaries + results.txt, default $REPO/../bend-cuda-scratch).
+export PATH=$HOME/.bend/bin:$HOME/.bun/bin:/usr/local/cuda/bin:$HOME/.cargo/bin:$PATH
+export BEND_NO_TELEMETRY=1
+PY=${PY:-/usr/bin/python3}            # the exporters are stdlib-only
+REPO=${REPO:-$(cd "$(dirname "$0")/../.." && pwd)}
+W=${W:-$REPO/../bend-cuda-scratch}; R=$W/results.txt; mkdir -p $W; : > $R
 set -e
-cd /root/bend-groth16
+cd "$REPO"
 log() { echo "$*" | tee -a $R; }
 dt() { awk "BEGIN{printf \"%.2f\", $2-$1}"; }
 
@@ -75,4 +74,4 @@ run g1_add gpu 24 20 --gpu 8GB
 
 kill $SMI 2>/dev/null; wait $SMI 2>/dev/null || true
 log "## nvidia-smi peak memory.used: $(awk -F', ' '{gsub(/ MiB/,"",$2); if($2+0>m)m=$2+0} END{print m" MiB"}' $W/smi.log)"
-touch /root/done-bend-cuda
+touch $W/done-bend-cuda

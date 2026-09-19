@@ -37,7 +37,7 @@ serialises them onto one OS thread rather than changing the algorithmic split.
 ## Results — Mac mini, Apple M4 (10 cores), 2026-09-18
 
 Raw data: `bench/gnark-macmini.json` (every entry carries the host `loadavg` at sample time).
-**Host was shared with sibling lanes compiling (load1 ≈ 9–20 on 10 cores); all numbers are
+**Host was shared with other builds (load1 ≈ 9–20 on 10 cores); all numbers are
 upper bounds** — 10-thread proves suffer most (K=14 measured 97 ms on a quieter moment vs 194 ms
 below), rerun on a quiet host before quoting. QAP domain = N (gnark uses `next_pow2(N)`);
 `num_public = 2` counts the constant-one wire.

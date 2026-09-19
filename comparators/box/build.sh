@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Build every comparator on the GPU box (Ubuntu 24.04, CUDA 12.8 devel, RTX 5090 = sm_120).
-# Layout: sources /root/dev/<repo> (see comparators/box/README.md), builds/installs under /root/art.
+# Layout: sources $DEV/<repo> (see comparators/box/README.md), builds/installs under $ART.
 set -euxo pipefail
-export PATH=/home/pika/.cargo/bin:/usr/local/go/bin:/root/tools:/root/tools/node_modules/.bin:$PATH
+DEV=${DEV:-/root/dev}; ART=${ART:-/root/art}; TOOLS=${TOOLS:-/root/tools}
+REPO=${REPO:-$(cd "$(dirname "$0")/../.." && pwd)}
+export PATH=$HOME/.cargo/bin:/usr/local/go/bin:$TOOLS:$TOOLS/node_modules/.bin:$PATH
 THREADS=${THREADS:-$(nproc)}
-ART=/root/art; DEV=/root/dev; REPO=${REPO:-/root/w1}
+
 # rapidsnark v0.0.8 (CPU)
 if [ ! -x $DEV/rapidsnark/package/bin/prover ]; then
   (cd $DEV/rapidsnark && ./build_gmp.sh host && make host -j"$THREADS")
@@ -32,9 +34,10 @@ if [ ! -f $ART/icicle4-install/lib/libicicle_curve_bn254.so ]; then
   cmake -S $DEV/open-icicle/icicle -B $ART/icicle4-build -DCMAKE_BUILD_TYPE=Release -DCURVE=bn254 -DCUDA_BACKEND=local -DCUDA_ARCH=120 -DG2=OFF -DECNTT=OFF -DFRI=OFF -DPOSEIDON=OFF -DPOSEIDON2=OFF -DSUMCHECK=OFF -DCMAKE_INSTALL_PREFIX=$ART/icicle4-install
   cmake --build $ART/icicle4-build --target install -j"$THREADS"
 fi
+ln -sfn $DEV/open-icicle $REPO/comparators/gpu/icicle-prim/open-icicle
 (cd $REPO/comparators/gpu/icicle-prim && ICICLE_FRONTEND_INSTALL_DIR=$ART/icicle4-install/lib cargo build -q --release)
-# sppark v0.1.15 PoCs (bn254): msm bench + our ntt timer example
+# sppark v0.1.15 PoCs (bn254): msm bench + the ntt timer example
 (cd $DEV/sppark/poc/msm-cuda && cargo bench --features bn254 --bench msm --no-run -q)
 cp $REPO/comparators/gpu/sppark/ntt_timer.rs $DEV/sppark/poc/ntt-cuda/examples/ntt_timer.rs 2>/dev/null || { mkdir -p $DEV/sppark/poc/ntt-cuda/examples && cp $REPO/comparators/gpu/sppark/ntt_timer.rs $DEV/sppark/poc/ntt-cuda/examples/; }
 (cd $DEV/sppark/poc/ntt-cuda && cargo build -q --release --features bn254 --example ntt_timer)
-touch /root/done-build
+touch $ART/done-build

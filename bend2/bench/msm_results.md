@@ -3,9 +3,9 @@
 M4 Mac mini (10 cores, 16 GB, Metal), Bend 2.0.5, `--gpu 8GB` span, medians of 3 (2^20 1-thread, G2 2^18 and
 Metal ≥ 2^18: single runs). Points = `data/18/bend/pk_a.bin` (n ≤ 2^18), `pk_h.bin` (2^19 real points; 2^20 =
 those points twice with different scalars); scalars = canonical `witness.bin` cycled. The affine result is
-identical across `--threads 1`, 10 threads and `MODE=gpu` for every n (checksums in the campaign log).
+identical across `--threads 1`, 10 threads and `MODE=gpu` for every n (checksums recorded per run).
 
-**Input caveat (w5fix, 2026-09-18):** every table below was measured with a loader that allocated 2^18 G1 / 2^18 scalar
+**Input caveat (loader fixed 2026-09-18):** every table below was measured with a loader that allocated 2^18 G1 / 2^18 scalar
 records while `pk_a.bin` and `witness.bin` hold 2^18 + 2, so the last two records overwrote the first two (G2: the whole
 262146-record file was read into an n-record buffer) — timing is unaffected, but the "first n points" claim was false and the
 checksums below do not match the fixed loader (`bench/msm.bend` now sizes every buffer from `header.bin`).
@@ -51,8 +51,8 @@ Window comparison, 10 threads, fd = 4: 2^16 c=8 1896 / c=12 2465 / c=16 4493 ms;
 
 ## v2 (2026-09-18): deeper fork, same layout — defaults c = 8 (< 2^20) / 10, fd = min(7, log2 n − c − 1)
 
-Same M4 mini, Bend 2.0.5, `--gpu 8GB` span (2^20 OOMs the default span at every fd ≥ 6), single runs, **box
-shared with a sibling lane burning one core** (v1 rows above were taken on a quiet box; v1 default re-measured
+Same M4 mini, Bend 2.0.5, `--gpu 8GB` span (2^20 OOMs the default span at every fd ≥ 6), single runs, **host
+shared with another process burning one core** (v1 rows above were taken on a quiet box; v1 default re-measured
 here for a fair pair). `bench/msm.bend` at this point read the whole `pk_a.bin` into a 2^18-record buffer; the two
 extra records still wrapped onto records 0–1 (see the input caveat at the top), so the 2^16 checksums differ from v1's
 for that reason and 2^18/2^20 were unchanged.

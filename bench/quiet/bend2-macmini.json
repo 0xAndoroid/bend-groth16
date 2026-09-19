@@ -9,7 +9,7 @@
  "threads": 10,
  "git_head": "baab824",
  "updated": "2026-09-18T09:10:37Z",
- "notes": "Quiet-host rerun (w5quiet, load1<=4 gate before every run, strictly sequential). prove.<k>.cpu_all = prove.sh default (10 threads, BENDG_GPU unset); K=18 needs --gpu 8GB (arena span only; default span OOMs at this head); cpu1 = --threads 1; cpu_all_gpuoff = 10 threads with --gpu off. msm_g1/ntt: bend2/bench/msm.bend (MODE=cpu G=1, v2 defaults, --gpu 8GB span) and ntt.bend (OP=fft, default FD), 10 threads, median of 3, ms; load1 = 1-min load before each run.",
+ "notes": "Quiet-host rerun (load1<=4 gate before every run, strictly sequential). prove.<k>.cpu_all = prove.sh default (10 threads, BENDG_GPU unset); K=18 needs --gpu 8GB (arena span only; default span OOMs at this head); cpu1 = --threads 1; cpu_all_gpuoff = 10 threads with --gpu off. msm_g1/ntt: bend2/bench/msm.bend (MODE=cpu G=1, v2 defaults, --gpu 8GB span) and ntt.bend (OP=fft, default FD), 10 threads, median of 3, ms; load1 = 1-min load before each run.",
  "msm_g1": {
   "16": {
    "log2": 16,

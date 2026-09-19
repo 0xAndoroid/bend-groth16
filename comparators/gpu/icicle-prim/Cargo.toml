@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
-# open-icicle v4.0.0 checkout: paths below are hardcoded to the box layout (/root/dev/open-icicle/wrappers/rust); edit them to relocate. See ../README.md
+# open-icicle v4.0.0 checkout, reached through the gitignored symlink `open-icicle` in this directory:
+#   ln -sfn "$DEV/open-icicle" comparators/gpu/icicle-prim/open-icicle
+# (comparators/box/build.sh does this). See ../README.md and docs/box.md.
 [dependencies]
-icicle-bn254 = { path = "/root/dev/open-icicle/wrappers/rust/icicle-curves/icicle-bn254", default-features = false, features = ["msm", "ntt"] }
-icicle-core = { path = "/root/dev/open-icicle/wrappers/rust/icicle-core" }
-icicle-runtime = { path = "/root/dev/open-icicle/wrappers/rust/icicle-runtime" }
+icicle-bn254 = { path = "open-icicle/wrappers/rust/icicle-curves/icicle-bn254", default-features = false, features = ["msm", "ntt"] }
+icicle-core = { path = "open-icicle/wrappers/rust/icicle-core" }
+icicle-runtime = { path = "open-icicle/wrappers/rust/icicle-runtime" }
 serde_json = "1"

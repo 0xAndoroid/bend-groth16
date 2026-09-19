@@ -1,4 +1,4 @@
-# Bend 2 data interchange format (FROZEN by the orchestrator, 2026-09-18)
+# Bend 2 data interchange format (frozen 2026-09-18)
 
 All binaries are little-endian, written by `bend2/tools/export_bin.py` from the arkworks JSON under `data/<K>/` and `data/vectors/`, read in Bend 2 via `File.read_bytes` into `Array<U32>` (see `docs/bend2-idioms.md` §3, `bend2/probe/io.bend`).
 

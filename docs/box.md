@@ -3,42 +3,67 @@ created: 2026-09-18
 updated: 2026-09-18
 tags: [bend-groth16, gpu, benchmark]
 ---
-# GPU box — `pika-bend-5090`
+# CUDA box — hardware, toolchain, reproduction
 
-**Snapshot; box destroyed 2026-09-18 04:38 ET.** Current Bend results: `bend2/bench/prover_results.md`, `bend2/bench/box_results.md`, `bench/bend2-box.json`.
+Every `bench/box-*.json` and `bench/bend2-box.json` row, `bend2/bench/box_results.md` and the box half of
+`bend2/bench/prover_results.md` were measured on one rented RTX 5090 machine (a GPU-rental marketplace instance; any
+Ubuntu 24.04 / CUDA 12.8 host with the same class of GPU reproduces the setup). Current Bend results:
+`bend2/bench/prover_results.md`, `bend2/bench/box_results.md`, `bench/bend2-box.json`; summary in `docs/benchmarks.md`.
 
-Rented 2026-09-18 05:47 UTC by lane `bend-groth16 · w1 gpu-box`; reused by the Bend-CUDA lane; torn down by the orchestrator (`echo y | vastai destroy instance <id>`).
+## Hardware snapshot
 
 | | |
 |---|---|
-| vast.ai instance | **51392026** (offer 50511172), label `pika-bend-5090`, Virginia US |
-| price | **$0.628/h** (offer listed $0.601 + storage) |
 | GPU | NVIDIA GeForce RTX 5090, 32607 MiB, compute capability **12.0** (sm_120) |
-| driver / CUDA | driver 595.84 (cuda_max_good 13.2); toolkit in image **nvcc 12.8.93** |
-| CPU | AMD Ryzen Threadripper 9960X, 24 cores / 48 threads (Zen 5, AVX-512), 125 GiB RAM, 100 GB overlay disk |
-| OS / image | Ubuntu 24.04.1, `ghcr.io/0xandoroid/pika-vast:latest` (`PIKA_SKIP_SHIM=1`, shim not registered) |
-| ssh (direct) | `ssh -i <key> -p <port> root@<ip>` (values were in the machine file below; the box no longer exists) |
-| machine file | `$TMPDIR/bend-groth16/box.json` on the mini (`instance_id, ip, port, key, dph`) |
+| driver / CUDA | driver 595.84; toolkit **nvcc 12.8.93** |
+| CPU | AMD Ryzen Threadripper 9960X, 24 cores / 48 threads (Zen 5, AVX-512); governor `powersave` (idle 400 MHz, boosts to 5.45 GHz) |
+| RAM / disk | 125 GiB, 100 GB overlay disk |
+| OS | Ubuntu 24.04.1 (container image with CUDA 12.8 devel) |
+| container | 47 Go threads visible to gnark (`GOMAXPROCS=47`); Bend uses `--threads 48` |
 
-## Layout on the box
+## Toolchain versions
 
-| path | content |
+| tool | version |
 |---|---|
-| `/root/bend-groth16` | this repo, branch `bend-groth16-integration` |
-| `/root/w1` | rsync of this lane's `comparators/` (scripts are run from here; `REPO=/root/w1`) |
-| `/root/dev/{rapidsnark,icicle-gnark,icicle-snark,open-icicle,sppark}` | pinned sources: v0.0.8, v3.2.2, bf00385, v4.0.0, v0.1.15 |
-| `/root/art/square-K/` | Circom SquareChain(2^K) artifacts: `circuit.r1cs`, `witness.wtns`, `circuit.zkey`, `vk.json` (K=10,14,18,20) |
-| `/root/art/potP.ptau` | PSE perpetual-powers-of-tau prepared files `ppot_0080_P.ptau`, P = K+1 (Hermez GCS/S3 URLs now 403) |
-| `/root/art/gnark-install`, `snark-install`, `icicle4-install` | isolated ICICLE prefixes (icicle-gnark v3.2.2 all 4 curves · ICICLE-SNARK's vendored icicle · open-icicle v4.0.0 bn254), all `-DCUDA_ARCH=120` |
-| `/root/art/gnark-cpu`, `/root/art/gnark-icicle` | Go runner binaries (`comparators/gpu/gnark-icicle`), the latter built with `-tags=icicle` |
-| toolchains | Go 1.25.7 `/usr/local/go`; Rust 1.95 `/home/pika/.cargo/bin` (`CARGO_HOME/RUSTUP_HOME` point at `/home/pika`); Node 22.23; snarkjs 0.7.6 in `/root/tools/node_modules/.bin`; circom 2.2.3 `/root/tools/circom` |
-| logs | `/root/setup.log`, `/root/build.log`, `/root/gen.log`, `/root/art/gen-K.log`, `/root/cpu.log`, `/root/gpu.log` |
+| Go | 1.25.7 (`/usr/local/go`) |
+| Rust | 1.95 (`$HOME/.cargo/bin`) |
+| Node / snarkjs / circom | 22.23 / 0.7.6 / 2.2.3 |
+| clang | 19.1.7 (apt.llvm.org; Bend's `!` programs need clang ≥ 19 — stock Ubuntu clang 18 is rejected) |
+| Bend | 2.0.5 (`curl -fsSL https://bend-lang.com/install.sh \| BEND_NO_TELEMETRY=1 sh` → `$HOME/.bend`) |
+| gnark / icicle-gnark | v0.16.3 / v3.2.2 |
+| rapidsnark | v0.0.8 |
+| ICICLE-SNARK | bf00385 |
+| open-icicle | v4.0.0 |
+| sppark | v0.1.15 |
 
-## Circuit check
+## Layout
 
-`snarkjs r1cs info` per K (`/root/art/square-K/r1cs-info.txt`): constraints = 2^K exactly, wires = 2^K + 2, 1 private input, 1 output, 0 public inputs. gnark runner asserts `GetNbConstraints() == N`.
+All scripts take their paths from environment variables with these defaults:
 
-## Results — box CPU (Threadripper 9960X, 24C/48T; container exposes GOMAXPROCS=47)
+| variable | default | content |
+|---|---|---|
+| `REPO` | the checkout containing the script | this repository |
+| `DEV` | `/root/dev` | pinned comparator sources: `rapidsnark`, `icicle-gnark`, `icicle-snark`, `open-icicle`, `sppark` |
+| `ART` | `/root/art` | builds and artifacts: `square-K/` (Circom `circuit.r1cs`, `witness.wtns`, `circuit.zkey`, `vk.json` for K=10,14,18,20), `potP.ptau` (PSE `ppot_0080_P.ptau`, P = K+1), `gnark-install`, `snark-install`, `icicle4-install` (isolated ICICLE prefixes, all `-DCUDA_ARCH=120`), `gnark-cpu` / `gnark-icicle` runner binaries |
+| `TOOLS` | `/root/tools` | `circom` binary and `node_modules/.bin/snarkjs` |
+
+`comparators/gpu/icicle-prim/Cargo.toml` reaches `open-icicle` through the gitignored symlink `comparators/gpu/icicle-prim/open-icicle` (`build.sh` creates it: `ln -sfn $DEV/open-icicle comparators/gpu/icicle-prim/open-icicle`).
+
+## Steps
+
+1. One-time setup, comparator builds and Circom artifacts: `comparators/box/README.md` (`build.sh`, `gen-all.sh`).
+2. Circuit check: `snarkjs r1cs info` per K must report constraints = 2^K exactly, wires = 2^K + 2, 1 private input,
+   1 output, 0 public inputs; the gnark runner asserts `GetNbConstraints() == N`.
+3. CPU comparators: `comparators/box/run-cpu.sh` → `bench/box-cpu-{gnark,gnark-1thread,rapidsnark,snarkjs}.json`.
+4. GPU comparators: `comparators/gpu/run-gpu.sh` → `bench/box-gpu-{gnark-icicle,gnark-icicle-pinned,icicle-snark,primitives}.json`.
+5. Bend 2 smoke test (interpreter, C build, CUDA `!` build): `comparators/box/bend-smoke.sh`.
+6. Bend 2 primitive benches on CUDA: `comparators/box/bend-cuda.sh` → `bend2/bench/box_results.md`.
+7. Bend 2 prover: `BENDG_GPU=1 sh bend2/scripts/prove.sh K --gpu 16GB` (CUDA) and `sh bend2/scripts/prove.sh K --threads 48` (CPU);
+   `bend2/scripts/bench_prover.sh` produces the `bench/bend2-box.json` rows.
+
+Run one benchmark process at a time on an otherwise idle box; every JSON row records the 1-minute load average.
+
+## Results — box CPU (Threadripper 9960X, 24C/48T)
 
 SquareChain(2^K), BN254, median wall ms, every proof verified. What each timer includes differs — read the row label.
 
@@ -49,14 +74,14 @@ SquareChain(2^K), BN254, median wall ms, every proof verified. What each timer i
 | 18 | **189.4** (3; solve 9.7) | — | 643.9 (3) | 2894 (2) |
 | 20 | **665.7** (3; solve 43.2) | — | 2031 (2) | 10663 (1) |
 
-- gnark: `groth16.Setup` 19 / 151 / 1872 / 7339 ms; raw PK 0.39 MB (K=10) … see `pk_bytes` in the JSON; first (cold) prove within ±5 % of warm.
+- gnark: `groth16.Setup` 19 / 151 / 1872 / 7339 ms; first (cold) prove within ±5 % of warm.
 - rapidsnark numbers are process launches (file-inclusive): the 562 MB K=20 zkey is read from page cache each run, so this is an upper bound on its in-memory prove time (the CLI has no warm-prove mode; see `docs/comparators.md`).
 - snarkjs K=20 is a single run (10.7 s); QAP domain for snarkjs is 2N (adds public/constant rows), gnark uses N.
 - Files: `bench/box-cpu-gnark.json`, `bench/box-cpu-gnark-1thread.json`, `bench/box-cpu-rapidsnark.json`, `bench/box-cpu-snarkjs.json`.
 
 ## Results — RTX 5090 provers
 
-Same SquareChain rows; median wall ms. Verification scope: gnark and gnark+ICICLE verify every timed proof; ICICLE-SNARK: only the final proof per size verified (the worker overwrites one proof file across cold + warm runs); arkworks: one untimed proof verified per size, warm medians.
+Same SquareChain rows; median wall ms. Verification scope: gnark and gnark+ICICLE verify every timed proof; ICICLE-SNARK: only the final proof per size is verified (the worker overwrites one proof file across cold + warm runs).
 
 | K | gnark CPU (ref, all cores) | **gnark v0.16.3 + icicle-gnark v3.2.2** (`icicleGroth.Prove`, PK not pinned) | same, `WithPinKeysToGPU` | **ICICLE-SNARK bf00385** (`--device CUDA`, zkey cached) | ICICLE-SNARK cold (1st prove, zkey parse + H2D) |
 |---|---|---|---|---|---|
@@ -65,11 +90,13 @@ Same SquareChain rows; median wall ms. Verification scope: gnark and gnark+ICICL
 | 18 | 189.4 | **48.3** (3) | 44.4 (3) | **41.3** (5) | 73.1 |
 | 20 | 665.7 | **203.2** (3) | 180.6 (3) | **114.3** (5) | 232.9 |
 
-- gnark+ICICLE time = gnark constraint solver (`solve_ms` 0.2 / 1.5 / 9.7 / 40.6 ms — CPU) + H2D of witness-dependent vectors + GPU MSMs/NTTs + proof D2H; PK vectors are re-uploaded each proof unless pinned. Speed-up vs gnark CPU on this box: K=18 3.9× (4.3× pinned), K=20 3.3× (3.7× pinned); K≤14 is *slower* than CPU (≈26 ms fixed launch/transfer floor). Admission gate passed: build with `-DCUDA_ARCH=120` on CUDA 12.8, valid verified proofs at all K. First prove of a process includes ICICLE backend load + device warm-up (`first_prove_ms` 289 ms at K=10).
+- gnark+ICICLE time = gnark constraint solver (`solve_ms` 0.2 / 1.5 / 9.7 / 40.6 ms — CPU) + H2D of witness-dependent vectors + GPU MSMs/NTTs + proof D2H; PK vectors are re-uploaded each proof unless pinned. Speed-up vs gnark CPU on this box: K=18 3.9× (4.3× pinned), K=20 3.3× (3.7× pinned); K≤14 is *slower* than CPU (≈26 ms fixed launch/transfer floor). Built with `-DCUDA_ARCH=120` on CUDA 12.8; valid verified proofs at all K. First prove of a process includes ICICLE backend load + device warm-up (`first_prove_ms` 289 ms at K=10).
 - ICICLE-SNARK: worker's own `proof took` timer; includes reading `witness.wtns` from disk (32 MB at K=20) and writing proof/public JSON, excludes zkey parsing (cached). Driver-side wall agrees within 0.1 ms for the warm medians (the first command of a process includes start-up: `first_wall_ms` 146 vs `first_prove_ms` 135 at K=10). No witness solving (Circom wtns pre-generated) — so vs gnark+ICICLE subtract ~41 ms of solver at K=20 for a like-for-like view. Experimental per upstream README.
 - Files: `bench/box-gpu-gnark-icicle.json`, `bench/box-gpu-gnark-icicle-pinned.json`, `bench/box-gpu-icicle-snark.json`.
 
-## Results — RTX 5090 primitives (BN254 G1 MSM, Fr radix-2 NTT; median of 10 after 1 warm-up)
+## Results — RTX 5090 primitives (BN254 G1 MSM, Fr radix-2 NTT; ms)
+
+ICICLE rows: median of 10 after 1 warm-up. sppark MSM: Criterion estimate (20 samples, 1 s warm-up).
 
 | 2^k | ICICLE v4 MSM device-resident (kernel only) | ICICLE v4 MSM host scalars (H2D scalars, cached bases) | sppark v0.1.15 MSM `multi_scalar_mult_arkworks` (H2D points+scalars each call) | ICICLE v4 NTT fwd device in-place | ICICLE v4 NTT fwd host in/out | sppark NTT fwd host in-place (H2D+D2H) |
 |---|---|---|---|---|---|---|
@@ -81,18 +108,19 @@ Same SquareChain rows; median wall ms. Verification scope: gnark and gnark+ICICL
 | 19 | 4.83 | 5.20 | 47.2 | 0.249 | 1.373 | 1.335 |
 | 20 | **7.17** | 7.39 | 92.0 | **0.622** | 2.96 | 2.63 |
 
-- ICICLE (open-icicle v4.0.0, `-DCUDA_ARCH=120`, our `comparators/gpu/icicle-prim`): synchronous calls (`is_async=false`), precompute factor 1, `c` auto, batch 1; device result == host-path result at every size; NTT round-trip `ifft(fft(x)) == x` at every size; twiddle domain for 2^20 initialised once (1.1 ms, untimed). MSM has a ≈2.3 ms floor below 2^17 (kernel-launch/bucket setup bound). ICICLE's stock criterion benches were not used (their timer is async with sync outside the loop).
+- ICICLE (open-icicle v4.0.0, `-DCUDA_ARCH=120`, `comparators/gpu/icicle-prim`): synchronous calls (`is_async=false`), precompute factor 1, `c` auto, batch 1; device result == host-path result at every size; NTT round-trip `ifft(fft(x)) == x` at every size (checked through the host-buffer API); twiddle domain for 2^20 initialised once (1.1 ms, untimed). MSM has a ≈2.3 ms floor below 2^17 (kernel-launch/bucket setup bound). ICICLE's stock criterion benches were not used (their timer is async with sync outside the loop).
 - sppark MSM is the shipped `poc/msm-cuda` criterion bench (`BENCH_NPOW=k`, `--features bn254`; sm_120 selected by sppark's nvcc probe); its API takes host arkworks 0.3 slices and copies points **and** scalars every call, so it is host-inclusive and not comparable to the device-resident ICICLE column (2^20: 64 MB points + 32 MB scalars per call). sppark ships no BN254 NTT timing bench; `comparators/gpu/sppark/ntt_timer.rs` times `ntt_cuda::NTT/iNTT` (host in-place, round-trip checked).
 - File: `bench/box-gpu-primitives.json` (`icicle.*`, `sppark.*`, per-size samples).
 
-## Bend 2 on the box (for the Bend-CUDA lane)
+## Bend 2 on the box
 
-- Installed with `curl -fsSL https://bend-lang.com/install.sh | BEND_NO_TELEMETRY=1 sh` → `/root/.bend` (`/root/.bend/bin/bend` → `app/2.0.5/…`; installs bun into `/root/.bun`). `bend --version` = **bend 2.0.5**. PATH: `export PATH=/root/.bend/bin:/root/.bun/bin:/usr/local/cuda/bin:$PATH` (only added to `.bashrc`).
+- Install: `curl -fsSL https://bend-lang.com/install.sh | BEND_NO_TELEMETRY=1 sh` → `$HOME/.bend` (`$HOME/.bend/bin/bend`; installs bun into `$HOME/.bun`). `bend --version` = **bend 2.0.5**. PATH: `export PATH=$HOME/.bend/bin:$HOME/.bun/bin:/usr/local/cuda/bin:$PATH`.
 - CLI: `bend file.bend` = check + run (interpreter, 74 ms for hello); `bend file.bend -o out` = native binary; `-o out.c` emits one C file.
-- C target: `bend hello.bend -o hello` → 1.1 MB static-ish binary (libc/libm only), prints. 0.3 s build.
-- CUDA target: a program using `!` (`pow2!(20n)`) needs **clang ≥ 19** — stock Ubuntu clang 18 is rejected ("bend needs clang 19"). Installed `clang-19` via `bash llvm.sh 19` (apt.llvm.org). Then `bend pow2.bend -o pow2` builds in 0.76 s, prints 1048576, links `libcuda.so.1` + `libnvrtc.so.12` (kernels are NVRTC-JIT'd at run time; emitted C contains `__global__ void bend_dev(...)`). Run 0.12 s.
-- Smoke script: `comparators/box/bend-smoke.sh`; files in `/root/bendtest/`.
+- C target: `bend hello.bend -o hello` → 1.1 MB binary (libc/libm only). 0.3 s build.
+- CUDA target: a program using `!` needs **clang ≥ 19** (`bash llvm.sh 19` from apt.llvm.org). `bend pow2.bend -o pow2` builds in 0.76 s, links `libcuda.so.1` + `libnvrtc.so.12` (kernels are NVRTC-JIT'd at run time into a `.gpu` cache next to the binary; emitted C contains `__global__ void bend_dev(...)`). Run 0.12 s.
+- `uv` is not needed on the box: `bend2/scripts/prove.sh` calls `uv run python`; the exporters are stdlib-only, so `python3 bend2/tools/export_bin.py` + `ref/target/release/groth16-ref verify` work directly.
+- Smoke script: `comparators/box/bend-smoke.sh`; benches: `comparators/box/bend-cuda.sh`.
 
-## Cost / time
+## Cost
 
-Started 05:47 UTC; all comparator runs done 07:00 UTC (~1.3 h ≈ $0.8 of the $40 budget at $0.628/h). Box left running for the Bend-CUDA lane; destroyed 2026-09-18 04:38 ET (2 h 51 min rental).
+All comparator runs took ~1.3 h of box time; the whole session (comparators + Bend CUDA benches + prover rows) was under 3 h at about $0.63/h.

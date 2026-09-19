@@ -53,7 +53,7 @@ Notes
   `prove(K) ≈ 3·msm_g1(K) + msm_g1(K+1) + msm_g2(K) + 7·ntt(K+1)` plus ~20–40 % for the sparse
   `evaluate_constraint` passes, `into_bigint` conversions of four scalar vectors and the final
   `into_affine`. On a quiet host 2^18 measures ≈ 2.1 s against a ≈ 1.6 s primitive sum.
-- Load matters more than pk source: with `iters = 1` a 2^18 prove read 5.9 s while a sibling lane
+- Load matters more than pk source: with `iters = 1` a 2^18 prove read 5.9 s while another build
   compiled, yet 2^20 read only 8.5 s a minute later; re-measured back to back at 2^18, pk.bin vs
   in-memory setup differ by < 15 %. Treat entries whose `loadavg` ≫ `threads` as upper bounds and
   rerun `groth16-ref bench --log2 K` on a quiet host before quoting them.
