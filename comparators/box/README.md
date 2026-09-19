@@ -25,7 +25,7 @@ git clone --branch v0.1.15 --recurse-submodules https://github.com/supranational
 git clone https://github.com/0xAndoroid/bend-groth16                                      # REPO
 ```
 
-`comparators/gpu/icicle-prim/Cargo.toml` points at `open-icicle` by path under `/root/dev`; edit it if `DEV` differs.
+`comparators/gpu/icicle-prim/Cargo.toml` reaches `open-icicle` through the gitignored symlink `comparators/gpu/icicle-prim/open-icicle` (`build.sh` creates it: `ln -sfn $DEV/open-icicle comparators/gpu/icicle-prim/open-icicle`).
 
 ## Artifacts and builds
 

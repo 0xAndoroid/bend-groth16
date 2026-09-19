@@ -47,7 +47,7 @@ All scripts take their paths from environment variables with these defaults:
 | `ART` | `/root/art` | builds and artifacts: `square-K/` (Circom `circuit.r1cs`, `witness.wtns`, `circuit.zkey`, `vk.json` for K=10,14,18,20), `potP.ptau` (PSE `ppot_0080_P.ptau`, P = K+1), `gnark-install`, `snark-install`, `icicle4-install` (isolated ICICLE prefixes, all `-DCUDA_ARCH=120`), `gnark-cpu` / `gnark-icicle` runner binaries |
 | `TOOLS` | `/root/tools` | `circom` binary and `node_modules/.bin/snarkjs` |
 
-`comparators/gpu/icicle-prim/Cargo.toml` references `open-icicle` by path under `/root/dev`; edit it if `DEV` differs.
+`comparators/gpu/icicle-prim/Cargo.toml` reaches `open-icicle` through the gitignored symlink `comparators/gpu/icicle-prim/open-icicle` (`build.sh` creates it: `ln -sfn $DEV/open-icicle comparators/gpu/icicle-prim/open-icicle`).
 
 ## Steps
 

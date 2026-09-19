@@ -43,7 +43,7 @@ so the ptau must have power ≥ K+1.
 
 ## Artifacts (outside the repo, gitignored patterns `*.ptau *.zkey *.wtns`)
 
-All under `$TMPDIR/bend-groth16/w0e/` on the Mac mini (`$TMPDIR=/Volumes/Dev/tmp`):
+All under `$TMPDIR/bend-groth16/circom/` (any scratch directory works; `L` below):
 
 - `bin/circom`, `snarkjs/node_modules/.bin/snarkjs`
 - `ptau/ppot_0080_{11,15,19,21}.ptau`
@@ -55,7 +55,7 @@ All under `$TMPDIR/bend-groth16/w0e/` on the Mac mini (`$TMPDIR=/Volumes/Dev/tmp
 ## Exact commands
 
 ```sh
-L=$TMPDIR/bend-groth16/w0e; export PATH=$L/bin:$L/snarkjs/node_modules/.bin:$PATH
+L=$TMPDIR/bend-groth16/circom; export PATH=$L/bin:$L/snarkjs/node_modules/.bin:$PATH
 # 1. compile (K=10 shown)
 comparators/circom/gen.sh 10 $L/build            # prints "# of Constraints: 1024"
 # 2. setup + vkey (12 GB heap needed for K=20: use node --max-old-space-size=12000 .../snarkjs/build/cli.cjs)

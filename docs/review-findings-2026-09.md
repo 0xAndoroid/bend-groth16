@@ -94,7 +94,7 @@ Unretained data, not numeric contradictions: `bench/bend2-*.json` retain only ag
 | `bend2/bench/box_results.md:59`, `:61`; `docs/box.md:8`, `:96` | Box results are an old snapshot, but current-facing future instructions still predict a huge speedup, say MSM/NTT absent, and imply a live rental. The box no longer exists. Keep snapshot provenance while linking current results and teardown state. |
 | `docs/comparators.md:196`, `:203`, `:259` | Clearly marked research plan, but not the implemented recipe: arkworks 0.6 proposed versus 0.5 used; gnark GPU recipe only builds BN254 whereas actual runner links all four curves (`comparators/box/build.sh:14`); final comparison table still says Bend/HVM2. Add a current-results/recipe pointer rather than treating these as run instructions. |
 | `docs/comparators.md:89`, `:103`, `:195` | Plan download/build recipes were superseded by actual findings: Hermez URLs 403; Mac rapidsnark make target expects unavailable nproc. Actual Circom README documents working alternatives. |
-| `comparators/gpu/icicle-prim/Cargo.toml:6` | Claims ICICLE_RS override, but dependency paths are hardcoded `/root/dev/open-icicle/...`; no environment override is read. Box-only build works in its specified layout; advertised relocation does not. |
+| `comparators/gpu/icicle-prim/Cargo.toml` | Dependency paths were hardcoded to one host layout (`/root/dev/open-icicle/...`). Fixed: paths now go through the gitignored symlink `comparators/gpu/icicle-prim/open-icicle` (`comparators/box/build.sh` creates it). |
 | `comparators/circom/README.md:99` | hardware_concurrency-based thread count is runtime-derived, not “fixed at build time”. Both Circom Python `--threads` options are labels only. |
 
 ## Other harness / repository findings

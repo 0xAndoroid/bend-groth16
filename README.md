@@ -42,7 +42,7 @@ sh bend2/tests/run.sh                        # every bend2 test, ends with the K
 The prover prints `A x y`, `B x0 x1 y0 y1`, `C x y`, then `T <phase> <ms>` lines
 (`load evals qap msm_a msm_b1 msm_b2 msm_h msm_l total`). K=18 needs `--gpu 8GB` (arena span), K=20 about 20 GB.
 
-## What we measured
+## What was measured
 
 SquareChain(2^K) — K squaring constraints, K+2 wires, one public output — at K = 10, 14, 18, 20; median ms.
 
@@ -73,7 +73,7 @@ G1 add), phase breakdowns, hardware and reproduction steps: [docs/benchmarks.md]
 Collected in [docs/review-notes.md](docs/review-notes.md) (language/runtime questions raised by the prover:
 shared read-only buffers, zero-copy views, widened integer products, device-resident scheduling, work stealing)
 and [docs/formal-verification.md](docs/formal-verification.md) (what Bend 2's type system could check about this
-code). Issues we hit: [bendlang/bend#804](https://github.com/bendlang/bend/issues/804) (array split copies),
+code). Bend issues hit: [bendlang/bend#804](https://github.com/bendlang/bend/issues/804) (array split copies),
 #791 / #779 (`Nat` literals ≥ 10000n crash the checker).
 
 ## License
