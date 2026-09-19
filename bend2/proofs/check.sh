@@ -9,7 +9,9 @@ fail=0
 for f in "$DIR"/*.bend; do
   printf '%s: ' "$(basename "$f")"
   out=$(cd "$DIR" && "$BEND" "$(basename "$f")" 2>&1) || true
-  echo "$out" | tail -1
-  [ "$out" = "All terms check." ] || fail=1
+  case $out in
+    "All terms check.") echo "$out" ;;
+    *) echo "FAIL $(echo "$out" | grep -m1 '^Location' || true)"; fail=1 ;;
+  esac
 done
 exit $fail
