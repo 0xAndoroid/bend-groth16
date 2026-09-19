@@ -70,12 +70,13 @@ Deliberate trade-offs, kept for publication:
 1. **MSM shape: c = 8, 32 windows, fork by point range, element-wise bucket join** instead of by-window Pippenger with signed c = 15-16. Cost at K=18: `msm_a` ≈109 M Fq-mul vs ≈58 M (1.9×), `msm_h` 201 M vs 109 M, and at 2^20 (c = 10) 354 M vs 202 M (1.75×). Reason: by-window parallelism needs shared read-only access to the inputs; Bend 2 arrays are single-owner, so each window task would hold its own copy (0.86 GB at 2^18, ≈3.4 GB at 2^20) or the design needs another read-only representation. The point-range topology copies nothing but the bucket sets, and its join is 6-13 % of the bucket adds at c = 8.
 2. **Field multiplication: 16×16-bit CIOS with per-cell normalisation, 2801 U32 ops per mul,** instead of ≈1860 with 20×13-bit limbs and lazy carries (−34 % ops, estimated 1.3-1.6× on the whole prover). Reason: Bend 2 has U32 only (wrapping mul, no mul-hi, no U64), so the 16-bit split is the largest one whose CIOS cells cannot overflow ((2^16 − 1)^2 + 2(2^16 − 1) = 2^32 − 1); a 13-bit lazy-carry kernel changes R, the reduction bounds and every generated field routine, and its gain is an operation count that `bench/field_mul.bend` has not yet confirmed. Squaring (#5) and lazy add/sub (#6) only pay on top of it.
 
-Fixed before publishing:
+Fixed before publishing (M4 Mac mini, 10 threads unless noted; medians of 3 runs at K=10/14, one run at K=18):
 
-- MSM: test the bucket for ∞ before `add_mixed` (`Msm.*.badd.s`; G1 and G2, generated) — one wasted mixed add per bucket per leaf removed (6 % of mixed adds at K=18, ≈43 % at K ≤ 14).
+- MSM: test the bucket for ∞ before `add_mixed` (`Msm.*.badd.s`; G1 and G2, generated) — one wasted mixed add per bucket per leaf removed. Measured: K=14 total 5.49 → 4.28 s (−22 %; 1 thread 11.66 → 8.74 s, −25 %), K=10 0.65 → 0.49 s, K=18 MSM phases −4…−8 % (31.4 → 30.1 s total).
 - QAP: one fused scale pass (n^−1 · g^j) per `qap_h` pipeline instead of two — 6D Fr-mul and three array passes.
 - R1CS evaluation: coefficient 1 skips the Fr multiplication (all 786 432 K=18 coefficients).
 - Scalars: convert `z` to canonical form once and copy its suffix, instead of converting `z` and `zl` separately.
+- The three QAP/evals fixes together: `qap` K=14 88 → 79 ms (1 thread 402 → 356 ms), K=18 1336 → 1310 ms; `evals` K=14 10 → 4 ms, K=18 163 → 54 ms. Small against a 31 s prover, but they were the cheapest items on both lists.
 
 Open items (for a Bend issue):
 
