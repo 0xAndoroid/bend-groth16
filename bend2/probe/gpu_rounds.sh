@@ -4,8 +4,8 @@
 # Run the binary with BEND_ROUNDS=1 to get, on stderr, one line per cube_run:
 #   rounds=R frontier_sum=S frontier_max=M f1=A f<=128=B f<=1024=C f<=16384=D f>16384=E ms=T
 # R = host-synchronised scheduler rounds (each = grow/work/pack kernels in one Metal
-# command buffer, or two pool_turn phases on the CPU); f = tasks in the frontier at the
-# start of a round (= lanes that can be busy in its work pass). Same host clang flags as
+# command buffer, or two pool_turn phases on the CPU); f = tasks handed over at the
+# start of a round, before its grow kernels fork them further. Same host clang flags as
 # ~/.bend/current/bend2/main.ts cli_build (macOS, `!` program). Bend 2.0.5 only.
 set -eu
 SRC=$1
@@ -14,7 +14,7 @@ NAME=$(basename "$SRC" .bend)
 mkdir -p "$OUT"
 export BEND_NO_TELEMETRY=1
 "${BEND:-$HOME/.bend/bin/bend}" "$SRC" -o "$OUT/$NAME.c"
-uv run python - "$OUT/$NAME.c" <<'PY'
+"${PYTHON:-python3}" - "$OUT/$NAME.c" <<'PY'
 import sys, re
 p = sys.argv[1]
 s = open(p).read()

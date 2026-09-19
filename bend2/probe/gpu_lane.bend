@@ -1,4 +1,4 @@
-# GPU-lane probe (review lane C, docs/review-notes.md): what one Metal/CUDA lane costs
+# GPU-lane probe (docs/review-notes.md §C): what one Metal/CUDA lane costs
 # against one CPU core, and whether the per-`!` cost is per call or per process.
 #   fmul  : 2^N sequential Fr.mul on ONE lane (`!` at fork depth 0) vs one CPU thread
 #   walk  : 2^N sequential a[i] <- a[i]+h(i) on ONE lane vs one CPU thread (memory latency)
