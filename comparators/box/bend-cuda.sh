@@ -27,7 +27,6 @@ log "## env"
 log "$(bend --version) | $(clang-19 --version | head -1) | $(nvcc --version | tail -1) | git $(git rev-parse --short HEAD)"
 log "$(nvidia-smi --query-gpu=name,driver_version,memory.total,compute_cap --format=csv,noheader)"
 
-# 2. tests (CPU)
 log "## tests"
 bend2/tests/run.sh 2>&1 | tee -a $R
 
@@ -42,7 +41,6 @@ for b in field_mul g1_add; do
 done
 cd $W
 
-# run BIN MODE N FD [args...] — 3 runs; the binary prints its own ms + checksum (xor / sum)
 run() {
   local bin=$1 mode=$2 n=$3 fd=$4; shift 4
   for i in 1 2 3; do

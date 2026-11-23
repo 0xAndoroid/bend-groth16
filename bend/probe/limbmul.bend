@@ -39,7 +39,6 @@ def mul(as, bs):
     case List/Cons:
       return add(row(as.head, bs, 0), List/Cons(0, mul(as.tail, bs)), 0)
 
-# n pseudo-random 12-bit limbs from a seed
 def gen(n, seed):
   switch n:
     case 0:

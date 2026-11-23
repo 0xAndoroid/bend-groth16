@@ -66,7 +66,6 @@ def flat(t, acc):
     case Tree/Node:
       return flat(t.left, flat(t.right, acc))
 
-# carry-propagate to 8-bit limbs and checksum in one pass
 def norm(xs, carry, acc):
   match xs:
     case List/Nil:

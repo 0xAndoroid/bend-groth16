@@ -13,7 +13,6 @@ type G is Type:
 def h(+i: U32) -> U32:
   (((i * 2654435761) .^. (i >> 15n)) * 2246822519 : U32)
 
-# a[i] <- h(i) for i in [0, n)
 def fill(n: Nat, +i: U32, a: Array<U32>) -> Array<U32>:
   match n:
     case 0n:

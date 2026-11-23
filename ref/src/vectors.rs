@@ -203,7 +203,6 @@ pub fn run(out: &Path) -> Result<()> {
         .collect();
     json::write_json(&out.join("ntt_small.json"), &ntt)?;
 
-    // sanity: G2 generator round-trips through the JSON encoding
     let g2 = G2Affine::generator();
     assert_eq!(G2Json::from(&g2).to_affine()?, g2);
     println!("vectors written to {}", out.display());

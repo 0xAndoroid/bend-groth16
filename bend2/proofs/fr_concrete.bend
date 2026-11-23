@@ -13,7 +13,6 @@ def two() -> F.Fr:
 def neg_one() -> F.Fr:
   F.Fr{6, 40960, 49527, 38731, 41831, 55896, 29106, 61751, 4654, 2312, 41543, 20961, 49402, 18217, 54961, 8793}
 
-# 1 + 1 = 2 (no modular wrap)
 def add_one_one() -> {F.Fr.add(F.Fr.one(), F.Fr.one()) == two() : F.Fr}:
   {==}
 
@@ -25,11 +24,9 @@ def add_one_neg_one() -> {F.Fr.add(F.Fr.one(), neg_one()) == F.Fr.zero() : F.Fr}
 def sub_zero_one() -> {F.Fr.sub(F.Fr.zero(), F.Fr.one()) == neg_one() : F.Fr}:
   {==}
 
-# F.Fr.neg(1) = -1
 def neg_one_ok() -> {F.Fr.neg(F.Fr.one()) == neg_one() : F.Fr}:
   {==}
 
-# F.Fr.eq(1, 1) = 1 and F.Fr.is_zero(0) = 1
 def eq_refl_one() -> {F.Fr.eq(F.Fr.one(), F.Fr.one()) == 1 : U32}:
   {==}
 
@@ -44,6 +41,5 @@ def mul_one_one() -> {F.Fr.mul(F.Fr.one(), F.Fr.one()) == F.Fr.one() : F.Fr}:
 def mul_two_one() -> {F.Fr.mul(two(), F.Fr.one()) == two() : F.Fr}:
   {==}
 
-# round trip through the canonical (non-Montgomery) representation
 def canon_round_trip() -> {F.Fr.to_canonical(F.Fr.from_canonical(F.Fr.raw_one())) == F.Fr.raw_one() : F.Fr}:
   {==}

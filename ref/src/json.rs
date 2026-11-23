@@ -155,7 +155,6 @@ pub fn read_json<T: for<'de> Deserialize<'de>>(path: &std::path::Path) -> anyhow
         .map_err(|e| format!("{}: {e}", path.display()))?)
 }
 
-/// Minimal error alias so we don't pull in `anyhow`.
 pub mod anyhow_lite {
     pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 }

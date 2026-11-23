@@ -112,7 +112,6 @@ pub fn primitives(it: usize, out_dir: &Path, max_log2: u32) -> Result<()> {
     let mut rng = circuit::rng();
     let stamp = || chrono::Utc::now().to_rfc3339();
 
-    // MSM G1 2^10..2^max, G2 2^10..2^16 — random affine points, random scalars, fresh per size.
     let top = max_log2.min(20);
     let pts: Vec<G1Affine> = G1Projective::normalize_batch(&(0..1usize << top).map(|_| G1Projective::rand(&mut rng)).collect::<Vec<_>>());
     let sc: Vec<Fr> = (0..1usize << top).map(|_| Fr::rand(&mut rng)).collect();
@@ -133,7 +132,6 @@ pub fn primitives(it: usize, out_dir: &Path, max_log2: u32) -> Result<()> {
     }
     drop(pts2);
 
-    // NTT / iNTT over Fr.
     for k in 10..=top {
         let n = 1usize << k;
         let d = Radix2EvaluationDomain::<Fr>::new(n).unwrap();
@@ -145,7 +143,6 @@ pub fn primitives(it: usize, out_dir: &Path, max_log2: u32) -> Result<()> {
             "fft_samples_ms": fft_samples, "ifft_samples_ms": ifft_samples, "timestamp": stamp(), "loadavg": loadavg()}));
     }
 
-    // Fr mul throughput, single thread.
     const N_MULS: usize = 10_000_000;
     let mut x = Fr::rand(&mut rng);
     let y = Fr::rand(&mut rng);

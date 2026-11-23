@@ -38,7 +38,6 @@ class Gen:
     def lit(self, x):
         return "%s{%s}" % (self.N, ", ".join(str(v) for v in to_limbs(x)))
 
-    # ---- SSA helpers: each cell is one `+v = expr` line at indent 6 ----
     def emit(self, expr):
         self.fresh += 1
         v = "v%d" % self.fresh
@@ -66,7 +65,6 @@ class Gen:
         self.w("  match %s %s:" % (a, b))
         self.w("    case %s %s:" % (self.rec(a), self.rec(b)))
 
-    # ---- ops ----
     def gen_add(self):
         self.head2("add")
         t, c = [], None

@@ -9,7 +9,6 @@ import ../src/fr.bend as R
 import ../src/ntt.bend as Ntt
 import ../src/bin_io.bend as Io
 
-# ---- copy n elements: dst[i] = src[u0 + i] ----
 
 type Cp is Type:
   Cp{src: Array<U32>, dst: Array<U32>}
@@ -26,7 +25,6 @@ def T.copy(n: Nat, +i: Nat, +u0: Nat, st: Cp) -> Cp:
       Cp{src, dst} = st
       T.copy(p, (i + 1n), u0, T.copy.s0(i, dst, R.Fr.from_array(src, (u0 + i))))
 
-# ---- count mismatches: a[i] != arr[u0 + i] ----
 
 type Cm is Type:
   Cm{a: Array<U32>, arr: Array<U32>, +bad: U32}
@@ -51,7 +49,6 @@ def T.cmp.bad(st: Cm) -> U32:
   Cm{a, arr, bad} = st
   bad
 
-# ---- vectors mode ----
 
 # fresh 2^(log2+4)-word array holding arr[u0 .. u0+n)
 def T.extract(arr: Array<U32>, +log2: Nat, +u0: Nat) -> Cp:
@@ -69,7 +66,6 @@ def T.vec.step4(+log2: Nat, +n: Nat, +b1: U32, +b2: U32, +b3: U32, st: Cm) -> IO
   Cm{a, arr, b4} = st
   T.vec.report(U32.is_eq(U32.or(U32.or(b1, b2), U32.or(b3, b4)), 0), n, b1, b2, b3, b4)
 
-# coset_ifft(coset_fft(coeffs)) == coeffs
 def T.vec.step3.go(+log2: Nat, +n: Nat, +b1: U32, +b2: U32, +b3: U32, c: Cp) -> IO(Unit):
   Cp{arr, x} = c
   T.vec.step4(log2, n, b1, b2, b3, T.cmp(n, 0n, 3n, Cm{Ntt.Ntt.coset_ifft(Ntt.Ntt.coset_fft(x, log2), log2), arr, 0}))
@@ -78,7 +74,6 @@ def T.vec.step3(+log2: Nat, +n: Nat, +b1: U32, +b2: U32, st: Cm) -> IO(Unit):
   Cm{a, arr, b3} = st
   T.vec.step3.go(log2, n, b1, b2, b3, T.extract(arr, log2, 3n))
 
-# ifft(fft(coeffs)) == coeffs
 def T.vec.step2.go(+log2: Nat, +n: Nat, +b1: U32, +b2: U32, c: Cp) -> IO(Unit):
   Cp{arr, x} = c
   T.vec.step3(log2, n, b1, b2, T.cmp(n, 0n, 3n, Cm{Ntt.Ntt.ifft(Ntt.Ntt.fft(x, log2), log2), arr, 0}))
@@ -87,7 +82,6 @@ def T.vec.step2(+log2: Nat, +n: Nat, +b1: U32, st: Cm) -> IO(Unit):
   Cm{a, arr, b2} = st
   T.vec.step2.go(log2, n, b1, b2, T.extract(arr, log2, 3n))
 
-# ifft(evals) == coeffs
 def T.vec.step1.go(+log2: Nat, +n: Nat, +b1: U32, c: Cp) -> IO(Unit):
   Cp{arr, x} = c
   T.vec.step2(log2, n, b1, T.cmp(n, 0n, 3n, Cm{Ntt.Ntt.ifft(x, log2), arr, 0}))
@@ -96,7 +90,6 @@ def T.vec.step1(+log2: Nat, +n: Nat, st: Cm) -> IO(Unit):
   Cm{a, arr, b1} = st
   T.vec.step1.go(log2, n, b1, T.extract(arr, log2, (3n + n)))
 
-# fft(coeffs) == evals
 def T.vec.step0(+log2: Nat, +n: Nat, c: Cp) -> IO(Unit):
   Cp{arr, x} = c
   T.vec.step1(log2, n, T.cmp(n, 0n, (3n + n), Cm{Ntt.Ntt.fft(x, log2), arr, 0}))
@@ -117,7 +110,6 @@ def T.vec(+path: String, +log2: Nat) -> IO(Unit):
     arr : Array<U32> <- Io.load_u32(path, (log2 + 6n), 15)
     T.vec.cnt(path, log2, arr[15])
 
-# ---- QAP mode ----
 
 def T.env.fin(r: Result<&1, &1, U32 & String, String>) -> Maybe<&2, String>:
   match r:

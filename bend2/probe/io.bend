@@ -24,7 +24,6 @@ def pack.step(+b: U32, st: Acc) -> Acc:
   Acc{a, i, w, k, s} = st
   pack.fin(U32.is_eq(k, 3), a, i, (w .|. (b << U32.to_nat((k * 8 : U32))) : U32), k, s)
 
-# one byte per list cell, little-endian into the current word
 def pack(bs: List<&2, U32>, st: Acc) -> Acc:
   match bs:
     case Nil{}:
@@ -50,7 +49,6 @@ def read.step(st: Acc, rd: File & Result<&1, &1, U32 & String, List<&2, U32>>) -
   (f, r) = rd
   read.res(f, st, r)
 
-# fuel-bounded read loop: stop at the first empty read
 def read_all(fuel: Nat, +chunk: U32, r: Rd) -> IO(Rd):
   match fuel:
     case 0n:
