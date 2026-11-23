@@ -14,7 +14,6 @@ a = ap.parse_args()
 doc = {"schema": 1, "framework": "gpu-primitives", "host": platform.node(), "cpu": a.cpu, "gpu": a.gpu, "git_head": a.git_head, "updated": "",
        "icicle": {}, "sppark": {}}
 
-# ICICLE v4 (open-icicle v4.0.0), CUDA backend built with -DCUDA_ARCH=120 into $ART/icicle4-install
 env = dict(os.environ, ICICLE_BACKEND_INSTALL_DIR=f"{a.art}/icicle4-install/lib/backend", LD_LIBRARY_PATH=f"{a.art}/icicle4-install/lib")
 r = subprocess.run([f"{a.repo}/comparators/gpu/icicle-prim/target/release/icicle-prim", "--min", str(a.min), "--max", str(a.max), "--iters", str(a.iters)],
                    capture_output=True, text=True, env=env)

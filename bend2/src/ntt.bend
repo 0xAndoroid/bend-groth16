@@ -42,7 +42,6 @@ def Ntt.two_inv() -> F.Fr:
 
 # END GENERATED
 
-# ---- field helpers ----
 
 def Ntt.pow.bit(r: Nat, +x: F.Fr, acc: F.Fr) -> F.Fr:
   match r:
@@ -77,7 +76,6 @@ def Ntt.omega(k: Nat) -> F.Fr:
 def Ntt.omega_inv(k: Nat) -> F.Fr:
   Ntt.sqr_n(Nat.sub(28n, k), Ntt.root_inv())
 
-# ---- chunk tree ----
 
 type NTree is Type:
   NLeaf{a: Array<U32>}
@@ -113,7 +111,6 @@ def Ntt.pair_node(p: NTree & NTree) -> NTree:
   (lo, hi) = p
   NNode{lo, hi}
 
-# ---- early stage: constant twiddle, lo[i] = e[i] + w o[i], hi[i] = e[i] - w o[i] ----
 
 type NBf is Type:
   NBf{e: Array<U32>, o: Array<U32>, lo: Array<U32>, hi: Array<U32>}
@@ -143,7 +140,6 @@ def Ntt.early.fin(st: NBf) -> NTree & NTree:
 def Ntt.early.leaf(a: Array<U32>, b: Array<U32>, +lm: Nat, w: F.Fr) -> NTree & NTree:
   Ntt.early.fin(Ntt.bfc(Nat.pow(2n, lm), 0n, w, NBf{a, b, Array.new(U32, (lm + 4n), 0), Array.new(U32, (lm + 4n), 0)}))
 
-# zip the two halves of a depth-s subtree leaf by leaf
 def Ntt.early.zip(l: NTree, r: NTree, +lm: Nat, +w: F.Fr) -> NTree & NTree:
   match l r:
     case NLeaf{a} NLeaf{b}:
@@ -175,7 +171,6 @@ def Ntt.early(d: Nat, t: NTree, +w: F.Fr, +lm: Nat, +ws: F.Fr) -> NTree & NTree:
         case NLeaf{a}:
           (NLeaf{a}, NLeaf{Array.new(U32, 0n, 0)})
 
-# ---- late stage: running twiddle over blocks of h butterflies ----
 
 type NBr is Type:
   NBr{src: Array<U32>, lo: Array<U32>, hi: Array<U32>, +w: F.Fr}
@@ -251,7 +246,6 @@ def Ntt.late(d: Nat, t: NTree, +w: F.Fr, +lm: Nat, +h: Nat, +wm: F.Fr, +ratio: F
         case NLeaf{a}:
           (NLeaf{a}, NLeaf{Array.new(U32, 0n, 0)})
 
-# ---- stages ----
 
 def Ntt.stage.go(early: Bool, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +j: Nat, ws: F.Fr, wn: F.Fr) -> NTree:
   match early:
@@ -276,7 +270,6 @@ def Ntt.stages(n: Nat, +s: Nat, t: NTree, +fd: Nat, +lm: Nat, +log2: Nat, +wn: F
 def Ntt.core(t: NTree, +log2: Nat, +fd: Nat, wn: F.Fr) -> NTree:
   Ntt.stages(log2, 0n, t, fd, Nat.sub(log2, fd), log2, wn)
 
-# ---- scaling: x[j] *= start ratio^j over the whole tree ----
 
 type NSc is Type:
   NSc{a: Array<U32>, +v: F.Fr}
@@ -311,12 +304,10 @@ def Ntt.scale.t(t: NTree, +rc: F.Fr, +lm: Nat, +start: F.Fr, +ratio: F.Fr, +ratm
 def Ntt.scale(t: NTree, +lm: Nat, +start: F.Fr, +ratio: F.Fr) -> NTree:
   Ntt.scale.t(t, F.Fr.one(), lm, start, ratio, Ntt.sqr_n(lm, ratio))
 
-# ---- tree-level transforms ----
 
 def Ntt.t_fft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
   Ntt.core(t, log2, fd, Ntt.omega(log2))
 
-# n^-1 = two_inv^log2
 def Ntt.t_ifft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
   Ntt.scale(Ntt.core(t, log2, fd, Ntt.omega_inv(log2)), Nat.sub(log2, fd), Ntt.pow(Ntt.two_inv(), log2, 6n), F.Fr.one())
 
@@ -327,7 +318,6 @@ def Ntt.t_coset_fft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
 def Ntt.t_coset_ifft(t: NTree, +log2: Nat, +fd: Nat) -> NTree:
   Ntt.scale(Ntt.core(t, log2, fd, Ntt.omega_inv(log2)), Nat.sub(log2, fd), Ntt.pow(Ntt.two_inv(), log2, 6n), Ntt.gen_inv())
 
-# ---- pointwise (a b - c) z over three trees ----
 
 type NP3 is Type:
   NP3{a: Array<U32>, b: Array<U32>, c: Array<U32>}
@@ -388,7 +378,6 @@ def Ntt.point(d: Nat, ta: NTree, tb: NTree, tc: NTree, +lm: Nat, +z: F.Fr) -> NT
         case NLeaf{a}:
           NLeaf{a}
 
-# ---- flat API (frozen) ----
 
 # fork depth: 2^fd chunks of >= 1 element, up to 4096 chunks (the M4 has 4P + 6E cores and
 # no work stealing, so a stage needs many more tasks than cores to balance)
@@ -423,11 +412,9 @@ def Ntt.coset_ifft_fd.go(z: Bool, a: Array<U32>, +log2: Nat, +fd: Nat) -> Array<
     case False{}:
       Ntt.to_array(Ntt.t_coset_ifft(Ntt.to_tree(fd, a), log2, fd))
 
-# clamp a requested fork depth into 1 <= fd < log2
 def Ntt.clamp(+log2: Nat, fd: Nat) -> Nat:
   Nat.max(1n, Nat.min(fd, Nat.sub(log2, 1n)))
 
-# explicit fork depth (clamped to 1 <= fd < log2); the bench sweeps it and calls these with `!` for the GPU
 def Ntt.fft_fd(a: Array<U32>, +log2: Nat, fd: Nat) -> Array<U32>:
   Ntt.fft_fd.go(Nat.is_eq(log2, 0n), a, log2, Ntt.clamp(log2, fd))
 

@@ -71,7 +71,6 @@ func now() string { return time.Now().UTC().Format(time.RFC3339) }
 // loadavg: host 1/5/15-min load at sample time (same field as bench/arkworks-*.json).
 func loadavg() string { return sh("sysctl", "-n", "vm.loadavg") }
 
-// timeN runs f iters times and returns the samples in ms.
 func timeN(iters int, f func()) []float64 {
 	out := make([]float64, 0, iters)
 	for i := 0; i < iters; i++ {
@@ -257,7 +256,6 @@ func primitives(maxLog2 int) map[string]any {
 		}
 	}
 
-	// Fr mul throughput, single goroutine.
 	const nMuls = 10_000_000
 	var x, yv fr.Element
 	x.SetRandom()

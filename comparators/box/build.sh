@@ -18,7 +18,6 @@ for curve in bn254 bls12_377 bls12_381 bw6_761; do
   cmake -S $DEV/icicle-gnark/icicle -B $ART/gnark-build-$curve -DCMAKE_BUILD_TYPE=Release -DCURVE=$curve -DCUDA_BACKEND=ON -DCUDA_ARCH=120 -DCMAKE_INSTALL_PREFIX=$ART/gnark-install
   cmake --build $ART/gnark-build-$curve --target install -j"$THREADS"
 done
-# gnark runner: CPU binary + icicle binary
 cd $REPO/comparators/gpu/gnark-icicle
 GOFLAGS=-mod=mod go mod tidy
 go build -o $ART/gnark-cpu .

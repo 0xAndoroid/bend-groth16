@@ -20,7 +20,7 @@ prover itself reads `BENDG_DATA` and prints `A`/`B`/`C` then `T load evals qap m
 | `src/msm.bend`, `src/ntt.bend` | Pippenger MSM (G1/G2, fork tree of private bucket arrays, `g1_with/g2_with(points, scalars, n, c, fd)`), Stockham NTT / iNTT / coset FFT + QAP `h` (**generated** by `gen/gen_msm.py`, `gen/gen_ntt.py`) |
 | `src/groth16.bend` | header/CSR loading, evaluation vectors, MSM accumulators, final combination |
 | `prove.bend` | entry point: phases, `T` timing lines, `BENDG_GPU` dispatch |
-| `tests/` | `test_{fr,fq,g1,g2,ntt,msm}.bend`, `probe_show.bend`, `test_prove.sh` (K=4 end to end), `run.sh` (all of them) |
+| `tests/` | `test_{fr,fq,g1,g2,ntt,msm}.bend`, `test_prove.sh` (K=4 end to end), `run.sh` (all of them) |
 | `bench/` | `field_mul.bend`, `g1_add.bend`, `msm.bend`, `ntt.bend` + `msm_results.md`, `ntt_results.md`, `prover_results.md`, `box_results.md` |
 | `scripts/` | `prove.sh`, `bench_prover.sh` |
 | `tools/` | `export_bin.py` (JSON → `.bin`), `verify_bin.py`, `proof_to_json.py` (see `tools/README.md`) |
@@ -68,7 +68,6 @@ Exit 1 unless every test prints only `PASS` lines and the K=4 prove is `OK` + `E
 | `test_g1` (`PASS 32`), `test_g2` (`PASS 16`) | add, add_mixed, double, neg, mul_scalar, affine neg, add reversed, affine round trip; cases 0–2 are ∞, P = Q, P = −Q |
 | `test_ntt` (`PASS 8`; `K=4`, `K=10`) | NTT/iNTT on `ntt_small_*.bin`; QAP `h` against `gen/ref_qap.py` references |
 | `test_msm` | `msm_small_{8,64,1024}.bin` |
-| `probe_show` | hex printing and `Fr.bits_window` values (printed, eyeballed) |
 | `test_prove.sh` | `prove.sh 4` → `OK` + `EQUAL` (`PASS prove K=4`) |
 
 ## Bench (M4 Mac mini, 10 cores, Metal; medians of 3; checksums equal across configs)

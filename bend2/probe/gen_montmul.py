@@ -36,7 +36,6 @@ w("")
 w("def mont(a: Fr, b: Fr) -> Fr:")
 w("  match a b:")
 w("    case Fr{" + ", ".join("a%d" % j for j in range(L)) + "} Fr{" + ", ".join("b%d" % j for j in range(L)) + "}:")
-# SSA body, indented 6
 body = []
 def emit(expr):
     fresh[0] += 1

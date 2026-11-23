@@ -21,14 +21,12 @@ type Hdr is Data:
 type S is Type:
   S{+h: Hdr, z: Array<U32>, zl: Array<U32>, ca: Array<U32>, cb: Array<U32>, cc: Array<U32>, ea: Array<U32>, eb: Array<U32>, ec: Array<U32>, hh: Array<U32>, g1: Array<U32>, g2: Array<U32>, pa: Array<U32>, pb1: Array<U32>, pb2: Array<U32>, ph: Array<U32>, pl: Array<U32>, res1: Array<U32>, res2: Array<U32>, +r: R.Fr, +s: R.Fr}
 
-# the finished proof, affine
 type Out is Data:
   Out{+a: G.G1Aff, +b: G2.G2Aff, +c: G.G1Aff}
 
 def Groth.empty() -> Array<U32>:
   Array.new(U32, 0n, 0)
 
-# ---------------------------------------------------------------- header
 
 def Hdr.s7(+nc: U32, +ni: U32, +nw: U32, +lg: U32, +na: U32, +nb: U32, +nh: U32, p: Array<U32> & U32) -> Hdr:
   (a, +nl) = p
@@ -65,7 +63,6 @@ def Hdr.s0(p: Array<U32> & U32) -> Hdr:
 def Hdr.read(a: Array<U32>) -> Hdr:
   Hdr.s0(a[0])
 
-# ---------------------------------------------------------------- small helpers
 
 # ceil(log2(w)) for 1 <= w <= 2^31: the number of k in 0..30 with 2^k < w
 def Groth.clog2.go(k: Nat, +w: U32) -> Nat:
@@ -106,7 +103,6 @@ def Groth.first_word(path: String) -> IO(U32):
     v : U32 <- Groth.word.fin(rd)
     return v
 
-# ---------------------------------------------------------------- evaluation vectors
 # CSR file words: [nnz][offs[0..N]][entries: col, 16-word coeff]; entry e starts at word 2 + N + 17e
 
 def Ev.ent.s2.fin(one: Bool, acc: R.Fr, coef: R.Fr, zv: R.Fr) -> R.Fr:
@@ -166,7 +162,6 @@ def Ev.rows(n: Nat, +i: Nat, +base: U32, st: Array<U32> & (Array<U32> & Array<U3
 def Ev.matrix(csr: Array<U32>, z: Array<U32>, +nc: Nat, lg: Nat) -> Array<U32> & (Array<U32> & Array<U32>):
   Ev.rows(nc, 0n, (U32.from_nat(nc) + 2 : U32), (csr, (z, Array.new(U32, (lg + 4n), 0))))
 
-# dst[doff + i] = src[soff + i] for n elements
 def Ev.copy.s(+i: Nat, dst: Array<U32>, r: Array<U32> & R.Fr) -> Array<U32> & Array<U32>:
   (src, x) = r
   (src, R.Fr.to_array(dst, i, x))
@@ -192,7 +187,6 @@ def Ev.matrix_a.fin(+ni: Nat, +nc: Nat, r: Array<U32> & (Array<U32> & Array<U32>
 def Ev.matrix_a(csr: Array<U32>, z: Array<U32>, +nc: Nat, lg: Nat, +ni: Nat) -> Array<U32> & (Array<U32> & Array<U32>):
   Ev.matrix_a.fin(ni, nc, Ev.matrix(csr, z, nc, lg))
 
-# all three vectors: (z, (ea, (eb, ec)))
 def Ev.three.s3(ea: Array<U32>, eb: Array<U32>, r: Array<U32> & (Array<U32> & Array<U32>)) -> Array<U32> & (Array<U32> & (Array<U32> & Array<U32>)):
   (cc, rr) = r
   (z, ec) = rr
@@ -211,7 +205,6 @@ def Ev.three.s1(cb: Array<U32>, cc: Array<U32>, +nc: Nat, +lg: Nat, r: Array<U32
 def Ev.three(ca: Array<U32>, cb: Array<U32>, cc: Array<U32>, z: Array<U32>, +nc: Nat, +lg: Nat, ni: Nat) -> Array<U32> & (Array<U32> & (Array<U32> & Array<U32>)):
   Ev.three.s1(cb, cc, nc, lg, Ev.matrix_a(ca, z, nc, lg, ni))
 
-# ---------------------------------------------------------------- scalars
 
 # a[i] = to_canonical(a[i]) for n elements (MSM scalars are canonical)
 def Sc.canon.s(+i: Nat, r: Array<U32> & R.Fr) -> Array<U32>:
@@ -225,7 +218,6 @@ def Sc.canon(n: Nat, +i: Nat, a: Array<U32>) -> Array<U32>:
     case 1n+m:
       Sc.canon(m, (i + 1n), Sc.canon.s(i, R.Fr.from_array(a, i)))
 
-# ---------------------------------------------------------------- loading
 
 def Groth.rs.s2(+r: R.Fr, p: Array<U32> & R.Fr) -> R.Fr & R.Fr:
   (a, s) = p
@@ -261,7 +253,6 @@ def Groth.load(+dir: String, h: Hdr, +nza: U32, +nzb: U32, +nzc: U32) -> IO(S):
         rs : Array<U32> <- Io.load_u32(dir ++ "/rs.bin", 5n, 0)
         return Groth.mk(Hdr{nc, ni, nw, lg, na, nb, nh, nl}, z, ca, cb, cc, g1, g2, pa, pb1, pb2, ph, pl, Groth.rs(rs))
 
-# ---------------------------------------------------------------- phase: evaluation vectors + canonical scalars
 
 def Groth.evals.fin2(+h: Hdr, ea: Array<U32>, eb: Array<U32>, ec: Array<U32>, hh: Array<U32>, g1: Array<U32>, g2: Array<U32>, pa: Array<U32>, pb1: Array<U32>, pb2: Array<U32>, ph: Array<U32>, pl: Array<U32>, res1: Array<U32>, res2: Array<U32>, +r: R.Fr, +s: R.Fr, p: Array<U32> & Array<U32>) -> S:
   match h:
@@ -285,7 +276,6 @@ def Groth.evals(st: S) -> S:
     case Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
       Groth.evals.fin(Hdr{nc, ni, nw, lg, na, nb, nh, nl}, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s, Ev.three(ca, cb, cc, z, U32.to_nat(nc), U32.to_nat(lg), U32.to_nat(ni)))
 
-# ---------------------------------------------------------------- MSM accumulators
 
 # a[idx] += m (affine slots start at infinity = (0, 0))
 def Groth.acc_g1.fin(+idx: Nat, m: G.G1, p: Array<U32> & G.G1Aff) -> Array<U32>:
@@ -302,7 +292,6 @@ def Groth.acc_g2.fin(+idx: Nat, m: G2.G2, p: Array<U32> & G2.G2Aff) -> Array<U32
 def Groth.acc_g2(a: Array<U32>, +idx: Nat, m: G2.G2) -> Array<U32>:
   Groth.acc_g2.fin(idx, m, G2.G2Aff.from_array(a, idx))
 
-# ---------------------------------------------------------------- phase: combine
 # A = alpha + msmA + r*delta; B1 = beta1 + msmB1 + s*delta1; B2 = beta2 + msmB2 + s*delta2;
 # C = s*A + r*B1 - r*s*delta1 + (msmL + msmH); res1 = [msmA msmB1 msmL+msmH], res2 = [msmB2]
 

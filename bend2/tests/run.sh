@@ -30,10 +30,9 @@ run() {
   echo "$out" | head -1
   [ "$rc" -eq 0 ] && [ -n "$out" ] && ! echo "$out" | grep -qvE '^PASS ' && ! echo "$out" | grep -qE 'FAIL|^PASS 0$' || { echo "  -> FAIL (exit $rc)"; fail=1; }
 }
-for t in test_fr test_fq test_g1 test_g2 test_ntt test_msm probe_show; do
+for t in test_fr test_fq test_g1 test_g2 test_ntt test_msm; do
   (cd "$ROOT/bend2/tests" && "$BEND" "$t.bend" -o "$OUT/$t")
   case "$t" in
-    probe_show) printf '%s: ' "$t"; (cd "$ROOT" && "$OUT/$t" | head -1) ;;
     test_ntt) run test_ntt; run test_ntt K=4; run test_ntt K=10 ;;
     *) run "$t" ;;
   esac

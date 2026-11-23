@@ -7,7 +7,6 @@ import ../src/g1.bend as G
 import ../src/msm.bend as Msm
 import ../src/bin_io.bend as Io
 
-# copy k words src[si..] -> dst[di..]; pr = (src, src[si]); returns (src, dst)
 def T.copy(k: Nat, +si: U32, +di: U32, dst: Array<U32>, pr: Array<U32> & U32) -> Array<U32> & Array<U32>:
   match k:
     case 0n:

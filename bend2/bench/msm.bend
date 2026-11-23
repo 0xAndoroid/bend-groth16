@@ -92,7 +92,6 @@ def B.points(g2: Bool, +n: Nat, +h: P.Hdr) -> IO(Array<U32>):
         case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:
           B.points_g1(n, P.Groth.clog2((na * 32 : U32)), P.Groth.clog2((nh * 32 : U32)))
 
-# number of witness.bin entries (ni + nw)
 def B.nz(+h: P.Hdr) -> Nat:
   match h:
     case P.Hdr{nc, ni, nw, lg, na, nb, nh, nl}:

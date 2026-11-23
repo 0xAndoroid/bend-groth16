@@ -10,7 +10,6 @@ import ./src/g2.bend as G2
 import ./src/bin_io.bend as Io
 import ./src/groth16.bend as P
 
-# ---------------------------------------------------------------- GPU dispatch (BENDG_GPU=1 → one `!` per MSM / qap phase)
 
 def Pr.env_gpu.fin(r: Result<&1, &1, U32 & String, String>) -> Bool:
   match r:
@@ -49,7 +48,6 @@ def Pr.qap_run(gpu: Bool, a: Array<U32>, b: Array<U32>, c: Array<U32>, +lg: Nat)
     case False{}:
       N.Ntt.qap_h(a, b, c, lg)
 
-# ---------------------------------------------------------------- phase: h coefficients (canonical)
 
 def Pr.qap(gpu: Bool, st: P.S) -> P.S:
   P.S{h, z, zl, ca, cb, cc, ea, eb, ec, hh, g1, g2, pa, pb1, pb2, ph, pl, res1, res2, r, s} = st
